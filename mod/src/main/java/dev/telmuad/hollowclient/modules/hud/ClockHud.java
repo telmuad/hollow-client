@@ -16,7 +16,7 @@ public final class ClockHud extends TextHudModule {
 	private final BooleanSetting seconds = add(new BooleanSetting("seconds", "Show seconds", false));
 
 	public ClockHud() {
-		super("clock", "Clock", "The real-world time.", false, at(Anchor.START, 2, Anchor.START, 80));
+		super("clock", "Clock", "The real-world time.", false, at(Anchor.CENTER, 0, Anchor.START, 18));
 	}
 
 	@Override

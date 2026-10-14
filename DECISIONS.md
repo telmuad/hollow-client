@@ -51,3 +51,14 @@ Choices made while building Hollow Client, with the reason for each. Newest sect
 - **Ping** is the latency the server reports in the player list (the same number as the Tab list); it is hidden in singleplayer.
 - **CPS** counts real mouse presses in a 1-second window (only while no screen is open). It only reads input.
 - **Potion Effects** can hide vanilla's top-right effect icons (off by default), via `replaceElement(STATUS_EFFECTS)`.
+
+## Quality of life and visual modules
+
+- **Zoom** (hold C): divides the world FOV (not the hand), smooth by default (eased in log space so in and out feel the same), scroll while holding changes the zoom (1.15x per notch, 1.5x–50x) instead of the hotbar slot, mouse turning slows down with the zoom, optional cinematic camera. C is also vanilla's "Save Toolbar Activator" (creative only); both still work because Minecraft lets two bindings share a key, but Controls shows it in red. Rebind either if that bothers you.
+- **Toggle Sprint / Sneak**: one module with "toggle sprint" (on), "toggle sneak" (off) and "always sprint". It ORs the toggled state into the input record vanilla already builds from your keys, exactly what vanilla's own "Sprint: Toggle" option does. Toggled sneak is not applied while flying or riding (you would sink or dismount). Keep vanilla's Sprint/Sneak options on "Hold" to avoid double toggling. A "Sprint/Sneak Status" HUD element shows the state.
+- **Fullbright** raises the brightness value the lightmap shader reads (strength 1x–15x, default 10x). The saved Brightness option is never changed, so turning it off is instant and clean.
+- **Custom crosshair** replaces the vanilla crosshair element through Fabric's HUD registry (no mixin): cross, dot, circle, X, box, T. Vanilla's attack indicator is redrawn under it. In spectator mode and with the F3 3D crosshair, vanilla's crosshair is used.
+- **Low Fire** moves the first-person fire overlay down (0–100%, default 40%). **Clear Water** cancels the underwater screen overlay and pushes the underwater fog end out (default 96 blocks).
+- **Hit Color** rewrites the 8 "damage" rows of vanilla's 16x16 overlay texture and re-uploads it. That tint is used for every entity that gets hurt (including you in F5), not only for mobs you hit. Off = vanilla red restored.
+- **Mixins** use MixinExtras (`@ModifyReturnValue`, `@WrapOperation`, `@ModifyExpressionValue`) and plain `@Inject`; none use `@Overwrite` or `@Redirect`, and none touch the classes Sodium replaces (chunk rendering).
+- **Automated in-game test**: `gradlew runClientGameTest` (Fabric's client game-test API) runs the real client, creates a world, checks the menu key, CPS, zoom and toggle sprint, and screenshots every screen and visual module into `mod/build/run/clientGameTest/screenshots`.

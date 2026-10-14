@@ -68,7 +68,12 @@ public final class Keybinds {
 		}
 		for (Map.Entry<Module, KeyMapping> e : MODULE_KEYS.entrySet()) {
 			Module m = e.getKey();
-			if (m.keyDef().mode() != KeyDef.Mode.TOGGLE) continue;
+			if (m.keyDef().mode() != KeyDef.Mode.TOGGLE) {
+				// Held keys are read with isDown(); drop their click counts so they don't pile up.
+				while (e.getValue().consumeClick()) {
+				}
+				continue;
+			}
 			while (e.getValue().consumeClick()) {
 				m.toggle();
 				if (mc.player != null) {

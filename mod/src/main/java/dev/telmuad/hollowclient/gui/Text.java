@@ -33,7 +33,9 @@ public final class Text {
 					sb.appendCodePoint(cp);
 					return true;
 				});
-				g.drawString(font, fit(font, sb + "  ", width - font.width(ELLIPSIS)) + ELLIPSIS, x, y + i * 10, color, false);
+				String line = sb.toString().stripTrailing();
+				String shown = font.width(line + ELLIPSIS) <= width ? line + ELLIPSIS : fit(font, line, width);
+				g.drawString(font, shown, x, y + i * 10, color, false);
 			} else {
 				g.drawString(font, lines.get(i), x, y + i * 10, color, false);
 			}

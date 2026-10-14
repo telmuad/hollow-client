@@ -41,6 +41,7 @@ public final class HollowMenuScreen extends HollowScreen {
 	private Rect header = Rect.EMPTY;
 	private Rect rail = Rect.EMPTY;
 	private Rect grid = Rect.EMPTY;
+	private Rect section = Rect.EMPTY;
 	private Rect footer = Rect.EMPTY;
 	private Rect searchBox = Rect.EMPTY;
 	private boolean railLabels = true;
@@ -62,6 +63,13 @@ public final class HollowMenuScreen extends HollowScreen {
 		this(null);
 	}
 
+	/** Open the menu on a given category (clears the search). */
+	public static HollowMenuScreen at(Category category) {
+		lastCategory = category;
+		lastQuery = "";
+		return new HollowMenuScreen();
+	}
+
 	@Override
 	protected void init() {
 		super.init();
@@ -74,7 +82,8 @@ public final class HollowMenuScreen extends HollowScreen {
 		footer = new Rect(panel.x(), panel.bottom() - 18, pw, 18);
 		int railW = railLabels ? 108 : 28;
 		rail = new Rect(panel.x() + 8, header.bottom() + 2, railW, footer.y() - header.bottom() - 6);
-		grid = new Rect(rail.right() + 8, header.bottom() + 2, panel.right() - 8 - rail.right() - 8, footer.y() - header.bottom() - 6);
+		section = new Rect(rail.right() + 8, header.bottom() + 2, panel.right() - 8 - rail.right() - 8, 14);
+		grid = new Rect(section.x(), section.bottom() + 2, section.w(), footer.y() - section.bottom() - 6);
 		gap = 6;
 		cols = Math.max(1, (grid.w() + gap) / (140 + gap));
 		cardW = (grid.w() - 6 - gap * (cols - 1)) / cols;
@@ -140,6 +149,7 @@ public final class HollowMenuScreen extends HollowScreen {
 		Draw.roundOutline(g, panel, 8, Theme.fade(Theme.STROKE, a));
 		renderHeader(g, mx, my, a);
 		renderRail(g, mx, my, a);
+		renderSection(g, a);
 		scroll = Anim.approach(scroll, scrollTarget, dt, 18f);
 		g.enableScissor(grid.x(), grid.y(), grid.right(), grid.bottom());
 		if (showingTiles()) renderTiles(g, mx, my, a);
@@ -195,6 +205,20 @@ public final class HollowMenuScreen extends HollowScreen {
 		}
 	}
 
+	private void renderSection(GuiGraphics g, float a) {
+		String title = searching() ? "Search results" : category.label();
+		g.drawString(font, Component.literal(title).withStyle(st -> st.withBold(true)), section.x() + 1, section.y() + 3, Theme.fade(Theme.TEXT, a), false);
+		String count;
+		if (showingTiles()) {
+			count = "Only you can see your styles";
+		} else {
+			List<Module> mods = visibleModules();
+			long on = mods.stream().filter(Module::isEnabled).count();
+			count = on + " of " + mods.size() + " on";
+		}
+		g.drawString(font, count, section.right() - 4 - font.width(count), section.y() + 3, Theme.fade(Theme.TEXT_FAINT, a), false);
+	}
+
 	private static ItemStack iconFor(Category c) {
 		return switch (c) {
 			case HUD -> new ItemStack(Items.COMPASS);
@@ -226,7 +250,7 @@ public final class HollowMenuScreen extends HollowScreen {
 			Rect gear = gearRect(r);
 			boolean gh = inGrid && gear.contains(mx, my);
 			if (gh) Draw.roundRect(g, gear, 3, Theme.fade(Theme.CARD_HOVER, a));
-			g.drawString(font, "⚙", gear.x() + 3, gear.y() + 3, Theme.fade(gh ? Theme.TEXT : Theme.TEXT_FAINT, a), false);
+			Draw.settingsIcon(g, gear.x() + 4, gear.y() + 4, Theme.fade(gh ? Theme.TEXT : Theme.TEXT_FAINT, a));
 			if (searching()) {
 				String cat = m.category().label();
 				g.drawString(font, cat, r.right() - 8 - font.width(cat), r.y() + 21 + 10 * 2 - 9, Theme.fade(Theme.TEXT_FAINT, a), false);
@@ -288,7 +312,7 @@ public final class HollowMenuScreen extends HollowScreen {
 	}
 
 	private void renderFooter(GuiGraphics g, float a) {
-		String hint = "Click a card to toggle · ⚙ or right-click for settings · Right Shift closes";
+		String hint = "Click a card to toggle · Right-click or the slider icon for settings · Right Shift closes";
 		g.drawString(font, Text.fit(font, hint, footer.w() - 80), footer.x() + 10, footer.y() + 4, Theme.fade(Theme.TEXT_FAINT, a), false);
 		String version = "v" + FabricLoader.getInstance().getModContainer(HollowClient.MOD_ID)
 				.map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("?");

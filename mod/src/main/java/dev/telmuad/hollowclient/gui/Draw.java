@@ -83,6 +83,14 @@ public final class Draw {
 		}
 	}
 
+	/** A 7x7 "settings" icon: two slider lines with knobs. */
+	public static void settingsIcon(GuiGraphics g, int x, int y, int color) {
+		g.fill(x, y + 1, x + 7, y + 2, color);
+		g.fill(x + 1, y, x + 4, y + 3, color);
+		g.fill(x, y + 5, x + 7, y + 6, color);
+		g.fill(x + 3, y + 4, x + 6, y + 7, color);
+	}
+
 	/** The Hollow mark: a ring with a gap, drawn from fills. */
 	public static void logo(GuiGraphics g, int x, int y, int size, int color) {
 		int t = Math.max(2, size / 5);

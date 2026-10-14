@@ -1,0 +1,17 @@
+{
+	"schemaVersion": 1,
+	"id": "hollowclient-test",
+	"version": "1.0.0",
+	"name": "Hollow Client game tests",
+	"description": "Automated in-game checks for Hollow Client. Only used by `gradlew runClientGameTest`.",
+	"environment": "client",
+	"entrypoints": {
+		"fabric-client-gametest": [
+			"dev.telmuad.hollowclient.test.HollowClientGameTest"
+		]
+	},
+	"depends": {
+		"hollowclient": "*",
+		"fabric-client-gametest-api-v1": "*"
+	}
+}

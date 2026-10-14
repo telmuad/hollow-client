@@ -3,7 +3,13 @@
 	"package": "dev.telmuad.hollowclient.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
-		"MouseHandlerMixin"
+		"GameRendererMixin",
+		"KeyboardInputMixin",
+		"LightTextureMixin",
+		"MouseHandlerMixin",
+		"OverlayTextureAccessor",
+		"ScreenEffectRendererMixin",
+		"WaterFogEnvironmentMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

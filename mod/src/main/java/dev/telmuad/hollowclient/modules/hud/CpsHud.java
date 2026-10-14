@@ -12,7 +12,7 @@ public final class CpsHud extends TextHudModule {
 	private final BooleanSetting showRight = add(new BooleanSetting("showRight", "Show right clicks", true));
 
 	public CpsHud() {
-		super("cps", "CPS Counter", "Left and right clicks per second.", false, at(Anchor.START, 2, Anchor.START, 98));
+		super("cps", "CPS Counter", "Left and right clicks per second.", false, at(Anchor.CENTER, -40, Anchor.START, 2));
 	}
 
 	@Override

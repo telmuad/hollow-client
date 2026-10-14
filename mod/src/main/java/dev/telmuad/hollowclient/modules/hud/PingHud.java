@@ -13,7 +13,7 @@ public final class PingHud extends TextHudModule {
 	private final BooleanSetting colorByPing = add(new BooleanSetting("colorByPing", "Color by ping", true));
 
 	public PingHud() {
-		super("ping", "Ping", "Your ping to the server (only shown on servers).", false, at(Anchor.START, 2, Anchor.START, 62));
+		super("ping", "Ping", "Your ping to the server (only shown on servers).", false, at(Anchor.CENTER, 40, Anchor.START, 2));
 	}
 
 	private static Integer latency(Minecraft mc) {

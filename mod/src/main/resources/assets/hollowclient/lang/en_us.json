@@ -8,5 +8,13 @@
 	"key.hollowclient.armor": "Toggle Armor & Held Item",
 	"key.hollowclient.potions": "Toggle Potion Effects",
 	"key.hollowclient.ping": "Toggle Ping",
-	"key.hollowclient.clock": "Toggle Clock"
+	"key.hollowclient.clock": "Toggle Clock",
+	"key.hollowclient.toggle_status": "Toggle Sprint/Sneak Status",
+	"key.hollowclient.fullbright": "Toggle Fullbright",
+	"key.hollowclient.crosshair": "Toggle Custom Crosshair",
+	"key.hollowclient.low_fire": "Toggle Low Fire",
+	"key.hollowclient.clear_water": "Toggle Clear Water",
+	"key.hollowclient.hit_color": "Toggle Hit Color",
+	"key.hollowclient.zoom": "Zoom (hold)",
+	"key.hollowclient.toggle_sprint": "Toggle Sprint / Sneak module"
 }

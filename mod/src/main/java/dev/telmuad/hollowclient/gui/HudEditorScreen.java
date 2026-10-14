@@ -26,6 +26,7 @@ import java.util.Map;
 public final class HudEditorScreen extends HollowScreen {
 	private static final double SNAP = 4;
 	private static final int HANDLE = 5;
+	private static final String HINT = "Drag: move · Scroll or corner: scale · Right-click: reset · Alt: free move";
 
 	private final Module focus;
 	private final Map<HudModule, HudLayout.Box> boxes = new IdentityHashMap<>();
@@ -57,18 +58,48 @@ public final class HudEditorScreen extends HollowScreen {
 	protected void init() {
 		super.init();
 		if (focus instanceof HudModule h) selected = h;
-		int bw = Math.max(done.preferredWidth(font), 50);
-		int y = height / 2 - 30;
-		int cx = width / 2;
-		int total = resetAll.preferredWidth(font) + snapButton.preferredWidth(font) + 20 + showAll.preferredWidth(font) + 4 + bw + 12;
-		int x = cx - total / 2;
+		placeToolbar(height / 2 - 60);
+	}
+
+	/** Lay the toolbar out with its top at {@code top}; returns the bar's rectangle. */
+	private Rect placeToolbar(int top) {
+		int doneW = Math.max(done.preferredWidth(font), 50);
+		int snapW = snapButton.preferredWidth(font) + 20;
+		int showW = font.width("Show disabled: Off") + 16;
+		int total = resetAll.preferredWidth(font) + 4 + snapW + 4 + showW + 4 + doneW;
+		int x = width / 2 - total / 2;
+		int y = top + 22;
 		resetAll.bounds(new Rect(x, y, resetAll.preferredWidth(font), 16));
 		x += resetAll.bounds().w() + 4;
-		snapButton.bounds(new Rect(x, y, snapButton.preferredWidth(font) + 20, 16));
-		x += snapButton.bounds().w() + 4;
-		showAll.bounds(new Rect(x, y, showAll.preferredWidth(font), 16));
-		x += showAll.bounds().w() + 4;
-		done.bounds(new Rect(x, y, bw, 16));
+		snapButton.bounds(new Rect(x, y, snapW, 16));
+		x += snapW + 4;
+		showAll.bounds(new Rect(x, y, showW, 16));
+		x += showW + 4;
+		done.bounds(new Rect(x, y, doneW, 16));
+		int barW = Math.max(total, font.width(HINT)) + 16;
+		return new Rect(width / 2 - barW / 2, top, barW, 44);
+	}
+
+	/** Put the toolbar where it covers the fewest HUD elements: above the crosshair, above the hotbar, or at the top. */
+	private Rect chooseToolbar() {
+		int[] candidates = {height / 2 - 60, height - 110, 30};
+		Rect best = null;
+		double bestOverlap = Double.MAX_VALUE;
+		for (int top : candidates) {
+			Rect bar = placeToolbar(Math.max(2, top));
+			double overlap = 0;
+			for (HudLayout.Box b : boxes.values()) {
+				double ix = Math.min(bar.right(), b.right()) - Math.max(bar.x(), b.x());
+				double iy = Math.min(bar.bottom(), b.bottom()) - Math.max(bar.y(), b.y());
+				if (ix > 0 && iy > 0) overlap += ix * iy;
+			}
+			if (overlap < bestOverlap) {
+				bestOverlap = overlap;
+				best = bar;
+			}
+			if (overlap == 0) break;
+		}
+		return placeToolbar(best.y());
 	}
 
 	private List<HudModule> elements() {
@@ -128,11 +159,10 @@ public final class HudEditorScreen extends HollowScreen {
 		}
 
 		if (dragging == null) {
-			Rect bar = new Rect(resetAll.bounds().x() - 8, resetAll.bounds().y() - 24, done.bounds().right() - resetAll.bounds().x() + 16, 48);
+			Rect bar = chooseToolbar();
 			Draw.roundRect(g, bar, 6, Theme.fade(0xD0101015, a));
 			Draw.roundOutline(g, bar, 6, Theme.fade(Theme.STROKE, a));
-			g.drawCenteredString(font, "Drag to move · Scroll or drag the corner to scale · Right-click resets",
-					width / 2, bar.y() + 6, Theme.fade(Theme.TEXT_DIM, a));
+			g.drawCenteredString(font, HINT, width / 2, bar.y() + 7, Theme.fade(Theme.TEXT_DIM, a));
 			resetAll.setLabel(confirmReset ? "Click again" : "Reset all");
 			snapButton.setLabel("Snap: " + (snapping ? "On" : "Off"));
 			showAll.setLabel("Show disabled: " + (includeDisabled ? "On" : "Off"));

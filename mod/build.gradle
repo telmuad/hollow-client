@@ -26,6 +26,19 @@ loom {
 	accessWidenerPath = file("src/main/resources/hollowclient.accesswidener")
 }
 
+// Automated in-game checks: `gradlew runClientGameTest` starts a real client, creates a test world,
+// exercises the menus and modules and saves screenshots to build/run/clientGameTest/screenshots.
+fabricApi {
+	configureTests {
+		createSourceSet = true
+		modId = "hollowclient-test"
+		enableGameTests = false
+		enableClientGameTests = true
+		eula = false
+		clearRunDirectory = true
+	}
+}
+
 dependencies {
 	// Versions live in gradle.properties
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
