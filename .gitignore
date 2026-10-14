@@ -1,0 +1,49 @@
+# Gradle / Java
+.gradle/
+build/
+out/
+classes/
+hs_err_*.log
+replay_*.log
+*.hprof
+*.jfr
+
+# Fabric dev run folder
+run/
+
+# IntelliJ / Eclipse / VS Code
+.idea/
+*.iml
+*.ipr
+*.iws
+*.launch
+.settings/
+.vscode/
+bin/
+.classpath
+.project
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+
+# Launcher build output
+dist/
+launcher/build/
+launcher/bundled/*.jar
+launcher/screenshots/
+
+# Secrets: never commit these
+launcher/config.json
+config.json
+*.token
+tokens*.json
+token*.txt
+
+# OS
+*.DS_Store
+Thumbs.db
