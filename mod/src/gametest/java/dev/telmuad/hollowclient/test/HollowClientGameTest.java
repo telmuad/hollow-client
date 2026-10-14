@@ -3,6 +3,14 @@ package dev.telmuad.hollowclient.test;
 import dev.telmuad.hollowclient.HollowClient;
 import dev.telmuad.hollowclient.gui.HollowMenuScreen;
 import dev.telmuad.hollowclient.gui.HudEditorScreen;
+import dev.telmuad.hollowclient.gui.StylesScreen;
+import dev.telmuad.hollowclient.modules.Modules;
+import dev.telmuad.hollowclient.render.CosmeticModels;
+import dev.telmuad.hollowclient.styles.CapeManager;
+import dev.telmuad.hollowclient.styles.PackImporter;
+import dev.telmuad.hollowclient.styles.PackManager;
+import dev.telmuad.hollowclient.styles.PresetManager;
+import net.minecraft.client.CameraType;
 import dev.telmuad.hollowclient.hud.HudModule;
 import dev.telmuad.hollowclient.module.Category;
 import dev.telmuad.hollowclient.module.Module;
@@ -16,6 +24,7 @@ import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,6 +81,7 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 			menus(ctx);
 			hud(ctx);
 			qolAndVisual(ctx, sp);
+			styles(ctx, sp);
 		}
 		if (!failures.isEmpty()) throw new AssertionError("Hollow Client checks failed: " + failures);
 	}
@@ -271,5 +281,152 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		setEnabled(ctx, "clear_water", false);
 		sp.getServer().runCommand("fill " + at(-6, 0, -6) + " " + at(6, 6, 6) + " air");
 		ctx.waitTicks(10);
+	}
+
+	// ------------------------------------------------------------------------------------------------ styles
+
+	private void styles(ClientGameTestContext ctx, TestSingleplayerContext sp) {
+		home(sp);
+		sp.getServer().runCommand("time set noon");
+		ctx.runOnClient(mc -> {
+			for (Module m : HollowClient.modules().all()) if (m instanceof HudModule && !m.id().equals("fps")) m.setEnabled(false);
+		});
+		for (StylesScreen.Tab t : StylesScreen.Tab.values()) {
+			ctx.setScreen(() -> new StylesScreen(t, null));
+			ctx.waitTicks(8);
+			screenshot(ctx, "styles_" + t.name().toLowerCase());
+		}
+		ctx.setScreen(() -> null);
+
+		// Cosmetics in third person
+		ctx.runOnClient(mc -> {
+			Modules.CAPE.select("builtin:nightfall");
+			Modules.HAT.styleSetting().set(CosmeticModels.Hat.WIZARD_HAT);
+			Modules.HAT.setEnabled(true);
+			Modules.WINGS.styleSetting().set(CosmeticModels.Wings.ANGEL);
+			Modules.WINGS.setEnabled(true);
+			mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
+		});
+		ctx.waitTicks(10);
+		screenshot(ctx, "cosmetics_back");
+		ctx.runOnClient(mc -> mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT));
+		ctx.waitTicks(10);
+		screenshot(ctx, "cosmetics_front");
+		boolean capeOk = ctx.computeOnClient(mc -> Modules.CAPE.texture() != null);
+		check("Cape texture resolves for the built-in cape", capeOk);
+
+		// Import a PNG cape (64x32, generated here)
+		Path capePng = ctx.computeOnClient(mc -> mc.gameDirectory.toPath().resolve("test-cape.png"));
+		writeImage(capePng, 64, 32, (x, y) -> ((x / 4 + y / 4) % 2 == 0) ? 0xFF22CC88 : 0xFF114433);
+		String capeResult = ctx.computeOnClient(mc -> {
+			try {
+				String id = CapeManager.importCape(capePng);
+				Modules.CAPE.select(id);
+				return id;
+			} catch (PackImporter.ImportException e) {
+				return "ERROR " + e.getMessage();
+			}
+		});
+		check("PNG cape import (" + capeResult + ")", capeResult.startsWith("custom:"));
+		ctx.runOnClient(mc -> mc.options.setCameraType(CameraType.THIRD_PERSON_BACK));
+		ctx.waitTicks(10);
+		screenshot(ctx, "imported_cape_back");
+		Path badPng = ctx.computeOnClient(mc -> mc.gameDirectory.toPath().resolve("square.png"));
+		writeImage(badPng, 64, 64, (x, y) -> 0xFFFFFFFF);
+		String badResult = ctx.computeOnClient(mc -> {
+			try {
+				CapeManager.importCape(badPng);
+				return "accepted";
+			} catch (PackImporter.ImportException e) {
+				return e.getMessage();
+			}
+		});
+		check("Wrong-size cape is refused with a message (" + badResult + ")", badResult.contains("64x64"));
+		ctx.runOnClient(mc -> mc.options.setCameraType(CameraType.FIRST_PERSON));
+		ctx.setScreen(() -> new StylesScreen(StylesScreen.Tab.CAPES, null));
+		ctx.waitTicks(8);
+		screenshot(ctx, "styles_capes_with_import");
+		ctx.setScreen(() -> null);
+
+		// Texture pack: a pack that turns stone into a magenta checkerboard
+		sp.getServer().runCommand("fill " + at(-3, -1, 1) + " " + at(3, -1, 8) + " stone");
+		Path packZip = ctx.computeOnClient(mc -> mc.gameDirectory.toPath().resolve("Hollow Test Pack.zip"));
+		writePack(packZip);
+		ctx.runOnClient(mc -> PackManager.importAsync(packZip, name -> LOG.info("Imported {}", name), err -> LOG.error("Import failed: {}", err)));
+		ctx.waitFor(mc -> !PackManager.busy(), 200);
+		boolean listed = ctx.computeOnClient(mc -> HollowClient.styles().packs.contains("Hollow Test Pack.zip"));
+		check("Imported pack is listed", listed);
+		boolean used = ctx.computeOnClient(mc -> PackManager.use("Hollow Test Pack.zip"));
+		ctx.waitTicks(5);
+		ctx.waitFor(mc -> mc.getOverlay() == null, 1200);
+		ctx.waitTicks(20);
+		String active = ctx.computeOnClient(mc -> PackManager.active());
+		check("Switching to the imported pack works (" + active + ")", used && active.equals("Hollow Test Pack.zip"));
+		screenshot(ctx, "pack_active_magenta_stone");
+		ctx.setScreen(() -> new StylesScreen(StylesScreen.Tab.PACKS, null));
+		ctx.waitTicks(8);
+		screenshot(ctx, "styles_packs_with_import");
+		ctx.setScreen(() -> null);
+
+		// Presets: save, change things, apply, check they came back
+		ctx.runOnClient(mc -> PresetManager.save("Test look"));
+		ctx.runOnClient(mc -> {
+			Modules.HAT.setEnabled(false);
+			Modules.CAPE.select("builtin:ember");
+			PackManager.use(null);
+		});
+		ctx.waitTicks(5);
+		ctx.waitFor(mc -> mc.getOverlay() == null, 1200);
+		String warning = ctx.computeOnClient(mc -> PresetManager.apply(HollowClient.styles().findPreset("Test look")));
+		ctx.waitTicks(5);
+		ctx.waitFor(mc -> mc.getOverlay() == null, 1200);
+		ctx.waitTicks(10);
+		boolean restored = ctx.computeOnClient(mc -> Modules.HAT.isEnabled() && Modules.CAPE.capeId().startsWith("custom:")
+				&& PackManager.active().equals("Hollow Test Pack.zip"));
+		check("Applying a preset restores cape, hat and pack (warning: " + warning + ")", restored && warning == null);
+		ctx.setScreen(() -> new StylesScreen(StylesScreen.Tab.PRESETS, null));
+		ctx.waitTicks(8);
+		screenshot(ctx, "styles_presets");
+		ctx.setScreen(() -> null);
+
+		// Remove the pack again so the run ends on vanilla textures
+		ctx.runOnClient(mc -> PackManager.remove("Hollow Test Pack.zip"));
+		ctx.waitTicks(5);
+		ctx.waitFor(mc -> mc.getOverlay() == null, 1200);
+		boolean gone = ctx.computeOnClient(mc -> !HollowClient.styles().packs.contains("Hollow Test Pack.zip")
+				&& !java.nio.file.Files.exists(PackManager.folder().resolve("Hollow Test Pack.zip")));
+		check("Removing a pack forgets it and deletes Hollow's copy", gone);
+	}
+
+	private interface Pixel {
+		int argb(int x, int y);
+	}
+
+	private static void writeImage(Path file, int w, int h, Pixel pixel) {
+		java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(w, h, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+		for (int y = 0; y < h; y++) for (int x = 0; x < w; x++) img.setRGB(x, y, pixel.argb(x, y));
+		try {
+			javax.imageio.ImageIO.write(img, "png", file.toFile());
+		} catch (java.io.IOException e) {
+			throw new java.io.UncheckedIOException(e);
+		}
+	}
+
+	private static void writePack(Path zip) {
+		try (java.util.zip.ZipOutputStream out = new java.util.zip.ZipOutputStream(java.nio.file.Files.newOutputStream(zip))) {
+			out.putNextEntry(new java.util.zip.ZipEntry("pack.mcmeta"));
+			out.write("{\"pack\":{\"description\":\"Hollow test pack\",\"pack_format\":75,\"min_format\":75,\"max_format\":75}}"
+					.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+			out.closeEntry();
+			java.io.ByteArrayOutputStream png = new java.io.ByteArrayOutputStream();
+			java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(16, 16, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+			for (int y = 0; y < 16; y++) for (int x = 0; x < 16; x++) img.setRGB(x, y, ((x / 4 + y / 4) % 2 == 0) ? 0xFFFF00FF : 0xFF200020);
+			javax.imageio.ImageIO.write(img, "png", png);
+			out.putNextEntry(new java.util.zip.ZipEntry("assets/minecraft/textures/block/stone.png"));
+			out.write(png.toByteArray());
+			out.closeEntry();
+		} catch (java.io.IOException e) {
+			throw new java.io.UncheckedIOException(e);
+		}
 	}
 }

@@ -19,9 +19,15 @@ import dev.telmuad.hollowclient.modules.visual.CrosshairModule;
 import dev.telmuad.hollowclient.modules.visual.FullbrightModule;
 import dev.telmuad.hollowclient.modules.visual.HitColorModule;
 import dev.telmuad.hollowclient.modules.visual.LowFireModule;
+import dev.telmuad.hollowclient.modules.styles.CapeModule;
+import dev.telmuad.hollowclient.modules.styles.HatModule;
+import dev.telmuad.hollowclient.modules.styles.WingsModule;
+import dev.telmuad.hollowclient.render.CosmeticsLayer;
+import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 
 /**
  * The one place that lists every module. Order here = order in the menu.
@@ -35,6 +41,9 @@ public final class Modules {
 	public static LowFireModule LOW_FIRE;
 	public static ClearWaterModule CLEAR_WATER;
 	public static HitColorModule HIT_COLOR;
+	public static CapeModule CAPE;
+	public static HatModule HAT;
+	public static WingsModule WINGS;
 
 	private Modules() {
 	}
@@ -59,12 +68,19 @@ public final class Modules {
 		// Quality of life
 		ZOOM = registry.register(new ZoomModule());
 		TOGGLE_SPRINT = registry.register(new ToggleSprintModule());
+		// Styles (shown as tiles in the menu; picked in the Styles screen)
+		CAPE = registry.register(new CapeModule());
+		HAT = registry.register(new HatModule());
+		WINGS = registry.register(new WingsModule());
 	}
 
 	/** Fabric event hooks that aren't tied to one module (HUD layer, crosshair, cosmetics layer, reloads). */
 	public static void registerHooks() {
 		HudRenderer.register();
 		HudElementRegistry.replaceElement(VanillaHudElements.CROSSHAIR, vanilla -> CROSSHAIR.wrap(vanilla));
+		LivingEntityFeatureRendererRegistrationCallback.EVENT.register((type, renderer, helper, context) -> {
+			if (renderer instanceof AvatarRenderer<?> avatar) helper.register(new CosmeticsLayer(avatar));
+		});
 	}
 
 	public static Screen createMenu() {

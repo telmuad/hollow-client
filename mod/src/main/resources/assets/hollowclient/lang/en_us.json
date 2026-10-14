@@ -16,5 +16,8 @@
 	"key.hollowclient.clear_water": "Toggle Clear Water",
 	"key.hollowclient.hit_color": "Toggle Hit Color",
 	"key.hollowclient.zoom": "Zoom (hold)",
-	"key.hollowclient.toggle_sprint": "Toggle Sprint / Sneak module"
+	"key.hollowclient.toggle_sprint": "Toggle Sprint / Sneak module",
+	"key.hollowclient.cape": "Toggle Cape",
+	"key.hollowclient.hat": "Toggle Hat",
+	"key.hollowclient.wings": "Toggle Wings"
 }

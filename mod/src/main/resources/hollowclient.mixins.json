@@ -3,6 +3,8 @@
 	"package": "dev.telmuad.hollowclient.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"AbstractClientPlayerMixin",
+		"AvatarRendererMixin",
 		"GameRendererMixin",
 		"KeyboardInputMixin",
 		"LightTextureMixin",

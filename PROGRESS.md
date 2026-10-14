@@ -10,7 +10,7 @@ This file is the source of truth for where the build is. A new session should re
 - [x] **3. Mod menu**: Right Shift menu, categories, module cards, settings screen (toggle, slider, enum, color picker, keybind picker)
 - [x] **4. HUD**: FPS, coordinates, CPS, keystrokes, armor, potions, ping, clock, toggle indicator; HUD editor (drag, scale, snap, reset, resize-safe positions) + tests
 - [x] **5. QoL / visual**: zoom, toggle sprint/sneak, fullbright, custom crosshair, low fire, clear water, hit color
-- [ ] **6. Styles**: texture generator, capes (built-in + PNG import), hat + wings, texture pack import/switch, presets + tests
+- [x] **6. Styles**: texture generator, capes (built-in + PNG import), hat + wings, texture pack import/switch, presets + tests
 - [ ] **7. Mod polish**: `-PwithSodium` dev run, TESTING.md, mixin review, in-game checks
 - [ ] **8. Launcher core**: paths, settings, config, Modrinth, installer + pytest; real install into `%APPDATA%\.hollowclient`
 - [ ] **9. Launcher auth**: Microsoft OAuth (PKCE) with local redirect server, keyring token store, refresh, log out, "not approved yet" message + pytest
@@ -27,3 +27,7 @@ This file is the source of truth for where the build is. A new session should re
 - Milestone 5 run (2026-10-13): 8/8 checks pass (menu key, CPS, zoom, zoom scroll keeps hotbar slot, zoom release,
   toggle sprint on/off); all mixins applied with no errors; screenshots reviewed (fullbright, hit color, low fire,
   clear water, crosshair, menu, color picker, HUD editor).
+- Milestone 6 run: 15/15 checks pass (adds built-in cape, PNG cape import, wrong-size cape refused, pack import,
+  pack switch, preset save/apply incl. pack, pack removal). Screenshots reviewed: cape/hat/wings in F5 front and back,
+  imported cape, magenta test pack on stone, all four Styles tabs. Wings were redone after the first run (stray edge
+  lines, droopy pose).
