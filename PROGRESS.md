@@ -16,7 +16,7 @@ This file is the source of truth for where the build is. A new session should re
 - [x] **9. Launcher auth**: Microsoft OAuth (PKCE) with local redirect server, keyring token store, refresh, log out, "not approved yet" message + pytest
 - [x] **10. Launcher UI**: sidebar pages, PLAY, progress, account badge, logs, settings, icon
 - [x] **11. Packaging**: `launcher/build.bat`, PyInstaller spec, bundled mod jar, frozen `--selftest`
-- [ ] **12. Tie together**: `scripts/build_all.bat`, README, USER_GUIDE, final summary, push
+- [x] **12. Tie together**: `scripts/build_all.bat`, README, USER_GUIDE, final summary, push
 
 ## Notes / blockers
 
@@ -49,3 +49,36 @@ This file is the source of truth for where the build is. A new session should re
   ran green: `launcher\dist\HollowClient\HollowClient.exe`, 104 MB folder, mod jar/icon/logo bundled, self-test exit 0.
   Opened the packaged exe for real: dark title bar, PLAY without config.json shows the setup steps, the startup
   Modrinth check reports everything up to date.
+- Milestone 12: `scripts\build_all.bat` ran green end to end (mod build + 57 JUnit tests, jar bundled, 65 pytest tests,
+  PyInstaller, packaged self-test). README extended (original text kept), USER_GUIDE written, pushed to GitHub.
+
+## Final summary
+
+### What works (verified)
+- **Mod** (`mod\build\libs\hollowclient-1.0.0.jar`, Fabric 1.21.11, client-only): Right Shift menu (also on the title
+  and pause screens) with categories, search, cards, per-module settings (toggles, sliders, choices, color picker,
+  keybind picker), keybinds in Controls; config in `config/hollowclient.json` with corrupt-file fallback; 9 HUD
+  elements with text color/background/shadow/scale; HUD editor (drag, scale, snap, reset, resize-safe positions);
+  zoom, toggle sprint/sneak, fullbright, custom crosshair, low fire, clear water, hit color; Styles: 5 built-in capes +
+  PNG import, hat and wings (3 styles each, tint, flap), texture pack import (zip/folder, validation, wrapped packs) and
+  switching, presets. Works with Sodium 0.8.14.
+- **Tests**: 57 JUnit tests (`gradlew build`), 16 automated in-game checks with screenshots
+  (`gradlew runClientGameTest`, with and without Sodium), plus a hands-on pass driving the dev client.
+- **Launcher** (`launcher\dist\HollowClient\HollowClient.exe`): installs 1.21.11 + Mojang Java + Fabric 0.19.5 + Fabric
+  API + Sodium + the Hollow jar into `%APPDATA%\.hollowclient` (real install done and repeated); update check and
+  update; repair; settings; live logs; Microsoft login (PKCE, local redirect, Credential Manager, refresh, log out) with
+  the exact "not approved yet" message; packaged with PyInstaller; 65 pytest tests.
+
+### What to test yourself
+- Go through TESTING.md in game (especially the parts automation can't judge: how the menu feels, the look of the
+  cosmetics on your own skin, your real texture packs, Ping on a real server, and that other players don't see styles).
+- Once Mojang approves the app ID: put it in `config.json` (USER_GUIDE section 3), press PLAY, sign in, and check that
+  the game starts and the Logs tab fills. Then try Log out and signing in again.
+
+### Still open / known limits
+- **Launching from Hollow's own launcher couldn't be tested end to end**: it needs a real Microsoft sign-in with an
+  approved app ID. Everything up to that point is tested (install, the command line it builds, the login chain with
+  mocked servers, the local redirect with a fake browser). Until approval, use the official launcher (USER_GUIDE section 6).
+- The "close launcher on start" option discards the game's output (by design); turn it off to see logs.
+- The menu key doesn't work inside other screens (inventory, chat), the same as every other keybind.
+- Hit Color changes the hurt tint for every entity (that's how Minecraft draws it), not only mobs you hit.
