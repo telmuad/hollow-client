@@ -312,7 +312,8 @@ public final class HollowMenuScreen extends HollowScreen {
 	}
 
 	private void renderFooter(GuiGraphics g, float a) {
-		String hint = "Click a card to toggle · Right-click or the slider icon for settings · Right Shift closes";
+		String hint = showingTiles() ? "Click a tile to open it · Right Shift closes"
+				: "Click a card to toggle · Right-click or the slider icon for settings · Right Shift closes";
 		g.drawString(font, Text.fit(font, hint, footer.w() - 80), footer.x() + 10, footer.y() + 4, Theme.fade(Theme.TEXT_FAINT, a), false);
 		String version = "v" + FabricLoader.getInstance().getModContainer(HollowClient.MOD_ID)
 				.map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("?");

@@ -26,7 +26,12 @@ import dev.telmuad.hollowclient.render.CosmeticsLayer;
 import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
+import dev.telmuad.hollowclient.input.Keybinds;
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
+import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents;
+import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 
 /**
@@ -80,6 +85,16 @@ public final class Modules {
 		HudElementRegistry.replaceElement(VanillaHudElements.CROSSHAIR, vanilla -> CROSSHAIR.wrap(vanilla));
 		LivingEntityFeatureRendererRegistrationCallback.EVENT.register((type, renderer, helper, context) -> {
 			if (renderer instanceof AvatarRenderer<?> avatar) helper.register(new CosmeticsLayer(avatar));
+		});
+		// Keybinds don't fire while a screen is open, so also let the menu key work on the title and pause screens.
+		ScreenEvents.AFTER_INIT.register((client, screen, w, h) -> {
+			if (screen instanceof TitleScreen || screen instanceof PauseScreen) {
+				ScreenKeyboardEvents.afterKeyPress(screen).register((s, event) -> {
+					if (Keybinds.menuKey() != null && Keybinds.menuKey().matches(event) && client.screen == s) {
+						client.setScreen(new HollowMenuScreen(s));
+					}
+				});
+			}
 		});
 	}
 

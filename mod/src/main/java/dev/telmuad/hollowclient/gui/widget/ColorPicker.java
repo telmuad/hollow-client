@@ -132,7 +132,9 @@ public final class ColorPicker {
 			int sx = swatchRow.x() + (i % perRow) * (sw + gap);
 			int sy = swatchRow.y() + (i / perRow) * 11;
 			Draw.roundRect(g, sx, sy, sw, sw, 2, SWATCHES[i]);
-			if (new Rect(sx, sy, sw, sw).contains(mx, my)) Draw.roundOutline(g, sx - 1, sy - 1, sw + 2, sw + 2, 2, 0xFFFFFFFF);
+			boolean hovered = new Rect(sx, sy, sw, sw).contains(mx, my);
+			// Outline every swatch so the dark ones stay visible on the dark panel.
+			Draw.roundOutline(g, sx - 1, sy - 1, sw + 2, sw + 2, 2, hovered ? 0xFFFFFFFF : Theme.STROKE_STRONG);
 		}
 	}
 

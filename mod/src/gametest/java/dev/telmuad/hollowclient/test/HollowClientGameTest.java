@@ -54,6 +54,10 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 	public void runTest(ClientGameTestContext ctx) {
 		ctx.waitTicks(20);
 		screenshot(ctx, "title_screen");
+		ctx.getInput().pressKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
+		ctx.waitTicks(5);
+		boolean fromTitle = ctx.computeOnClient(mc -> mc.screen instanceof HollowMenuScreen);
+		check("Right Shift opens the menu on the title screen", fromTitle);
 		ctx.setScreen(() -> HollowMenuScreen.at(Category.HUD));
 		ctx.waitTicks(10);
 		screenshot(ctx, "menu_on_title_screen");
