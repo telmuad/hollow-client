@@ -15,7 +15,7 @@ This file is the source of truth for where the build is. A new session should re
 - [x] **8. Launcher core**: paths, settings, config, Modrinth, installer + pytest; real install into `%APPDATA%\.hollowclient`
 - [x] **9. Launcher auth**: Microsoft OAuth (PKCE) with local redirect server, keyring token store, refresh, log out, "not approved yet" message + pytest
 - [x] **10. Launcher UI**: sidebar pages, PLAY, progress, account badge, logs, settings, icon
-- [ ] **11. Packaging**: `launcher/build.bat`, PyInstaller spec, bundled mod jar, frozen `--selftest`
+- [x] **11. Packaging**: `launcher/build.bat`, PyInstaller spec, bundled mod jar, frozen `--selftest`
 - [ ] **12. Tie together**: `scripts/build_all.bat`, README, USER_GUIDE, final summary, push
 
 ## Notes / blockers
@@ -45,3 +45,7 @@ This file is the source of truth for where the build is. A new session should re
   "not approved yet" state and a small window (`--screenshots`); fixed a mnemonic "&", a disabled-button style and the
   card proportions. The launch command was built (not run) against the real install: Mojang Java runtime, Fabric
   KnotClient, token shown as ******** in logs. 65 pytest tests pass (incl. offscreen UI smoke tests).
+- Milestone 11: `launcher\build.bat` (venv, pinned packages, pytest, PyInstaller, then `HollowClient.exe --selftest`)
+  ran green: `launcher\dist\HollowClient\HollowClient.exe`, 104 MB folder, mod jar/icon/logo bundled, self-test exit 0.
+  Opened the packaged exe for real: dark title bar, PLAY without config.json shows the setup steps, the startup
+  Modrinth check reports everything up to date.

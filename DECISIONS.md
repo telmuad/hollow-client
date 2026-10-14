@@ -97,3 +97,10 @@ Choices made while building Hollow Client, with the reason for each. Newest sect
 - **Updates**: Modrinth is checked in the background at startup; a banner on Home offers "Update now", and Styles & Mods shows installed vs newest for Fabric API, Sodium and Hollow Client.
 - **Styles are in-game.** The launcher's Styles & Mods page explains that and opens the resourcepacks and imported-capes folders; it doesn't duplicate the in-game Styles screen.
 - **Logging**: `%APPDATA%\.hollowclient\launcher.log` (rotating, 1 MB x 3) plus the Logs tab. Tokens never appear in either.
+
+## Packaging
+
+- **PyInstaller one-folder build** (`dist\HollowClient\HollowClient.exe` + `_internal`), windowed, with the generated icon. One-folder starts faster than one-file and doesn't unpack to a temp folder on every start.
+- `launcher\build.bat` creates `.venv` on first run, installs the pinned packages, runs pytest, packages, copies `config.example.json` (and your `config.json`, if you made one) next to the exe, then runs the exe with `--selftest` (window builds, icon loads, mod jar is bundled, keyring backend works) and fails the build if that fails.
+- `keyring`'s Windows backend is chosen explicitly and `win32ctypes` is bundled, because backend auto-discovery uses package metadata that can go missing in a frozen app. minecraft-launcher-lib's `version.txt` data file is bundled too.
+- The mod jar comes from `launcher\bundled\` (filled by `scripts\build_all.bat`); it is not committed to git.
