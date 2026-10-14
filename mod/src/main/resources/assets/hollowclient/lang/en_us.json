@@ -1,4 +1,12 @@
 {
 	"key.category.hollowclient.main": "Hollow Client",
-	"key.hollowclient.menu": "Open Hollow menu"
+	"key.hollowclient.menu": "Open Hollow menu",
+	"key.hollowclient.fps": "Toggle FPS Counter",
+	"key.hollowclient.coordinates": "Toggle Coordinates",
+	"key.hollowclient.cps": "Toggle CPS Counter",
+	"key.hollowclient.keystrokes": "Toggle Keystrokes",
+	"key.hollowclient.armor": "Toggle Armor & Held Item",
+	"key.hollowclient.potions": "Toggle Potion Effects",
+	"key.hollowclient.ping": "Toggle Ping",
+	"key.hollowclient.clock": "Toggle Clock"
 }

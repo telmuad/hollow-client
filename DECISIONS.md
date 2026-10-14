@@ -41,3 +41,13 @@ Choices made while building Hollow Client, with the reason for each. Newest sect
 - **Styles category** shows four big tiles (Capes, Cosmetics, Texture Packs, Presets) instead of module cards, because those are pickers rather than on/off features.
 - **Settings screen**: the keybind row comes first (click, then press a key or mouse button; Backspace unbinds; Esc cancels), then one row per setting. "Reset to defaults" asks for a second click.
 - **Color picker**: saturation/value square, hue bar, alpha bar (when the color supports it), hex field (type 6 or 8 hex digits) and 12 swatches.
+
+## HUD
+
+- **Drawn through Fabric's `HudElementRegistry`**, so there is no HUD mixin. Elements are hidden with F1, while F3 is open, and while the HUD editor is open (the editor draws them itself, with sample data where there is none, e.g. Ping in singleplayer).
+- **Common settings on every element**: text color, background on/off, background color, text shadow; scale is set in the HUD editor (0.5x–3x).
+- **Positions** store an anchor per axis (start/center/end third of the screen) plus an offset as a fraction of the screen. Right- or bottom-flush elements stay flush when the window or GUI scale changes. Text lines up on the right for elements on the right side.
+- **Defaults on**: FPS, Coordinates, Armor & Held Item, Potion Effects (plus the sprint/sneak indicator later). Others start off.
+- **Ping** is the latency the server reports in the player list (the same number as the Tab list); it is hidden in singleplayer.
+- **CPS** counts real mouse presses in a 1-second window (only while no screen is open). It only reads input.
+- **Potion Effects** can hide vanilla's top-right effect icons (off by default), via `replaceElement(STATUS_EFFECTS)`.
