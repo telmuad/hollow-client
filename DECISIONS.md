@@ -24,3 +24,11 @@ Choices made while building Hollow Client, with the reason for each. Newest sect
 - **No split source sets.** Facet used `splitEnvironmentSourceSets()`. Hollow is client-only (`"environment": "client"`), so everything lives in `src/main`. Plain `src/test` JUnit tests can then see every class without extra Gradle wiring.
 - **JUnit 6.0.3** runs as part of `gradlew build` (the `check` task). Tests cover pure logic only (config, HUD layout math, click counting, zoom math, pack/cape validation, colors), so they don't need a running game.
 - **Sodium is opt-in for dev runs** (`gradlew runClient -PwithSodium`) through Modrinth's maven. It is never bundled in the jar.
+
+## Core systems
+
+- **Config file** is `config/hollowclient.json` (as asked). Files Hollow keeps besides that (imported capes) go in `config/hollowclient/`.
+- **Settings and modules are plain Java** (`setting/`, `module/`, `config/`, `hud/HudLayout`): no Minecraft classes, so config handling and layout math are unit tested.
+- **Loading never fails**: unknown keys are ignored, wrong types fall back to the default, numbers are clamped and snapped to their step, and a file that isn't valid JSON is renamed to `hollowclient.json.corrupt-<time>` before defaults load. Enabled flags are restored silently at startup (no enable/disable callbacks before the game is up).
+- **Saves** are debounced (500 ms) and atomic (temp file + move), plus a final save on shutdown. This is the pattern proven in Facet.
+- **Every module gets a keybind** in Options → Controls → "Hollow Client" (unbound by default except Zoom = C and the menu = Right Shift). Pressing a module's key toggles it and shows "Name: ON/OFF" in the action bar.
