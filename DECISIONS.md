@@ -72,3 +72,13 @@ Choices made while building Hollow Client, with the reason for each. Newest sect
 - **Presets** store the full state of the three style modules plus the pack name. Applying a preset whose pack was removed applies the rest and says which pack was skipped.
 - **Native file picker** (tinyfd, bundled with Minecraft) for "Import PNG/.zip/folder", run off the render thread. Drag-and-drop onto the Styles screen works too.
 - **Styles UI**: four tabs (Capes, Cosmetics, Texture Packs, Presets) with a live, slowly turning model of your player on the right when you're in a world and the window is wide enough.
+
+## Launcher core
+
+- **Own game folder** `%APPDATA%\.hollowclient`, never `.minecraft`, so the official launcher's files are untouched.
+- **Install order**: vanilla 1.21.11 through minecraft-launcher-lib (official Mojang servers; this also installs Mojang's Java 21 runtime, `java-runtime-delta`) → newest *stable* Fabric Loader that is at least 0.19.5 (the version the mod is built with), installed by the official Fabric installer run with Mojang's Java → Fabric API and Sodium from the Modrinth API → the Hollow jar.
+- **Repair** simply runs the whole install again: minecraft-launcher-lib re-checks every file's hash and only downloads what is missing or broken; mods are only downloaded when the version or the sha512 differs.
+- **Modrinth choice**: builds for game version 1.21.11 and the fabric loader; releases first, then betas, then alphas; newest by publish date within that. On 2026-10-13 this picks Sodium 0.8.14 (release) over 0.8.15-beta.1. Required dependencies are followed. Every download is checked against Modrinth's sha512 before it replaces anything. A small manifest (`mods\.hollow-mods.json`) records what Hollow installed, so updates replace the old file and never touch other mods you add yourself.
+- **Mod jar lookup**: the copy bundled with the exe first, then `mod\build\libs` (newest `hollowclient-<version>.jar`, never `-sources`).
+- **Settings** (`launcher_settings.json`): RAM 4 GB by default (slider from 1 GB to your RAM minus 2 GB, 512 MB steps), extra JVM arguments, window size (or Minecraft's default), close launcher on start. A broken file is renamed `.corrupt-<time>` and defaults are used.
+- **Headless modes** for testing and power users: `--install-only`, `--check-updates`, `--selftest`, `--screenshots DIR`.

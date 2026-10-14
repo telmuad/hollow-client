@@ -12,7 +12,7 @@ This file is the source of truth for where the build is. A new session should re
 - [x] **5. QoL / visual**: zoom, toggle sprint/sneak, fullbright, custom crosshair, low fire, clear water, hit color
 - [x] **6. Styles**: texture generator, capes (built-in + PNG import), hat + wings, texture pack import/switch, presets + tests
 - [x] **7. Mod polish**: `-PwithSodium` dev run, TESTING.md, mixin review, in-game checks
-- [ ] **8. Launcher core**: paths, settings, config, Modrinth, installer + pytest; real install into `%APPDATA%\.hollowclient`
+- [x] **8. Launcher core**: paths, settings, config, Modrinth, installer + pytest; real install into `%APPDATA%\.hollowclient`
 - [ ] **9. Launcher auth**: Microsoft OAuth (PKCE) with local redirect server, keyring token store, refresh, log out, "not approved yet" message + pytest
 - [ ] **10. Launcher UI**: sidebar pages, PLAY, progress, account badge, logs, settings, icon
 - [ ] **11. Packaging**: `launcher/build.bat`, PyInstaller spec, bundled mod jar, frozen `--selftest`
@@ -36,3 +36,7 @@ This file is the source of truth for where the build is. A new session should re
   message), color picker (swatch + drag), HUD editor (drag with snap guide, scroll scale, right-click reset, Done),
   Styles tiles, capes, cosmetics, the native file picker (opened and cancelled), F5 view. Fixes from that pass: swatch
   outlines, a hint for the Styles tiles, and Right Shift now also works on the title and pause screens (16/16 checks).
+- Milestone 8: real install into %APPDATA%\.hollowclient with `python -m hollow_launcher --install-only` worked first try
+  (Minecraft 1.21.11, Mojang Java runtime 21.0.7 "java-runtime-delta", Fabric Loader 0.19.5 via the official Fabric
+  installer, Fabric API 0.141.6, Sodium 0.8.14 release (not the newer beta), hollowclient-1.0.0.jar; 672 MB). A second
+  run (repair) took 9 s and downloaded nothing. `--check-updates` reports both mods up to date. 31 pytest tests pass.

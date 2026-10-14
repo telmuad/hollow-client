@@ -1,0 +1,5 @@
+# Runtime dependencies (pinned; checked on PyPI 2026-10-13)
+minecraft-launcher-lib==8.0
+PySide6-Essentials==6.11.2
+requests==2.34.2
+keyring==25.7.0
