@@ -32,3 +32,12 @@ Choices made while building Hollow Client, with the reason for each. Newest sect
 - **Loading never fails**: unknown keys are ignored, wrong types fall back to the default, numbers are clamped and snapped to their step, and a file that isn't valid JSON is renamed to `hollowclient.json.corrupt-<time>` before defaults load. Enabled flags are restored silently at startup (no enable/disable callbacks before the game is up).
 - **Saves** are debounced (500 ms) and atomic (temp file + move), plus a final save on shutdown. This is the pattern proven in Facet.
 - **Every module gets a keybind** in Options → Controls → "Hollow Client" (unbound by default except Zoom = C and the menu = Right Shift). Pressing a module's key toggles it and shows "Name: ON/OFF" in the action bar.
+
+## Menu
+
+- **Own drawing, no sprite sheets.** Rounded panels, cards, switches and sliders are drawn from fills (the approach proven in Facet), so the look is crisp at every GUI scale and needs no textures.
+- **Look**: near-black translucent panel, violet accent (#8B6CFF), vanilla item icons on the category rail. The background is dimmed, not blurred, so you can see your HUD while changing settings. The menu doesn't pause singleplayer.
+- **Cards**: click a card to toggle the module; the gear (or right-click) opens its settings. The search field (or `/`, Ctrl+F) searches every category.
+- **Styles category** shows four big tiles (Capes, Cosmetics, Texture Packs, Presets) instead of module cards, because those are pickers rather than on/off features.
+- **Settings screen**: the keybind row comes first (click, then press a key or mouse button; Backspace unbinds; Esc cancels), then one row per setting. "Reset to defaults" asks for a second click.
+- **Color picker**: saturation/value square, hue bar, alpha bar (when the color supports it), hex field (type 6 or 8 hex digits) and 12 swatches.

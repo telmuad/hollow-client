@@ -1,5 +1,6 @@
 package dev.telmuad.hollowclient.modules;
 
+import dev.telmuad.hollowclient.gui.HollowMenuScreen;
 import dev.telmuad.hollowclient.module.ModuleRegistry;
 import net.minecraft.client.gui.screens.Screen;
 
@@ -16,6 +17,6 @@ public final class Modules {
 	}
 
 	public static Screen createMenu() {
-		return null;
+		return new HollowMenuScreen();
 	}
 }
