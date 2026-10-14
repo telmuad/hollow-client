@@ -1,0 +1,37 @@
+{
+	"schemaVersion": 1,
+	"id": "hollowclient",
+	"version": "${version}",
+	"name": "Hollow Client",
+	"description": "A personal client-side mod: HUD elements, a HUD editor, zoom, toggle sprint, fullbright, custom crosshair and client-side styles (capes, cosmetics, texture packs). Cosmetic and quality-of-life only.",
+	"authors": [
+		"telmuad"
+	],
+	"contact": {
+		"sources": "https://github.com/telmuad/hollow-client"
+	},
+	"license": "All-Rights-Reserved",
+	"icon": "assets/hollowclient/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"dev.telmuad.hollowclient.HollowClient"
+		]
+	},
+	"accessWidener": "hollowclient.accesswidener",
+	"mixins": [
+		{
+			"config": "hollowclient.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.5",
+		"minecraft": "~1.21.11",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"sodium": "*"
+	}
+}
