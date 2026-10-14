@@ -14,7 +14,7 @@ This file is the source of truth for where the build is. A new session should re
 - [x] **7. Mod polish**: `-PwithSodium` dev run, TESTING.md, mixin review, in-game checks
 - [x] **8. Launcher core**: paths, settings, config, Modrinth, installer + pytest; real install into `%APPDATA%\.hollowclient`
 - [x] **9. Launcher auth**: Microsoft OAuth (PKCE) with local redirect server, keyring token store, refresh, log out, "not approved yet" message + pytest
-- [ ] **10. Launcher UI**: sidebar pages, PLAY, progress, account badge, logs, settings, icon
+- [x] **10. Launcher UI**: sidebar pages, PLAY, progress, account badge, logs, settings, icon
 - [ ] **11. Packaging**: `launcher/build.bat`, PyInstaller spec, bundled mod jar, frozen `--selftest`
 - [ ] **12. Tie together**: `scripts/build_all.bat`, README, USER_GUIDE, final summary, push
 
@@ -40,3 +40,8 @@ This file is the source of truth for where the build is. A new session should re
   (Minecraft 1.21.11, Mojang Java runtime 21.0.7 "java-runtime-delta", Fabric Loader 0.19.5 via the official Fabric
   installer, Fabric API 0.141.6, Sodium 0.8.14 release (not the newer beta), hollowclient-1.0.0.jar; 672 MB). A second
   run (repair) took 9 s and downloaded nothing. `--check-updates` reports both mods up to date. 31 pytest tests pass.
+- Milestone 10: launcher window (Home, Styles & Mods, Settings, Logs; account badge; PLAY flow install -> sign in ->
+  launch; repair; mod updates with a banner; live game log). Reviewed offscreen screenshots of every page, the
+  "not approved yet" state and a small window (`--screenshots`); fixed a mnemonic "&", a disabled-button style and the
+  card proportions. The launch command was built (not run) against the real install: Mojang Java runtime, Fabric
+  KnotClient, token shown as ******** in logs. 65 pytest tests pass (incl. offscreen UI smoke tests).
