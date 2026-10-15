@@ -55,7 +55,7 @@ def main(argv: list[str] | None = None) -> int:
         return _install_only()
     if args.check_updates:
         return _check_updates()
-    from .app import run
+    from .qmlui.app import run
 
     return run(selftest=args.selftest, screenshots=args.screenshots)
 

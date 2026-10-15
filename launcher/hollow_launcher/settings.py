@@ -22,6 +22,10 @@ class LauncherSettings:
     resolution_height: int = 0
     close_on_launch: bool = False
     last_update_check: float = 0.0
+    # the launcher window itself
+    animated_background: bool = True
+    ui_sounds: bool = True
+    show_intro: bool = True
 
     def sanitize(self) -> "LauncherSettings":
         self.ram_mb = clamp_ram(self.ram_mb)
