@@ -18,9 +18,13 @@ public final class Fx {
 	public static final Identifier SIGIL = HollowClient.id("textures/gui/sigil.png");
 	public static final Identifier SIGIL_GLOW = HollowClient.id("textures/gui/sigil_glow.png");
 	private static final Identifier GLOW = HollowClient.id("generated/soft_glow");
+	private static final Identifier DOT = HollowClient.id("generated/soft_dot");
+	private static final Identifier DISC = HollowClient.id("generated/disc");
 	private static final int G = 64;
 	private static final int E = 24;
+	private static final int D = 64;
 	private static boolean glowReady;
+	private static boolean dotsReady;
 
 	private Fx() {
 	}
@@ -84,6 +88,73 @@ public final class Fx {
 		g.blit(RenderPipelines.GUI_TEXTURED, GLOW, x, y, u, v, w, h, uw, vh, G, G, color);
 	}
 
+	// ------------------------------------------------------------------------------------------------ dots and discs
+
+	private static void ensureDots() {
+		if (dotsReady) return;
+		NativeImage soft = new NativeImage(D, D, true);
+		NativeImage disc = new NativeImage(D, D, true);
+		double c = D / 2.0;
+		for (int y = 0; y < D; y++) {
+			for (int x = 0; x < D; x++) {
+				double d = Math.hypot(x + 0.5 - c, y + 0.5 - c) / c;
+				double a = Math.max(0, 1 - d);
+				soft.setPixel(x, y, ColorUtil.withAlpha(0xFFFFFF, (int) Math.round(a * a * a * 255)));
+				// hard disc with a one-pixel antialiased edge
+				double edge = Math.max(0, Math.min(1, (1 - d) * c));
+				disc.setPixel(x, y, ColorUtil.withAlpha(0xFFFFFF, (int) Math.round(edge * 255)));
+			}
+		}
+		var tm = Minecraft.getInstance().getTextureManager();
+		tm.register(DOT, new DynamicTexture(DOT::toString, soft));
+		tm.register(DISC, new DynamicTexture(DISC::toString, disc));
+		dotsReady = true;
+	}
+
+	/** A soft round light centered on (cx, cy). Float position: moves smoothly between pixels. */
+	public static void dot(GuiGraphics g, float cx, float cy, float radius, int color) {
+		if (radius <= 0 || (color >>> 24) == 0) return;
+		ensureDots();
+		g.pose().pushMatrix();
+		g.pose().translate(cx - radius, cy - radius);
+		g.pose().scale(radius / 32f, radius / 32f);
+		g.blit(RenderPipelines.GUI_TEXTURED, DOT, 0, 0, 0f, 0f, 64, 64, D, D, D, D, color);
+		g.pose().popMatrix();
+	}
+
+	/** A filled circle (for ripples), centered on (cx, cy). */
+	public static void disc(GuiGraphics g, float cx, float cy, float radius, int color) {
+		if (radius <= 0 || (color >>> 24) == 0) return;
+		ensureDots();
+		g.pose().pushMatrix();
+		g.pose().translate(cx - radius, cy - radius);
+		g.pose().scale(radius / 32f, radius / 32f);
+		g.blit(RenderPipelines.GUI_TEXTURED, DISC, 0, 0, 0f, 0f, 64, 64, D, D, D, D, color);
+		g.pose().popMatrix();
+	}
+
+	// ------------------------------------------------------------------------------------------------ glass panels
+
+	/**
+	 * A frosted-glass panel: soft shadow, theme glow, translucent body (the world behind is blurred), a light sheen
+	 * at the top, a thin highlight line and a border that flows through the theme gradient.
+	 */
+	public static void glass(GuiGraphics g, Rect r, int radius, float alpha, float glowAmount, float borderAmount, float phase) {
+		if (r.w() <= 0 || r.h() <= 0 || alpha <= 0f) return;
+		Draw.roundRect(g, r.x() + 1, r.y() + 4, r.w(), r.h(), radius, ColorUtil.fade(0x48000000, alpha));
+		if (glowAmount > 0f) glow(g, r.x(), r.y(), r.w(), r.h(), 16, ColorUtil.fade(Theme.accent(), alpha * glowAmount * 0.32f));
+		Draw.roundRect(g, r, radius, ColorUtil.fade(Theme.GLASS, alpha));
+		Draw.roundGradient(g, r.x(), r.y(), r.w(), Math.min(r.h(), 48), radius, ColorUtil.fade(0x16FFFFFF, alpha), 0x00FFFFFF);
+		int in = Math.min(radius, r.w() / 2);
+		g.fill(r.x() + in, r.y() + 1, r.right() - in, r.y() + 2, ColorUtil.fade(0x1CFFFFFF, alpha));
+		if (borderAmount > 0f) {
+			Draw.roundOutline(g, r, radius, ColorUtil.fade(Theme.STROKE, alpha * (1f - borderAmount)));
+			gradientOutline(g, r, radius, alpha * borderAmount * (0.45f + 0.55f * Theme.glow()), phase);
+		} else {
+			Draw.roundOutline(g, r, radius, ColorUtil.fade(Theme.STROKE, alpha));
+		}
+	}
+
 	// ------------------------------------------------------------------------------------------------ gradient outlines
 
 	/**
@@ -126,6 +197,23 @@ public final class Fx {
 	/** Vertical gradient between two colors (used for glassy highlights). */
 	public static void vGradient(GuiGraphics g, int x, int y, int w, int h, int top, int bottom) {
 		g.fillGradient(x, y, x + w, y + h, top, bottom);
+	}
+
+	/** Bold title text with a slowly moving theme gradient across its letters. Returns its width. */
+	public static int gradientBold(GuiGraphics g, net.minecraft.client.gui.Font font, String text, int x, int y, float alpha) {
+		int cx = x;
+		int n = text.length();
+		float phase = (float) ((Util.getMillis() * Theme.speed() / 4000.0) % 1.0);
+		for (int i = 0; i < n; ) {
+			int cp = text.codePointAt(i);
+			String ch = new String(Character.toChars(cp));
+			float t = n <= 1 ? 0f : (float) i / (n - 1);
+			int c = ColorUtil.fade(Theme.current().gradientAt(Math.abs(((t * 0.8f + phase) % 1f) * 2 - 1), Util.getMillis()), alpha);
+			g.drawString(font, Ui.bold(ch), cx, y, c, false);
+			cx += Ui.boldWidth(font, ch);
+			i += Character.charCount(cp);
+		}
+		return cx - x;
 	}
 
 	/** Text with a horizontal gradient: each character is colored along the theme gradient. */

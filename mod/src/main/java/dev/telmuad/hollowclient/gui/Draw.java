@@ -37,6 +37,19 @@ public final class Draw {
 		}
 	}
 
+	/** A rounded rectangle filled with a vertical gradient (top color to bottom color). */
+	public static void roundGradient(GuiGraphics g, int x, int y, int w, int h, int r, int top, int bottom) {
+		if (w <= 0 || h <= 0) return;
+		r = radius(w, h, r);
+		int[] inset = INSETS[r];
+		for (int i = 0; i < r; i++) {
+			int c = dev.telmuad.hollowclient.util.ColorUtil.mix(top, bottom, h <= 1 ? 0f : i / (float) (h - 1));
+			g.fill(x + inset[i], y + i, x + w - inset[i], y + i + 1, c);
+		}
+		int c0 = dev.telmuad.hollowclient.util.ColorUtil.mix(top, bottom, h <= 1 ? 0f : r / (float) (h - 1));
+		g.fillGradient(x, y + r, x + w, y + h, c0, bottom);
+	}
+
 	public static void roundRect(GuiGraphics g, Rect r, int radius, int color) {
 		roundRect(g, r.x(), r.y(), r.w(), r.h(), radius, color);
 	}

@@ -122,8 +122,7 @@ public class ModuleSettingsScreen extends HollowScreen {
 		int mx = modal ? -10000 : mouseX;
 		int my = modal ? -10000 : mouseY;
 
-		Draw.roundRect(g, panel, 7, Theme.fade(Theme.PANEL, a));
-		Draw.roundOutline(g, panel, 7, Theme.fade(Theme.STROKE, a));
+		drawPanel(g, panel, 7, a);
 		back.render(g, font, mx, my, dt, a);
 
 		int titleX = back.bounds().right() + 8;

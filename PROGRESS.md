@@ -88,7 +88,7 @@ This file is the source of truth for where the build is. A new session should re
 # Expansion: visuals & features (add-on plan, started 2026-10-14)
 
 - [x] **E1. Identity core**: theme engine (accent/gradient/glow/blur/roundness/animation speed, 6 presets + custom), shared theme file for the launcher, H sigil logo, OFL UI font (Inter) with vanilla toggle, original UI sounds + volume, Performance Mode, FPS-aware Auto Quality, Iris detection
-- [ ] **E2. Menu remake**: world blur, spring open/close, staggered cards, glass panels, animated gradient borders, hover glow, card tilt, click ripples, live animated search, reactive particle field; toast notifications
+- [x] **E2. Menu remake**: world blur, spring open/close, staggered cards, glass panels, animated gradient borders, hover glow, card tilt, click ripples, live animated search, reactive particle field; toast notifications
 - [ ] **E3. Custom screens**: splash/loading screen, title screen (nebula shader, parallax, glowing logo, animated buttons, clock + FPS), pause menu, inventory blur, chat restyle (rounded, translucent, slide-in)
 - [ ] **E4. HUD upgrades**: glass/gradient text/glow/rounded themes, rolling numbers, fade/slide-in, animated hotbar, keystroke glow + ripple
 - [ ] **E5. Post-processing**: bloom, motion blur, chromatic aberration, vignette, film grain, color grading presets, damage screen shake; Iris auto-off
@@ -103,4 +103,5 @@ This file is the source of truth for where the build is. A new session should re
 ## Expansion notes / blockers
 
 - E1: theme editor first overflowed at small GUI sizes (854x480, GUI scale 2); reworked to adaptive row heights and a scrolling theme list. Inter's license file had an uppercase name inside `assets/` (invalid resource path, logged an error); moved to `licenses/`. The config debounce unit test was flaky under load; it now waits up to 15 s.
+- E2: particles were too faint at first (made bigger/brighter); the search category label overlapped descriptions (now a tag before the switch). Gametest 21/21 (new: notifications show, menu close is animated).
 - E1 gametest: 19/19 checks pass (new: theme card opens the editor, theme saved to the shared file, Performance Mode turns menu blur off).

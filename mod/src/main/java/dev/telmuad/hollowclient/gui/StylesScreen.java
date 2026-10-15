@@ -268,9 +268,7 @@ public final class StylesScreen extends HollowScreen {
 		int mx = modal ? -10000 : mouseX;
 		int my = modal ? -10000 : mouseY;
 
-		Draw.roundRect(g, panel.x() + 3, panel.y() + 4, panel.w(), panel.h(), 8, Theme.fade(0x55000000, a));
-		Draw.roundRect(g, panel, 8, Theme.fade(Theme.PANEL, a));
-		Draw.roundOutline(g, panel, 8, Theme.fade(Theme.STROKE, a));
+		drawPanel(g, panel, 8, a);
 		back.render(g, font, mx, my, dt, a);
 		hit(back.bounds(), () -> back.click(back.bounds().x() + 1, back.bounds().y() + 1), false);
 		Ui.draw(g, font, Ui.bold("Styles"), back.bounds().right() + 8, panel.y() + 12, Theme.fade(Theme.TEXT, a));
@@ -454,8 +452,10 @@ public final class StylesScreen extends HollowScreen {
 			String id = CapeManager.importCape(file);
 			Modules.CAPE.select(id);
 			status("Imported \"" + file.getFileName() + "\" and put it on.", false);
+			Toasts.success("Cape imported", String.valueOf(file.getFileName()));
 		} catch (PackImporter.ImportException e) {
 			status(e.getMessage(), true);
+			Toasts.error("Cape not imported", e.getMessage());
 		}
 	}
 
@@ -604,9 +604,11 @@ public final class StylesScreen extends HollowScreen {
 		status("Importing \"" + source.getFileName() + "\"...", false);
 		PackManager.importAsync(source, name -> {
 			status("Imported \"" + name + "\". Click Use to switch to it.", false);
+			Toasts.success("Texture pack imported", name);
 			nextImport();
 		}, error -> {
 			status(error, true);
+			Toasts.error("Texture pack not imported", error);
 			nextImport();
 		});
 	}
@@ -701,8 +703,13 @@ public final class StylesScreen extends HollowScreen {
 				bx -= buttonW("Apply") + 4;
 				button(g, new Rect(bx, r.y() + 7, buttonW("Apply"), 16), "Apply", UiButton.Style.PRIMARY, mx, my, a, true, () -> {
 					String warning = PresetManager.apply(p);
-					if (warning != null) status(warning, true);
-					else status("Applied \"" + p.name() + "\".", false);
+					if (warning != null) {
+						status(warning, true);
+						Toasts.warning("Preset applied with a warning", warning);
+					} else {
+						status("Applied \"" + p.name() + "\".", false);
+						Toasts.success("Preset applied", p.name());
+					}
 				});
 				int textW = bx - 6 - (r.x() + 8);
 				Ui.draw(g, font, Text.fit(font, p.name(), textW), r.x() + 8, r.y() + 5, Theme.fade(Theme.TEXT, a));

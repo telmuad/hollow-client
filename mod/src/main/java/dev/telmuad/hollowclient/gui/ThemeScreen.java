@@ -125,12 +125,9 @@ public final class ThemeScreen extends HollowScreen {
 		frameHits.clear();
 		int mx = picker != null ? -10000 : mouseX;
 		int my = picker != null ? -10000 : mouseY;
-		int rr = Theme.radius(8);
-		Fx.glow(g, panel.x(), panel.y(), panel.w(), panel.h(), 14, Theme.fade(Theme.accent(), a * Theme.glow() * 0.35f));
-		Draw.roundRect(g, panel, rr, Theme.fade(Theme.PANEL, a));
-		Fx.gradientOutline(g, panel, rr, a * (0.35f + 0.65f * Theme.glow()), 0f);
+		drawPanel(g, panel, 8, a);
 		back.render(g, font, mx, my, dt, a);
-		hit(back.bounds(), () -> back.click(back.bounds().x() + 1, back.bounds().y() + 1));
+		hit(back.bounds(), () -> back.click(lastX, lastY));
 		int s = 14;
 		Fx.sigil(g, back.bounds().right() + 8, panel.y() + 9, s, a, true);
 		Ui.draw(g, font, Ui.bold("Theme"), back.bounds().right() + 12 + s, panel.y() + 12, Theme.fade(Theme.TEXT, a));
@@ -227,7 +224,7 @@ public final class ThemeScreen extends HollowScreen {
 		if (a > 0.5f) name.render(g, mx, my, 0);
 		Rect sr = new Rect(box.right() + 4, saveRow.y(), bw, saveRow.h());
 		save.bounds(sr).render(g, font, mx, my, dt, a);
-		hit(sr, () -> save.click(sr.x() + 1, sr.y() + 1));
+		hit(sr, () -> save.click(lastX, lastY));
 	}
 
 	private void renderEditor(GuiGraphics g, int mx, int my, float a) {
@@ -309,6 +306,7 @@ public final class ThemeScreen extends HollowScreen {
 		dirty = false;
 		name.setValue(saved.name());
 		status("Saved \"" + saved.name() + "\".", false);
+		Toasts.success("Theme saved", saved.name() + " is also used by the launcher.");
 	}
 
 	private void status(String s, boolean error) {
@@ -336,6 +334,7 @@ public final class ThemeScreen extends HollowScreen {
 	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
 		lastX = event.x();
 		lastY = event.y();
+		if (closing()) return true;
 		if (picker != null) {
 			if (!picker.mouseClicked(event.x(), event.y())) {
 				picker = null;

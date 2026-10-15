@@ -6,6 +6,7 @@ import dev.telmuad.hollowclient.gui.HudEditorScreen;
 import dev.telmuad.hollowclient.gui.HollowScreen;
 import dev.telmuad.hollowclient.gui.StylesScreen;
 import dev.telmuad.hollowclient.gui.ThemeScreen;
+import dev.telmuad.hollowclient.gui.Toasts;
 import dev.telmuad.hollowclient.theme.HollowTheme;
 import dev.telmuad.hollowclient.theme.Themes;
 import dev.telmuad.hollowclient.modules.Modules;
@@ -143,6 +144,43 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		check("Right Shift opens the menu", open);
 		ctx.waitTicks(5);
 		screenshot(ctx, "menu_hud");
+		// hover the first card: glow, tilt and shine
+		int[] card = ctx.computeOnClient(mc -> {
+			int w = mc.getWindow().getGuiScaledWidth();
+			int h = mc.getWindow().getGuiScaledHeight();
+			int margin = w < 420 ? 4 : 14;
+			int pw = Math.min(w - 2 * margin, 620);
+			int ph = Math.min(h - 2 * margin, 370);
+			int px = (w - pw) / 2;
+			int py = (h - ph) / 2;
+			int railW = pw >= 440 ? 108 : 28;
+			return new int[]{px + 8 + railW + 8 + 30, py + 30 + 2 + 14 + 2 + 12};
+		});
+		double gui = ctx.computeOnClient(mc -> mc.getWindow().getGuiScale());
+		ctx.getInput().setCursorPos(card[0] * gui, card[1] * gui);
+		ctx.waitTicks(8);
+		screenshot(ctx, "menu_card_hover");
+		// live search
+		ctx.getInput().pressKey(GLFW.GLFW_KEY_SLASH);
+		ctx.waitTick();
+		ctx.getInput().typeChars("co");
+		ctx.waitTicks(10);
+		screenshot(ctx, "menu_search_co");
+		ctx.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+		ctx.waitTick();
+		// notification card
+		ctx.runOnClient(mc -> Toasts.success("Theme saved", "Void is also used by the launcher."));
+		ctx.waitTicks(12);
+		check("Hollow notifications show up", ctx.computeOnClient(mc -> Toasts.count() == 1));
+		screenshot(ctx, "toast_over_menu");
+		// closing animates: still open for a moment, then gone
+		ctx.getInput().pressKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
+		boolean stillThere = ctx.computeOnClient(mc -> mc.screen instanceof HollowMenuScreen);
+		ctx.waitTicks(10);
+		boolean gone = ctx.computeOnClient(mc -> mc.screen == null);
+		check("The menu closes with an animation (" + stillThere + ", " + gone + ")", stillThere && gone);
+		ctx.setScreen(() -> HollowMenuScreen.at(Category.HUD));
+		ctx.waitTicks(8);
 		for (Category c : new Category[]{Category.VISUAL, Category.QOL, Category.STYLES, Category.CLIENT}) {
 			ctx.setScreen(() -> HollowMenuScreen.at(c));
 			ctx.waitTicks(8);

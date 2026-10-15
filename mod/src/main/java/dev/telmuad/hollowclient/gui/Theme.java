@@ -13,6 +13,8 @@ public final class Theme {
 	public static final int DIM_TOP = 0x7005060A;
 	public static final int DIM_BOTTOM = 0xB005060A;
 	public static final int PANEL = 0xD80A0B10;
+	/** Glass panels: a little more see-through than PANEL because the world behind them is blurred. */
+	public static final int GLASS = 0xC20B0C13;
 	public static final int PANEL_RAISED = 0xEE12131A;
 	public static final int RAIL = 0xC00E0F15;
 	public static final int CARD = 0xB0171922;

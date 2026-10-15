@@ -23,5 +23,7 @@
 	"key.hollowclient.theme": "Open Theme editor",
 	"key.hollowclient.performance": "Toggle Performance Mode",
 	"key.hollowclient.ui_font": "Toggle UI Font",
-	"key.hollowclient.ui_sounds": "Toggle UI Sounds"
+	"key.hollowclient.ui_sounds": "Toggle UI Sounds",
+	"key.hollowclient.menu_fx": "Toggle Menu Effects",
+	"key.hollowclient.toasts": "Toggle Hollow notifications"
 }

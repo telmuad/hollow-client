@@ -3,8 +3,10 @@ package dev.telmuad.hollowclient.modules;
 import dev.telmuad.hollowclient.gui.HollowMenuScreen;
 import dev.telmuad.hollowclient.hud.HudRenderer;
 import dev.telmuad.hollowclient.module.ModuleRegistry;
+import dev.telmuad.hollowclient.modules.client.MenuFxModule;
 import dev.telmuad.hollowclient.modules.client.PerformanceModule;
 import dev.telmuad.hollowclient.modules.client.ThemeModule;
+import dev.telmuad.hollowclient.modules.client.ToastsModule;
 import dev.telmuad.hollowclient.modules.client.UiFontModule;
 import dev.telmuad.hollowclient.modules.client.UiSoundsModule;
 import dev.telmuad.hollowclient.modules.hud.ArmorHud;
@@ -57,6 +59,8 @@ public final class Modules {
 	public static UiFontModule UI_FONT;
 	public static UiSoundsModule UI_SOUNDS;
 	public static PerformanceModule PERFORMANCE;
+	public static MenuFxModule MENU_FX;
+	public static ToastsModule TOASTS;
 
 	private Modules() {
 	}
@@ -90,6 +94,8 @@ public final class Modules {
 		PERFORMANCE = registry.register(new PerformanceModule());
 		UI_FONT = registry.register(new UiFontModule());
 		UI_SOUNDS = registry.register(new UiSoundsModule());
+		MENU_FX = registry.register(new MenuFxModule());
+		TOASTS = registry.register(new ToastsModule());
 	}
 
 	/** Fabric event hooks that aren't tied to one module (HUD layer, crosshair, cosmetics layer, reloads). */

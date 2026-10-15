@@ -6,6 +6,7 @@ import dev.telmuad.hollowclient.gui.widget.UiToggle;
 import dev.telmuad.hollowclient.input.Keybinds;
 import dev.telmuad.hollowclient.module.Category;
 import dev.telmuad.hollowclient.module.Module;
+import dev.telmuad.hollowclient.util.ColorUtil;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
@@ -14,19 +15,27 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Util;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import org.joml.Matrix3x2f;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The Right Shift menu: categories on the left, a card per module with a toggle and a settings button,
- * a search field, and a button for the HUD editor. The Styles category shows four big tiles instead of cards.
+ * a live search field, and a button for the HUD editor. The Styles category shows four big tiles instead of cards.
+ * <p>
+ * Motion: cards slide in one after another, glide to their new place while you search, lean toward the mouse
+ * with a moving shine, glow on hover and ripple on click; the category marker springs between categories.
+ * All of it follows the Menu Effects module.
  */
 public final class HollowMenuScreen extends HollowScreen {
 	private static Category lastCategory = Category.HUD;
@@ -34,6 +43,9 @@ public final class HollowMenuScreen extends HollowScreen {
 
 	private static final int CARD_H = 46;
 	private static final int TILE_H = 58;
+	private static final int RAIL_ROW = 26;
+	private static final long STAGGER_MS = 28;
+	private static final float APPEAR_MS = 300f;
 
 	private Category category = lastCategory;
 	private String query = lastQuery;
@@ -44,6 +56,7 @@ public final class HollowMenuScreen extends HollowScreen {
 	private Rect section = Rect.EMPTY;
 	private Rect footer = Rect.EMPTY;
 	private Rect searchBox = Rect.EMPTY;
+	private Rect clearSearch = Rect.EMPTY;
 	private boolean railLabels = true;
 	private int cols = 2;
 	private int cardW = 150;
@@ -52,8 +65,25 @@ public final class HollowMenuScreen extends HollowScreen {
 	private final UiButton editHud = new UiButton("Edit HUD", this::openHudEditor).style(UiButton.Style.PRIMARY);
 	private final Map<Object, Float> hover = new HashMap<>();
 	private final Map<Module, UiToggle> toggles = new HashMap<>();
+	private final Map<Object, CardAnim> anims = new HashMap<>();
+	private Set<Object> shownLastFrame = new HashSet<>();
+	private long listShownAt = Util.getMillis();
+	private final Spring railMarker = Spring.bouncy(-1f);
+	private float railMarkerAlpha;
+	private float searchFocus;
 	private float scroll;
 	private float scrollTarget;
+
+	/** Per card/tile animation state. */
+	private static final class CardAnim {
+		float x;
+		float y;
+		long appearAt;
+		float hover;
+		float tiltX;
+		float tiltY;
+		float press;
+	}
 
 	public HollowMenuScreen(Screen parent) {
 		super(Component.literal("Hollow Client"), parent);
@@ -92,7 +122,8 @@ public final class HollowMenuScreen extends HollowScreen {
 		editHud.bounds(new Rect(header.right() - 10 - bw, header.y() + 8, bw, 16));
 		int searchW = Math.max(70, Math.min(170, editHud.bounds().x() - 10 - (header.x() + 120)));
 		searchBox = new Rect(editHud.bounds().x() - 8 - searchW, header.y() + 8, searchW, 16);
-		search = new EditBox(font, searchBox.x() + 14, searchBox.y() + 4, searchBox.w() - 18, 10, Component.literal("Search"));
+		clearSearch = new Rect(searchBox.right() - 13, searchBox.y() + 3, 10, 10);
+		search = new EditBox(font, searchBox.x() + 14, searchBox.y() + 4, searchBox.w() - 30, 10, Component.literal("Search"));
 		search.setBordered(false);
 		search.setMaxLength(40);
 		search.setTextColor(Theme.TEXT);
@@ -104,9 +135,12 @@ public final class HollowMenuScreen extends HollowScreen {
 				query = q;
 				lastQuery = q;
 				scrollTarget = 0;
+				listShownAt = Util.getMillis();
 			}
 		});
 		addWidget(search);
+		anims.clear();
+		shownLastFrame = new HashSet<>();
 	}
 
 	private boolean searching() {
@@ -140,21 +174,30 @@ public final class HollowMenuScreen extends HollowScreen {
 		return Math.max(0, contentHeight() - grid.h());
 	}
 
+	private void switchCategory(Category c) {
+		category = c;
+		lastCategory = c;
+		scroll = scrollTarget = 0;
+		listShownAt = Util.getMillis();
+		if (searching()) search.setValue("");
+		search.setFocused(false);
+	}
+
 	// ---------------------------------------------------------------------------------------------------- render
 
 	@Override
 	protected void renderContent(GuiGraphics g, int mx, int my, float a) {
-		Draw.roundRect(g, panel.x() + 3, panel.y() + 4, panel.w(), panel.h(), 8, Theme.fade(0x55000000, a));
-		Draw.roundRect(g, panel, 8, Theme.fade(Theme.PANEL, a));
-		Draw.roundOutline(g, panel, 8, Theme.fade(Theme.STROKE, a));
+		drawPanel(g, panel, 8, a);
 		renderHeader(g, mx, my, a);
 		renderRail(g, mx, my, a);
 		renderSection(g, a);
 		scroll = Anim.approach(scroll, scrollTarget, dt, 18f);
-		g.enableScissor(grid.x(), grid.y(), grid.right(), grid.bottom());
-		if (showingTiles()) renderTiles(g, mx, my, a);
-		else renderCards(g, mx, my, a);
+		g.enableScissor(grid.x() - 1, grid.y(), grid.right() + 1, grid.bottom());
+		Set<Object> shown = new HashSet<>();
+		if (showingTiles()) renderTiles(g, mx, my, a, shown);
+		else renderCards(g, mx, my, a, shown);
 		g.disableScissor();
+		shownLastFrame = shown;
 		if (maxScroll() > 0) {
 			int barH = Math.max(16, grid.h() * grid.h() / contentHeight());
 			int barY = grid.y() + Math.round((grid.h() - barH) * (scroll / maxScroll()));
@@ -166,16 +209,27 @@ public final class HollowMenuScreen extends HollowScreen {
 	private void renderHeader(GuiGraphics g, int mx, int my, float a) {
 		int lx = header.x() + 10;
 		int ly = header.y() + 9;
-		Draw.logo(g, lx, ly - 1, 13, Theme.fade(Theme.accent(), a));
-		Component title = Ui.bold("HOLLOW")
-				.append(Component.literal(" CLIENT").withStyle(s -> s.withBold(false).withColor(Theme.TEXT_DIM & 0xFFFFFF)));
-		Ui.draw(g, font, title, lx + 18, ly + 2, Theme.fade(Theme.TEXT, a));
+		Fx.sigil(g, lx - 2, ly - 4, 18, a, true);
+		int tx = lx + 20;
+		tx += Fx.gradientBold(g, font, "HOLLOW", tx, ly + 2, a);
+		Ui.draw(g, font, " CLIENT", tx, ly + 2, Theme.fade(Theme.TEXT_DIM, a));
 
 		boolean focused = search.isFocused();
-		Draw.roundRect(g, searchBox, 3, Theme.fade(focused ? Theme.CARD_HOVER : Theme.CARD, a));
-		Draw.roundOutline(g, searchBox, 3, Theme.fade(focused ? Theme.accent() : Theme.STROKE, a));
-		drawMagnifier(g, searchBox.x() + 4, searchBox.y() + 4, Theme.fade(Theme.TEXT_DIM, a));
+		searchFocus = Anim.approach(searchFocus, focused ? 1f : 0f, dt, 14f);
+		int rad = Theme.radius(4);
+		if (searchFocus > 0.01f) {
+			Fx.glow(g, searchBox.x(), searchBox.y(), searchBox.w(), searchBox.h(), 6,
+					Theme.fade(Theme.accent(), a * searchFocus * (0.2f + 0.4f * Theme.glow())));
+		}
+		Draw.roundRect(g, searchBox, rad, Theme.fade(Theme.mix(Theme.CARD, Theme.CARD_HOVER, searchFocus), a));
+		Draw.roundOutline(g, searchBox, rad, Theme.fade(Theme.mix(Theme.STROKE, Theme.accent(), searchFocus), a));
+		drawMagnifier(g, searchBox.x() + 4, searchBox.y() + 4, Theme.fade(Theme.mix(Theme.TEXT_DIM, Theme.accent(), searchFocus), a));
 		if (a > 0.5f) search.render(g, mx, my, 0);
+		if (searching()) {
+			boolean ch = clearSearch.contains(mx, my);
+			Draw.roundRect(g, clearSearch, 2, Theme.fade(ch ? Theme.CARD_HOVER : 0x00000000, a));
+			Ui.center(g, font, "x", clearSearch.centerX() + 1, clearSearch.y() + 1, Theme.fade(ch ? Theme.TEXT : Theme.TEXT_FAINT, a));
+		}
 		editHud.render(g, font, mx, my, dt, a);
 		g.fill(panel.x() + 8, header.bottom() - 2, panel.right() - 8, header.bottom() - 1, Theme.fade(Theme.STROKE, a));
 	}
@@ -187,34 +241,56 @@ public final class HollowMenuScreen extends HollowScreen {
 	}
 
 	private void renderRail(GuiGraphics g, int mx, int my, float a) {
+		Category[] cats = Category.values();
+		float targetY = rail.y() + 2 + category.ordinal() * RAIL_ROW;
+		if (railMarker.value() < 0) railMarker.snap(targetY);
+		railMarker.target(targetY);
+		float markerY = fxAmount(m -> m.entrance) > 0 ? railMarker.update(dt * Theme.speed()) : railMarker.snap(targetY).value();
+		railMarkerAlpha = Anim.approach(railMarkerAlpha, searching() ? 0f : 1f, dt, 12f);
+		if (railMarkerAlpha > 0.01f) {
+			Rect marker = new Rect(rail.x(), Math.round(markerY), rail.w(), 24);
+			float ma = a * railMarkerAlpha;
+			Draw.roundRect(g, marker, Theme.radius(5), Theme.fade(Theme.cardOn(), ma));
+			Fx.glow(g, marker.x(), marker.y() + 5, 2, 14, 4, Theme.fade(Theme.accent(), ma * Theme.glow() * 0.8f));
+			Draw.roundRect(g, marker.x(), marker.y() + 5, 2, 14, 1, Theme.fade(Theme.accent(), ma));
+		}
 		int y = rail.y() + 2;
-		for (Category c : Category.values()) {
+		for (Category c : cats) {
 			Rect r = new Rect(rail.x(), y, rail.w(), 24);
 			boolean selected = !searching() && c == category;
 			float h = animate(c, r.contains(mx, my));
-			int bg = selected ? Theme.cardOn() : Theme.mix(0x00000000, Theme.CARD, h);
-			Draw.roundRect(g, r, 4, Theme.fade(bg, a));
-			if (selected) Draw.roundRect(g, r.x(), r.y() + 5, 2, 14, 1, Theme.fade(Theme.accent(), a));
-			if (a > 0.6f) g.renderItem(iconFor(c), r.x() + 6, r.y() + 4);
+			if (!selected) Draw.roundRect(g, r, Theme.radius(5), Theme.fade(Theme.mix(0x00000000, Theme.CARD, h), a));
+			if (a > 0.6f) {
+				g.pose().pushMatrix();
+				float bump = 1f + 0.08f * h;
+				g.pose().translate(r.x() + 14, r.y() + 12);
+				g.pose().scale(bump, bump);
+				g.renderItem(iconFor(c), -8, -8);
+				g.pose().popMatrix();
+			}
 			if (railLabels) {
-				Ui.draw(g, font, c.label(), r.x() + 27, r.y() + 8, Theme.fade(selected ? Theme.TEXT : Theme.mix(Theme.TEXT_DIM, Theme.TEXT, h), a));
+				int color = selected ? Theme.TEXT : Theme.mix(Theme.TEXT_DIM, Theme.TEXT, h);
+				Ui.draw(g, font, c.label(), r.x() + 27 + Math.round(h * 2), r.y() + 8, Theme.fade(color, a));
 			} else if (r.contains(mx, my)) {
 				g.setTooltipForNextFrame(font, Component.literal(c.label()), mx, my);
 			}
-			y += 26;
+			y += RAIL_ROW;
 		}
 	}
 
 	private void renderSection(GuiGraphics g, float a) {
 		String title = searching() ? "Search results" : category.label();
-		Ui.draw(g, font, Ui.bold(title), section.x() + 1, section.y() + 3, Theme.fade(Theme.TEXT, a));
+		float t = Anim.easeOutCubic((Util.getMillis() - listShownAt) * Theme.speed() / APPEAR_MS);
+		int slide = fxAmount(m -> m.entrance) > 0 ? Math.round((1f - t) * 8) : 0;
+		Ui.draw(g, font, Ui.bold(title), section.x() + 1 + slide, section.y() + 3, Theme.fade(Theme.TEXT, a * (0.4f + 0.6f * t)));
 		String count;
 		if (showingTiles()) {
 			count = "Only you can see your styles";
 		} else {
 			List<Module> mods = visibleModules();
-			long on = mods.stream().filter(Module::isEnabled).count();
-			count = on + " of " + mods.size() + " on";
+			long on = mods.stream().filter(m -> m.toggleable() && m.isEnabled()).count();
+			long toggleable = mods.stream().filter(Module::toggleable).count();
+			count = searching() ? mods.size() + (mods.size() == 1 ? " match" : " matches") : on + " of " + toggleable + " on";
 		}
 		Ui.draw(g, font, count, section.right() - 4 - Ui.width(font, count), section.y() + 3, Theme.fade(Theme.TEXT_FAINT, a));
 	}
@@ -229,42 +305,166 @@ public final class HollowMenuScreen extends HollowScreen {
 		};
 	}
 
-	private void renderCards(GuiGraphics g, int mx, int my, float a) {
+	// ---------------------------------------------------------------------------------------------------- cards
+
+	/** Animation state for one card, created when it first appears (staggered by its place in the list). */
+	private CardAnim anim(Object key, int index, Rect scrolled, Set<Object> shown) {
+		Rect target = scrolled.offset(0, Math.round(scroll));
+		shown.add(key);
+		CardAnim c = anims.get(key);
+		if (c == null || !shownLastFrame.contains(key)) {
+			c = new CardAnim();
+			c.x = target.x();
+			c.y = target.y();
+			c.appearAt = listShownAt + Math.min(12, index) * STAGGER_MS;
+			anims.put(key, c);
+		} else {
+			// glide to the new place (search results reflow smoothly)
+			c.x = Anim.approach(c.x, target.x(), dt, 16f);
+			c.y = Anim.approach(c.y, target.y(), dt, 16f);
+		}
+		return c;
+	}
+
+	/** 0..1 appear progress of a card. */
+	private float appear(CardAnim c) {
+		if (fxAmount(m -> m.entrance) <= 0f) return 1f;
+		return Anim.clamp01((Util.getMillis() - c.appearAt) * Theme.speed() / APPEAR_MS);
+	}
+
+	/**
+	 * Push the transform for a card: slide up while appearing, scale a touch on hover and press, and lean toward
+	 * the mouse (a shear that reads as a 3D tilt). Pop it with {@code g.pose().popMatrix()}.
+	 */
+	private void pushCardTransform(GuiGraphics g, CardAnim c, Rect r, boolean hovered, int mx, int my, float appear) {
+		float tilt = fxAmount(m -> m.tilt);
+		float rx = 0f;
+		float ry = 0f;
+		if (hovered && tilt > 0f) {
+			rx = Math.max(-1f, Math.min(1f, (mx - r.centerX()) / (r.w() / 2f)));
+			ry = Math.max(-1f, Math.min(1f, (my - r.centerY()) / (r.h() / 2f)));
+		}
+		c.tiltX = Anim.approach(c.tiltX, rx, dt, 10f);
+		c.tiltY = Anim.approach(c.tiltY, ry, dt, 10f);
+		c.press = Anim.approach(c.press, 0f, dt, 9f);
+		float rise = (1f - easeOutBack(appear)) * 10f;
+		float scale = (0.94f + 0.06f * Anim.easeOutCubic(appear)) * (1f + 0.02f * c.hover * Math.max(tilt, 0.5f)) * (1f - 0.035f * c.press);
+		g.pose().pushMatrix();
+		g.pose().translate(r.x() + r.w() / 2f, r.y() + r.h() / 2f + rise);
+		g.pose().scale(scale, scale);
+		float k = 0.035f * tilt;
+		if (k > 0f) g.pose().mul(new Matrix3x2f(1f, c.tiltX * k * 0.6f, -c.tiltY * k, 1f, 0f, 0f));
+		g.pose().translate(-r.w() / 2f, -r.h() / 2f);
+	}
+
+	private static float easeOutBack(float t) {
+		t = Anim.clamp01(t);
+		float c1 = 1.4f;
+		float u = t - 1f;
+		return 1f + (c1 + 1f) * u * u * u + c1 * u * u;
+	}
+
+	/** The moving shine on a tilted card: a soft light that follows the mouse. Drawn in card-local coordinates. */
+	private void shine(GuiGraphics g, CardAnim c, int w, int h, float a) {
+		float tilt = fxAmount(m -> m.tilt);
+		if (tilt <= 0f || c.hover <= 0.01f) return;
+		float sx = w / 2f + c.tiltX * w / 2f;
+		float sy = h / 2f + c.tiltY * h / 2f;
+		g.enableScissor(0, 0, w, h);
+		Fx.dot(g, sx, sy, Math.max(w, h) * 0.55f, ColorUtil.fade(0xFFFFFFFF, a * c.hover * tilt * 0.13f));
+		g.disableScissor();
+	}
+
+	private void renderCards(GuiGraphics g, int mx, int my, float a, Set<Object> shown) {
 		List<Module> mods = visibleModules();
 		boolean inGrid = grid.contains(mx, my);
+		float borders = fxAmount(m -> m.borders);
 		for (int i = 0; i < mods.size(); i++) {
 			Module m = mods.get(i);
-			Rect r = cardRect(i);
-			if (r.bottom() < grid.y() || r.y() > grid.bottom()) continue;
+			Rect target = cardRect(i);
+			CardAnim c = anim(m, i, target, shown);
+			Rect r = animatedRect(m, target);
+			if (r.bottom() < grid.y() - 12 || r.y() > grid.bottom() + 12) continue;
 			boolean hovered = inGrid && r.contains(mx, my);
-			float h = animate(m, hovered);
+			c.hover = Anim.approach(c.hover, hovered ? 1f : 0f, dt, 14f);
+			float ap = appear(c);
+			float ca = a * Anim.easeOutCubic(ap);
+			if (ca <= 0.01f) continue;
+
+			hoverGlow(g, r, c.hover, ca);
+			pushCardTransform(g, c, r, hovered, mx, my, ap);
+			int w = r.w();
+			int h = r.h();
+			int rad = Theme.radius(6);
 			boolean lit = m.isEnabled() && m.toggleable();
-			int bg = lit ? Theme.mix(Theme.cardOn(), Theme.mix(Theme.cardOn(), 0xFFFFFFFF, 0.08f), h) : Theme.mix(Theme.CARD, Theme.CARD_HOVER, h);
-			Draw.roundRect(g, r, 5, Theme.fade(bg, a));
-			Draw.roundOutline(g, r, 5, Theme.fade(Theme.mix(lit ? Theme.fade(Theme.accent(), 0.33f) : Theme.STROKE, Theme.accent(), h * 0.7f), a));
-
-			int tx = r.right() - 8 - UiToggle.W;
-			int ty = r.y() + 7;
-			if (m.toggleable()) {
-				toggles.computeIfAbsent(m, k -> new UiToggle()).render(g, tx, ty, m.isEnabled(), inGrid && UiToggle.hit(tx, ty, mx, my), dt, a);
+			int bg = lit ? Theme.mix(Theme.cardOn(), Theme.mix(Theme.cardOn(), 0xFFFFFFFF, 0.06f), c.hover)
+					: Theme.mix(Theme.CARD, Theme.CARD_HOVER, c.hover);
+			Draw.roundRect(g, 0, 0, w, h, rad, Theme.fade(bg, ca));
+			Draw.roundGradient(g, 0, 0, w, h / 2, rad, Theme.fade(0x12FFFFFF, ca), 0x00FFFFFF);
+			shine(g, c, w, h, ca);
+			if (lit && borders > 0f) {
+				Fx.gradientOutline(g, new Rect(0, 0, w, h), rad, ca * borders * (0.45f + 0.35f * c.hover), i * 0.13f);
 			} else {
-				Ui.draw(g, font, "Open >", r.right() - 8 - Ui.width(font, "Open >"), ty + 2, Theme.fade(Theme.mix(Theme.TEXT_FAINT, Theme.accent(), h), a));
+				Draw.roundOutline(g, 0, 0, w, h, rad, Theme.fade(Theme.mix(Theme.STROKE, Theme.accent(), c.hover * 0.7f), ca));
 			}
-			Ui.draw(g, font, Text.fit(font, m.name(), tx - r.x() - 14), r.x() + 8, r.y() + 8, Theme.fade(Theme.TEXT, a));
-			Text.wrapped(g, font, m.description(), r.x() + 8, r.y() + 21, r.w() - 30, 2, Theme.fade(Theme.TEXT_DIM, a));
 
-			Rect gear = gearRect(r);
-			boolean gh = inGrid && gear.contains(mx, my);
-			if (gh) Draw.roundRect(g, gear, 3, Theme.fade(Theme.CARD_HOVER, a));
-			Draw.settingsIcon(g, gear.x() + 4, gear.y() + 4, Theme.fade(gh ? Theme.TEXT : Theme.TEXT_FAINT, a));
-			if (searching()) {
-				String cat = m.category().label();
-				Ui.draw(g, font, cat, r.right() - 8 - Ui.width(font, cat), r.y() + 21 + 10 * 2 - 9, Theme.fade(Theme.TEXT_FAINT, a));
+			int tx = w - 8 - UiToggle.W;
+			int ty = 7;
+			// mouse in card-local coordinates (close enough for the small hover effects inside)
+			int lmx = mx - r.x();
+			int lmy = my - r.y();
+			if (m.toggleable()) {
+				toggles.computeIfAbsent(m, k -> new UiToggle()).render(g, tx, ty, m.isEnabled(), hovered && UiToggle.hit(tx, ty, lmx, lmy), dt, ca);
+			} else {
+				Ui.draw(g, font, "Open >", w - 8 - Ui.width(font, "Open >") + Math.round(c.hover * 2), ty + 2, Theme.fade(Theme.mix(Theme.TEXT_FAINT, Theme.accent(), c.hover), ca));
 			}
+			int nameRoom = tx - 14;
+			if (searching()) {
+				// which category the result is from, as a small tag before the switch
+				String cat = m.category().label();
+				int cw = Ui.width(font, cat) + 6;
+				int cx = (m.toggleable() ? tx : w - 8 - Ui.width(font, "Open >")) - 6 - cw;
+				Draw.roundRect(g, cx, 7, cw, 11, 3, Theme.fade(0x30FFFFFF, ca));
+				Ui.draw(g, font, cat, cx + 3, 9, Theme.fade(Theme.TEXT_DIM, ca));
+				nameRoom = cx - 12;
+			}
+			drawName(g, m.name(), 8, 8, nameRoom, ca);
+			Text.wrapped(g, font, m.description(), 8, 21, w - 30, 2, Theme.fade(Theme.TEXT_DIM, ca));
+
+			Rect gear = gearRect(new Rect(0, 0, w, h));
+			boolean gh = hovered && gear.contains(lmx, lmy);
+			if (gh) Draw.roundRect(g, gear, 3, Theme.fade(Theme.CARD_HOVER, ca));
+			Draw.settingsIcon(g, gear.x() + 4, gear.y() + 4, Theme.fade(gh ? Theme.TEXT : Theme.TEXT_FAINT, ca));
+			g.pose().popMatrix();
 		}
 		if (mods.isEmpty()) {
-			Ui.center(g, font, searching() ? "No modules match \"" + query + "\"" : "Nothing here yet.", grid.centerX(), grid.y() + 30, Theme.fade(Theme.TEXT_FAINT, a));
+			float t = Anim.easeOutCubic((Util.getMillis() - listShownAt) * Theme.speed() / APPEAR_MS);
+			int s = 28;
+			Fx.sigil(g, grid.centerX() - s / 2, grid.y() + 24, s, a * 0.5f * t, true);
+			Ui.center(g, font, searching() ? "No modules match \"" + query + "\"" : "Nothing here yet.", grid.centerX(), grid.y() + 24 + s + 8, Theme.fade(Theme.TEXT_FAINT, a * t));
 		}
+	}
+
+	/** The module name, with the part that matches the search lit up in the accent color. */
+	private void drawName(GuiGraphics g, String name, int x, int y, int maxW, float a) {
+		String shownName = Text.fit(font, name, maxW);
+		int at = searching() ? shownName.toLowerCase(Locale.ROOT).indexOf(query) : -1;
+		if (at < 0) {
+			Ui.draw(g, font, shownName, x, y, Theme.fade(Theme.TEXT, a));
+			return;
+		}
+		int end = Math.min(shownName.length(), at + query.length());
+		String before = shownName.substring(0, at);
+		String match = shownName.substring(at, end);
+		String after = shownName.substring(end);
+		int cx = x;
+		Ui.draw(g, font, before, cx, y, Theme.fade(Theme.TEXT, a));
+		cx += Ui.width(font, before);
+		int mw = Ui.width(font, match);
+		Draw.roundRect(g, cx - 1, y - 2, mw + 2, 12, 2, Theme.fade(Theme.accent(), a * 0.25f));
+		Ui.draw(g, font, match, cx, y, Theme.fade(Theme.mix(Theme.accent(), 0xFFFFFFFF, 0.35f), a));
+		cx += mw;
+		Ui.draw(g, font, after, cx, y, Theme.fade(Theme.TEXT, a));
 	}
 
 	private Rect cardRect(int i) {
@@ -279,7 +479,22 @@ public final class HollowMenuScreen extends HollowScreen {
 		return new Rect(card.right() - 18, card.bottom() - 17, 14, 14);
 	}
 
-	// Styles tiles
+	/** The card currently drawn at a point (animated position), or -1. */
+	private int cardAt(List<Module> mods, double mx, double my) {
+		for (int i = 0; i < mods.size(); i++) {
+			if (animatedRect(mods.get(i), cardRect(i)).contains(mx, my)) return i;
+		}
+		return -1;
+	}
+
+	/** Where a card is drawn right now: its animated layout position, scrolled. */
+	private Rect animatedRect(Object key, Rect target) {
+		CardAnim c = anims.get(key);
+		if (c == null) return target;
+		return new Rect(Math.round(c.x), Math.round(c.y) - Math.round(scroll), target.w(), target.h());
+	}
+
+	// ---------------------------------------------------------------------------------------------------- styles tiles
 
 	private record Tile(StylesScreen.Tab tab, String title, String subtitle, ItemStack icon) {
 	}
@@ -300,26 +515,54 @@ public final class HollowMenuScreen extends HollowScreen {
 		return new Rect(grid.x() + col * (tw + gap), grid.y() + row * (TILE_H + gap) - Math.round(scroll), tw, TILE_H);
 	}
 
-	private void renderTiles(GuiGraphics g, int mx, int my, float a) {
+	private void renderTiles(GuiGraphics g, int mx, int my, float a, Set<Object> shown) {
 		List<Tile> list = tiles();
 		boolean inGrid = grid.contains(mx, my);
+		float borders = fxAmount(m -> m.borders);
 		for (int i = 0; i < list.size(); i++) {
 			Tile t = list.get(i);
-			Rect r = tileRect(i);
-			float h = animate(t.tab, inGrid && r.contains(mx, my));
-			Draw.roundRect(g, r, 6, Theme.fade(Theme.mix(Theme.CARD, Theme.CARD_HOVER, h), a));
-			Draw.roundOutline(g, r, 6, Theme.fade(Theme.mix(Theme.STROKE, Theme.accent(), h * 0.8f), a));
-			Draw.roundRect(g, r.x() + 8, r.y() + 8, 28, 28, 5, Theme.fade(Theme.cardOn(), a));
-			if (a > 0.6f) g.renderItem(t.icon, r.x() + 14, r.y() + 14);
-			Ui.draw(g, font, t.title, r.x() + 44, r.y() + 12, Theme.fade(Theme.TEXT, a));
-			Text.wrapped(g, font, t.subtitle, r.x() + 44, r.y() + 25, r.w() - 52, 2, Theme.fade(Theme.TEXT_DIM, a));
-			Ui.draw(g, font, "Open >", r.right() - 8 - Ui.width(font, "Open >"), r.bottom() - 13, Theme.fade(Theme.mix(Theme.TEXT_FAINT, Theme.accent(), h), a));
+			Rect target = tileRect(i);
+			CardAnim c = anim(t.tab, i, target, shown);
+			Rect r = animatedRect(t.tab, target);
+			boolean hovered = inGrid && r.contains(mx, my);
+			c.hover = Anim.approach(c.hover, hovered ? 1f : 0f, dt, 14f);
+			float ap = appear(c);
+			float ca = a * Anim.easeOutCubic(ap);
+			if (ca <= 0.01f) continue;
+			hoverGlow(g, r, c.hover, ca);
+			pushCardTransform(g, c, r, hovered, mx, my, ap);
+			int w = r.w();
+			int h = r.h();
+			int rad = Theme.radius(7);
+			Draw.roundRect(g, 0, 0, w, h, rad, Theme.fade(Theme.mix(Theme.CARD, Theme.CARD_HOVER, c.hover), ca));
+			Draw.roundGradient(g, 0, 0, w, h / 2, rad, Theme.fade(0x12FFFFFF, ca), 0x00FFFFFF);
+			shine(g, c, w, h, ca);
+			if (borders > 0f && c.hover > 0.01f) {
+				Draw.roundOutline(g, 0, 0, w, h, rad, Theme.fade(Theme.STROKE, ca * (1f - c.hover)));
+				Fx.gradientOutline(g, new Rect(0, 0, w, h), rad, ca * borders * c.hover, i * 0.2f);
+			} else {
+				Draw.roundOutline(g, 0, 0, w, h, rad, Theme.fade(Theme.mix(Theme.STROKE, Theme.accent(), c.hover * 0.8f), ca));
+			}
+			Draw.roundRect(g, 8, 8, 28, 28, Theme.radius(5), Theme.fade(Theme.cardOn(), ca));
+			if (ca > 0.6f) {
+				g.pose().pushMatrix();
+				float bump = 1f + 0.1f * c.hover;
+				g.pose().translate(22, 22);
+				g.pose().scale(bump, bump);
+				g.renderItem(t.icon, -8, -8);
+				g.pose().popMatrix();
+			}
+			Ui.draw(g, font, Ui.bold(t.title), 44, 12, Theme.fade(Theme.TEXT, ca));
+			Text.wrapped(g, font, t.subtitle, 44, 25, w - 52, 2, Theme.fade(Theme.TEXT_DIM, ca));
+			String open = "Open >";
+			Ui.draw(g, font, open, w - 8 - Ui.width(font, open) + Math.round(c.hover * 2), h - 13, Theme.fade(Theme.mix(Theme.TEXT_FAINT, Theme.accent(), c.hover), ca));
+			g.pose().popMatrix();
 		}
 	}
 
 	private void renderFooter(GuiGraphics g, float a) {
 		String hint = showingTiles() ? "Click a tile to open it · Right Shift closes"
-				: "Click a card to toggle · Right-click or the slider icon for settings · Right Shift closes";
+				: "Click a card to toggle · Right-click or the slider icon for settings · / to search · Right Shift closes";
 		Ui.draw(g, font, Text.fit(font, hint, footer.w() - 80), footer.x() + 10, footer.y() + 4, Theme.fade(Theme.TEXT_FAINT, a));
 		String version = "v" + FabricLoader.getInstance().getModContainer(HollowClient.MOD_ID)
 				.map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("?");
@@ -327,7 +570,9 @@ public final class HollowMenuScreen extends HollowScreen {
 	}
 
 	private float animate(Object key, boolean on) {
-		float v = Anim.approach(hover.getOrDefault(key, 0f), on ? 1f : 0f, dt, 16f);
+		float before = hover.getOrDefault(key, 0f);
+		float v = Anim.approach(before, on ? 1f : 0f, dt, 16f);
+		if (on && before == 0f) UiSounds.hover();
 		hover.put(key, v);
 		return v;
 	}
@@ -336,42 +581,51 @@ public final class HollowMenuScreen extends HollowScreen {
 
 	@Override
 	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+		if (closing()) return true;
 		double mx = event.x();
 		double my = event.y();
 		int button = event.button();
 		boolean left = button == GLFW.GLFW_MOUSE_BUTTON_LEFT;
 		if (left && editHud.click(mx, my)) return true;
+		if (left && searching() && clearSearch.contains(mx, my)) {
+			UiSounds.click();
+			search.setValue("");
+			return true;
+		}
 
 		int y = rail.y() + 2;
 		for (Category c : Category.values()) {
-			if (new Rect(rail.x(), y, rail.w(), 24).contains(mx, my)) {
+			Rect r = new Rect(rail.x(), y, rail.w(), 24);
+			if (r.contains(mx, my)) {
 				UiSounds.click();
-				category = c;
-				lastCategory = c;
-				scroll = scrollTarget = 0;
-				if (searching()) search.setValue("");
-				search.setFocused(false);
+				ripple(mx, my, r);
+				if (c != category || searching()) switchCategory(c);
 				return true;
 			}
-			y += 26;
+			y += RAIL_ROW;
 		}
 
 		if (grid.contains(mx, my)) {
 			if (showingTiles()) {
 				List<Tile> list = tiles();
 				for (int i = 0; i < list.size(); i++) {
-					if (tileRect(i).contains(mx, my)) {
+					Rect r = animatedRect(list.get(i).tab, tileRect(i));
+					if (r.contains(mx, my)) {
 						UiSounds.click();
+						ripple(mx, my, r);
 						open(new StylesScreen(list.get(i).tab, this));
 						return true;
 					}
 				}
 			} else {
 				List<Module> mods = visibleModules();
-				for (int i = 0; i < mods.size(); i++) {
-					Rect r = cardRect(i);
-					if (!r.contains(mx, my)) continue;
+				int i = cardAt(mods, mx, my);
+				if (i >= 0) {
 					Module m = mods.get(i);
+					Rect r = animatedRect(m, cardRect(i));
+					CardAnim c = anims.get(m);
+					if (c != null) c.press = 1f;
+					ripple(mx, my, r);
 					if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT || (left && (gearRect(r).contains(mx, my) || !m.toggleable()))) {
 						UiSounds.click();
 						show(settingsFor(m, this));

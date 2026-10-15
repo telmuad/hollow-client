@@ -3,6 +3,7 @@ package dev.telmuad.hollowclient.gui.widget;
 import dev.telmuad.hollowclient.gui.Ui;
 import dev.telmuad.hollowclient.gui.Anim;
 import dev.telmuad.hollowclient.gui.Draw;
+import dev.telmuad.hollowclient.gui.HollowScreen;
 import dev.telmuad.hollowclient.gui.Rect;
 import dev.telmuad.hollowclient.gui.Theme;
 import dev.telmuad.hollowclient.gui.UiSounds;
@@ -78,14 +79,21 @@ public final class UiButton {
 			fg = Theme.mix(Theme.TEXT_DIM, Theme.TEXT, hoverT);
 			outline = Theme.mix(Theme.STROKE, Theme.accent(), hoverT * 0.6f);
 		}
-		Draw.roundRect(g, bounds, 3, Theme.fade(bg, alpha));
-		if (outline != 0) Draw.roundOutline(g, bounds, 3, Theme.fade(outline, alpha));
+		if (enabled) HollowScreen.hoverGlow(g, bounds, hoverT * (style == Style.DANGER ? 0.5f : 1f), alpha);
+		int r = Theme.radius(3);
+		Draw.roundRect(g, bounds, r, Theme.fade(bg, alpha));
+		if (style == Style.PRIMARY && enabled) {
+			// a soft top-to-bottom sheen on the main buttons
+			Draw.roundGradient(g, bounds.x(), bounds.y(), bounds.w(), bounds.h(), r, Theme.fade(0x2EFFFFFF, alpha), 0x00FFFFFF);
+		}
+		if (outline != 0) Draw.roundOutline(g, bounds, r, Theme.fade(outline, alpha));
 		int tw = Ui.width(font, label);
 		Ui.draw(g, font, label, bounds.x() + (bounds.w() - tw) / 2, bounds.y() + (bounds.h() - 8) / 2 + 1, Theme.fade(fg, alpha));
 	}
 
 	public boolean click(double mx, double my) {
 		if (!enabled || !bounds.contains(mx, my)) return false;
+		HollowScreen.ripple(mx, my, bounds);
 		playClick();
 		onPress.run();
 		return true;
