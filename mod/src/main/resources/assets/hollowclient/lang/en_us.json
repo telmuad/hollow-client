@@ -31,5 +31,6 @@
 	"key.hollowclient.pause_menu": "Toggle Hollow pause menu",
 	"key.hollowclient.inventory_blur": "Toggle Inventory Blur",
 	"key.hollowclient.chat_style": "Toggle Chat Style",
-	"key.hollowclient.hud_style": "Toggle HUD Style"
+	"key.hollowclient.hud_style": "Toggle HUD Style",
+	"key.hollowclient.post_processing": "Toggle Post Processing"
 }

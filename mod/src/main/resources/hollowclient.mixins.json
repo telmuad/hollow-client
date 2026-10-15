@@ -10,6 +10,7 @@
 		"ChatLineMixin",
 		"ChatScreenMixin",
 		"GameRendererMixin",
+		"GameRendererPostMixin",
 		"GuiMixin",
 		"KeyboardInputMixin",
 		"LightTextureMixin",

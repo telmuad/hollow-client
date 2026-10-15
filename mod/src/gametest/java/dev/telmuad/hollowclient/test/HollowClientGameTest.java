@@ -99,6 +99,7 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 			screens(ctx);
 			hud(ctx);
 			qolAndVisual(ctx, sp);
+			postProcessing(ctx, sp);
 			styles(ctx, sp);
 		}
 		if (!failures.isEmpty()) throw new AssertionError("Hollow Client checks failed: " + failures);
@@ -416,6 +417,57 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		setEnabled(ctx, "clear_water", false);
 		sp.getServer().runCommand("fill " + at(-6, 0, -6) + " " + at(6, 6, 6) + " air");
 		ctx.waitTicks(10);
+	}
+
+	// ------------------------------------------------------------------------------------------------ post processing
+
+	private void postProcessing(ClientGameTestContext ctx, TestSingleplayerContext sp) {
+		home(sp);
+		sp.getServer().runCommand("time set noon");
+		ctx.waitTicks(10);
+		for (String grade : new String[]{"cinematic", "vibrant", "noir", "dreamy"}) {
+			setEnum(ctx, "post_processing", "grade", grade);
+			ctx.waitTicks(3);
+			screenshot(ctx, "grade_" + grade);
+		}
+		setEnum(ctx, "post_processing", "grade", "none");
+		check("Post-processing shaders compile and run", ctx.computeOnClient(mc -> dev.telmuad.hollowclient.render.PostFx.healthy()
+				&& dev.telmuad.hollowclient.render.PostFx.active()));
+		// bloom at night: a few glowstone blocks in front
+		sp.getServer().runCommand("time set midnight");
+		sp.getServer().runCommand("fill " + at(-2, 0, 4) + " " + at(2, 2, 4) + " glowstone");
+		ctx.waitTicks(30);
+		screenshot(ctx, "bloom_night");
+		ctx.runOnClient(mc -> setBool("post_processing", "bloom", false));
+		ctx.waitTicks(3);
+		screenshot(ctx, "bloom_off_night");
+		ctx.runOnClient(mc -> setBool("post_processing", "bloom", true));
+		sp.getServer().runCommand("fill " + at(-2, 0, 4) + " " + at(2, 2, 4) + " air");
+		sp.getServer().runCommand("time set noon");
+		// chromatic aberration + grain, then motion blur while turning
+		ctx.runOnClient(mc -> {
+			setBool("post_processing", "chromatic", true);
+			setBool("post_processing", "grain", true);
+		});
+		ctx.waitTicks(10);
+		screenshot(ctx, "chromatic_grain");
+		ctx.runOnClient(mc -> {
+			setBool("post_processing", "chromatic", false);
+			setBool("post_processing", "grain", false);
+			setBool("post_processing", "motionBlur", true);
+		});
+		for (int i = 0; i < 6; i++) {
+			ctx.runOnClient(mc -> mc.player.setYRot(mc.player.getYRot() + 9f));
+			ctx.waitTick();
+		}
+		screenshot(ctx, "motion_blur_turning");
+		ctx.runOnClient(mc -> setBool("post_processing", "motionBlur", false));
+		home(sp);
+		ctx.waitTicks(5);
+	}
+
+	private static void setBool(String module, String setting, boolean value) {
+		((dev.telmuad.hollowclient.setting.BooleanSetting) module(module).setting(setting)).set(value);
 	}
 
 	// ------------------------------------------------------------------------------------------------ styles

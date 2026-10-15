@@ -31,6 +31,7 @@ import dev.telmuad.hollowclient.modules.visual.CrosshairModule;
 import dev.telmuad.hollowclient.modules.visual.FullbrightModule;
 import dev.telmuad.hollowclient.modules.visual.HitColorModule;
 import dev.telmuad.hollowclient.modules.visual.LowFireModule;
+import dev.telmuad.hollowclient.modules.visual.PostProcessingModule;
 import dev.telmuad.hollowclient.modules.styles.CapeModule;
 import dev.telmuad.hollowclient.modules.styles.HatModule;
 import dev.telmuad.hollowclient.modules.styles.WingsModule;
@@ -73,6 +74,7 @@ public final class Modules {
 	public static InventoryBlurModule INVENTORY_BLUR;
 	public static ChatStyleModule CHAT_STYLE;
 	public static HudStyleModule HUD_STYLE;
+	public static PostProcessingModule POST_PROCESSING;
 
 	private Modules() {
 	}
@@ -101,6 +103,7 @@ public final class Modules {
 		LOW_FIRE = registry.register(new LowFireModule());
 		CLEAR_WATER = registry.register(new ClearWaterModule());
 		HIT_COLOR = registry.register(new HitColorModule());
+		POST_PROCESSING = registry.register(new PostProcessingModule());
 		// Quality of life
 		ZOOM = registry.register(new ZoomModule());
 		TOGGLE_SPRINT = registry.register(new ToggleSprintModule());
