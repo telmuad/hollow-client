@@ -1,13 +1,13 @@
 package dev.telmuad.hollowclient.gui.widget;
 
+import dev.telmuad.hollowclient.gui.Ui;
 import dev.telmuad.hollowclient.gui.Anim;
 import dev.telmuad.hollowclient.gui.Draw;
 import dev.telmuad.hollowclient.gui.Rect;
 import dev.telmuad.hollowclient.gui.Theme;
-import net.minecraft.client.Minecraft;
+import dev.telmuad.hollowclient.gui.UiSounds;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractWidget;
 
 /** A flat rounded button. */
 public final class UiButton {
@@ -19,6 +19,7 @@ public final class UiButton {
 	private boolean enabled = true;
 	private Style style = Style.NORMAL;
 	private float hoverT;
+	private boolean wasHover;
 
 	public UiButton(String label, Runnable onPress) {
 		this.label = label;
@@ -48,12 +49,14 @@ public final class UiButton {
 	}
 
 	public int preferredWidth(Font font) {
-		return font.width(label) + 16;
+		return Ui.width(font, label) + 16;
 	}
 
 	public void render(GuiGraphics g, Font font, int mx, int my, float dt, float alpha) {
 		if (bounds.w() <= 0) return;
 		boolean hover = enabled && bounds.contains(mx, my);
+		if (hover && !wasHover) UiSounds.hover();
+		wasHover = hover;
 		hoverT = Anim.approach(hoverT, hover ? 1f : 0f, dt, 18f);
 		int bg;
 		int fg;
@@ -63,7 +66,7 @@ public final class UiButton {
 			fg = Theme.TEXT_FAINT;
 			outline = Theme.STROKE;
 		} else if (style == Style.PRIMARY) {
-			bg = Theme.mix(Theme.ACCENT_SOFT, Theme.ACCENT, hoverT);
+			bg = Theme.mix(Theme.accentSoft(), Theme.accent(), hoverT);
 			fg = 0xFFFFFFFF;
 			outline = 0;
 		} else if (style == Style.DANGER) {
@@ -73,12 +76,12 @@ public final class UiButton {
 		} else {
 			bg = Theme.mix(Theme.CARD, Theme.CARD_HOVER, hoverT);
 			fg = Theme.mix(Theme.TEXT_DIM, Theme.TEXT, hoverT);
-			outline = Theme.mix(Theme.STROKE, Theme.ACCENT, hoverT * 0.6f);
+			outline = Theme.mix(Theme.STROKE, Theme.accent(), hoverT * 0.6f);
 		}
 		Draw.roundRect(g, bounds, 3, Theme.fade(bg, alpha));
 		if (outline != 0) Draw.roundOutline(g, bounds, 3, Theme.fade(outline, alpha));
-		int tw = font.width(label);
-		g.drawString(font, label, bounds.x() + (bounds.w() - tw) / 2, bounds.y() + (bounds.h() - 8) / 2 + 1, Theme.fade(fg, alpha), false);
+		int tw = Ui.width(font, label);
+		Ui.draw(g, font, label, bounds.x() + (bounds.w() - tw) / 2, bounds.y() + (bounds.h() - 8) / 2 + 1, Theme.fade(fg, alpha));
 	}
 
 	public boolean click(double mx, double my) {
@@ -89,6 +92,6 @@ public final class UiButton {
 	}
 
 	public static void playClick() {
-		AbstractWidget.playButtonClickSound(Minecraft.getInstance().getSoundManager());
+		UiSounds.click();
 	}
 }

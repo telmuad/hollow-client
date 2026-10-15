@@ -1,0 +1,19 @@
+{
+	"providers": [
+		{
+			"type": "ttf",
+			"file": "hollowclient:inter_medium.ttf",
+			"size": 9.0,
+			"oversample": 6.0,
+			"shift": [0.0, 0.5]
+		},
+		{
+			"type": "reference",
+			"id": "minecraft:include/default"
+		},
+		{
+			"type": "reference",
+			"id": "minecraft:include/unifont"
+		}
+	]
+}

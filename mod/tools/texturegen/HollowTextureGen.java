@@ -207,28 +207,144 @@ public final class HollowTextureGen {
 		save(img, "textures/cosmetics/wings_" + name + ".png");
 	}
 
-	// ------------------------------------------------------------------------------------------------ icon
+	// ------------------------------------------------------------------------------------------------ sigil + icon
 
-	private static void icon() throws IOException {
-		int s = 128;
-		BufferedImage img = new BufferedImage(s, s, BufferedImage.TYPE_INT_ARGB);
-		double c = s / 2.0 - 0.5;
-		for (int y = 0; y < s; y++) {
-			for (int x = 0; x < s; x++) {
-				// rounded square background
-				double dx = Math.max(Math.abs(x - c) - 40, 0), dy = Math.max(Math.abs(y - c) - 40, 0);
-				if (Math.hypot(dx, dy) > 22) continue;
-				int bg = mix(rgb(0x1A1830), rgb(0x0E0F15), (x + y) / (2.0 * s));
-				double d = Math.hypot(x - c, y - c);
-				int px = bg;
-				if (d > 26 && d < 40) {
-					double a = Math.atan2(y - c, x - c);
-					px = (a > 0.35 && a < 1.15) ? bg : mix(rgb(0x6B4FE0), rgb(0xB59CFF), (Math.sin(a) + 1) / 2);
-				}
-				if (d < 9) px = rgb(0xD9CCFF);
-				img.setRGB(x, y, px);
+	/**
+	 * The Hollow sigil: a pointy-top hexagon ring with a sharp, slanted "H" inside and two orbit dots. Shape in
+	 * unit coordinates (0..1), scaled to any size. The launcher draws the same shape with Qt (hollow_launcher/ui/logo.py).
+	 */
+	static java.awt.geom.Area sigilShape(double size) {
+		java.awt.geom.Area area = new java.awt.geom.Area();
+		double c = size / 2.0;
+		double ro = size * 0.44;
+		double ri = size * 0.385;
+		area.add(new java.awt.geom.Area(hexagon(c, c, ro)));
+		area.subtract(new java.awt.geom.Area(hexagon(c, c, ri)));
+		// H: two slanted bars and a crossbar
+		double top = size * 0.29;
+		double bottom = size * 0.71;
+		double barW = size * 0.085;
+		double slant = size * 0.035;
+		area.add(new java.awt.geom.Area(parallelogram(size * 0.335, top, barW, bottom - top, slant)));
+		area.add(new java.awt.geom.Area(parallelogram(size * 0.58, top, barW, bottom - top, slant)));
+		java.awt.geom.Path2D cross = new java.awt.geom.Path2D.Double();
+		double cy = size * 0.5;
+		double ch = size * 0.06;
+		cross.moveTo(size * 0.40, cy - ch / 2 + size * 0.012);
+		cross.lineTo(size * 0.60, cy - ch / 2 - size * 0.012);
+		cross.lineTo(size * 0.60, cy + ch / 2 - size * 0.012);
+		cross.lineTo(size * 0.40, cy + ch / 2 + size * 0.012);
+		cross.closePath();
+		area.add(new java.awt.geom.Area(cross));
+		// orbit dots on the top and bottom points of the hexagon
+		double dot = size * 0.045;
+		area.add(new java.awt.geom.Area(new java.awt.geom.Ellipse2D.Double(c - dot, c - ro - dot * 0.2 - dot, dot * 2, dot * 2)));
+		area.add(new java.awt.geom.Area(new java.awt.geom.Ellipse2D.Double(c - dot, c + ro + dot * 0.2 - dot, dot * 2, dot * 2)));
+		return area;
+	}
+
+	private static java.awt.geom.Path2D hexagon(double cx, double cy, double r) {
+		java.awt.geom.Path2D p = new java.awt.geom.Path2D.Double();
+		for (int i = 0; i < 6; i++) {
+			double a = Math.toRadians(-90 + 60 * i);
+			double x = cx + r * Math.cos(a);
+			double y = cy + r * Math.sin(a);
+			if (i == 0) p.moveTo(x, y);
+			else p.lineTo(x, y);
+		}
+		p.closePath();
+		return p;
+	}
+
+	private static java.awt.geom.Path2D parallelogram(double x, double y, double w, double h, double slant) {
+		java.awt.geom.Path2D p = new java.awt.geom.Path2D.Double();
+		p.moveTo(x + slant, y);
+		p.lineTo(x + w + slant, y);
+		p.lineTo(x + w, y + h);
+		p.lineTo(x, y + h);
+		p.closePath();
+		return p;
+	}
+
+	private static BufferedImage drawShape(java.awt.Shape shape, int size, int argb) {
+		BufferedImage img = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+		java.awt.Graphics2D g = img.createGraphics();
+		g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+		g.setRenderingHint(java.awt.RenderingHints.KEY_RENDERING, java.awt.RenderingHints.VALUE_RENDER_QUALITY);
+		g.setColor(new Color(argb, true));
+		g.fill(shape);
+		g.dispose();
+		return img;
+	}
+
+	/** Blur the alpha channel with three box-blur passes (close to a gaussian). White, alpha = blurred coverage. */
+	private static BufferedImage glow(BufferedImage src, int radius, float strength) {
+		int w = src.getWidth();
+		int h = src.getHeight();
+		float[] a = new float[w * h];
+		for (int y = 0; y < h; y++) for (int x = 0; x < w; x++) a[y * w + x] = ((src.getRGB(x, y) >>> 24) & 255) / 255f;
+		for (int pass = 0; pass < 3; pass++) {
+			a = boxBlur(a, w, h, radius, true);
+			a = boxBlur(a, w, h, radius, false);
+		}
+		BufferedImage out = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		for (int i = 0; i < a.length; i++) {
+			int alpha = clamp(Math.round(Math.min(1f, a[i] * strength) * 255));
+			out.setRGB(i % w, i / w, (alpha << 24) | 0xFFFFFF);
+		}
+		return out;
+	}
+
+	private static float[] boxBlur(float[] in, int w, int h, int r, boolean horizontal) {
+		float[] out = new float[in.length];
+		int n = horizontal ? w : h;
+		int lines = horizontal ? h : w;
+		for (int l = 0; l < lines; l++) {
+			float sum = 0;
+			for (int i = -r; i <= r; i++) sum += sample(in, w, h, horizontal, l, i);
+			for (int i = 0; i < n; i++) {
+				out[horizontal ? l * w + i : i * w + l] = sum / (2 * r + 1);
+				sum += sample(in, w, h, horizontal, l, i + r + 1) - sample(in, w, h, horizontal, l, i - r);
 			}
 		}
+		return out;
+	}
+
+	private static float sample(float[] a, int w, int h, boolean horizontal, int line, int i) {
+		if (horizontal) return i < 0 || i >= w ? 0 : a[line * w + i];
+		return i < 0 || i >= h ? 0 : a[i * w + line];
+	}
+
+	private static void icon() throws IOException {
+		// White sigil + its glow for the game (tinted with the theme colors at draw time)
+		int s = 256;
+		save(drawShape(sigilShape(s), s, 0xFFFFFFFF), "textures/gui/sigil.png");
+		save(glow(drawShape(sigilShape(s), s, 0xFFFFFFFF), 10, 1.6f), "textures/gui/sigil_glow.png");
+
+		// Colored mod icon: dark rounded square, violet-to-cyan sigil with a soft glow
+		int is = 128;
+		BufferedImage img = new BufferedImage(is, is, BufferedImage.TYPE_INT_ARGB);
+		java.awt.Graphics2D g = img.createGraphics();
+		g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+		g.setPaint(new java.awt.GradientPaint(0, 0, new Color(0x1B1636), is, is, new Color(0x08090E)));
+		g.fill(new java.awt.geom.RoundRectangle2D.Double(0, 0, is, is, is * 0.42, is * 0.42));
+		java.awt.geom.Area shape = sigilShape(is * 0.86);
+		shape.transform(java.awt.geom.AffineTransform.getTranslateInstance(is * 0.07, is * 0.07));
+		BufferedImage mask = drawShape(shape, is, 0xFFFFFFFF);
+		BufferedImage halo = glow(mask, 4, 1.3f);
+		for (int y = 0; y < is; y++) {
+			for (int x = 0; x < is; x++) {
+				float t = (x + y) / (2f * is);
+				int col = mix(rgb(0x9B6CFF), rgb(0x22D3EE), t);
+				int ha = (halo.getRGB(x, y) >>> 24) & 255;
+				int base = img.getRGB(x, y);
+				if ((base >>> 24) == 0) continue;
+				base = mix(base, col, ha / 255f * 0.45);
+				int ma = (mask.getRGB(x, y) >>> 24) & 255;
+				img.setRGB(x, y, mix(base, mix(col, rgb(0xFFFFFF), 0.12), ma / 255f));
+			}
+		}
+		g.dispose();
 		save(img, "icon.png");
 	}
 }

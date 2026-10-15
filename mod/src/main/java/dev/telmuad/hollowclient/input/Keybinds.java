@@ -2,9 +2,11 @@ package dev.telmuad.hollowclient.input;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.telmuad.hollowclient.HollowClient;
+import dev.telmuad.hollowclient.gui.ScreenProvider;
 import dev.telmuad.hollowclient.module.KeyDef;
 import dev.telmuad.hollowclient.module.Module;
 import dev.telmuad.hollowclient.module.ModuleRegistry;
+import dev.telmuad.hollowclient.modules.client.PerformanceModule;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
@@ -75,10 +77,24 @@ public final class Keybinds {
 				continue;
 			}
 			while (e.getValue().consumeClick()) {
-				m.toggle();
+				if (m instanceof ScreenProvider provider) {
+					// Theme: the key opens its editor
+					if (mc.screen == null) mc.setScreen(provider.createScreen(null));
+					continue;
+				}
+				String label = m.name();
+				boolean on;
+				if (m instanceof PerformanceModule performance) {
+					performance.performanceModeSetting().toggle();
+					label = "Performance Mode";
+					on = performance.performanceMode();
+				} else {
+					m.toggle();
+					on = m.isEnabled();
+				}
 				if (mc.player != null) {
-					mc.gui.setOverlayMessage(Component.literal(m.name() + ": ")
-							.append(m.isEnabled() ? Component.literal("ON").withStyle(ChatFormatting.GREEN)
+					mc.gui.setOverlayMessage(Component.literal(label + ": ")
+							.append(on ? Component.literal("ON").withStyle(ChatFormatting.GREEN)
 									: Component.literal("OFF").withStyle(ChatFormatting.RED)), false);
 				}
 			}

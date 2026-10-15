@@ -61,7 +61,13 @@ public abstract class Module {
 		return enabledByDefault;
 	}
 
+	/** False for modules that are always on (Theme, Performance): their card has no switch. */
+	public boolean toggleable() {
+		return true;
+	}
+
 	public final void setEnabled(boolean value) {
+		if (!toggleable()) value = true;
 		if (enabled == value) return;
 		enabled = value;
 		if (value) onEnable();
@@ -78,7 +84,7 @@ public abstract class Module {
 	 * because the game isn't fully up yet. {@link #onLoaded()} runs afterwards.
 	 */
 	public final void restoreEnabled(boolean value) {
-		enabled = value;
+		enabled = value || !toggleable();
 	}
 
 	public final List<Setting<?>> settings() {

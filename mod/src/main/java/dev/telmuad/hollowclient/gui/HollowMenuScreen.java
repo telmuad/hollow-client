@@ -96,7 +96,7 @@ public final class HollowMenuScreen extends HollowScreen {
 		search.setBordered(false);
 		search.setMaxLength(40);
 		search.setTextColor(Theme.TEXT);
-		search.setHint(Component.literal("Search modules").withStyle(ChatFormatting.DARK_GRAY));
+		search.setHint(Ui.text("Search modules").withStyle(ChatFormatting.DARK_GRAY));
 		search.setValue(query);
 		search.setResponder(value -> {
 			String q = value.trim().toLowerCase(Locale.ROOT);
@@ -166,14 +166,14 @@ public final class HollowMenuScreen extends HollowScreen {
 	private void renderHeader(GuiGraphics g, int mx, int my, float a) {
 		int lx = header.x() + 10;
 		int ly = header.y() + 9;
-		Draw.logo(g, lx, ly - 1, 13, Theme.fade(Theme.ACCENT, a));
-		Component title = Component.literal("HOLLOW").withStyle(s -> s.withBold(true))
+		Draw.logo(g, lx, ly - 1, 13, Theme.fade(Theme.accent(), a));
+		Component title = Ui.bold("HOLLOW")
 				.append(Component.literal(" CLIENT").withStyle(s -> s.withBold(false).withColor(Theme.TEXT_DIM & 0xFFFFFF)));
-		g.drawString(font, title, lx + 18, ly + 2, Theme.fade(Theme.TEXT, a), false);
+		Ui.draw(g, font, title, lx + 18, ly + 2, Theme.fade(Theme.TEXT, a));
 
 		boolean focused = search.isFocused();
 		Draw.roundRect(g, searchBox, 3, Theme.fade(focused ? Theme.CARD_HOVER : Theme.CARD, a));
-		Draw.roundOutline(g, searchBox, 3, Theme.fade(focused ? Theme.ACCENT : Theme.STROKE, a));
+		Draw.roundOutline(g, searchBox, 3, Theme.fade(focused ? Theme.accent() : Theme.STROKE, a));
 		drawMagnifier(g, searchBox.x() + 4, searchBox.y() + 4, Theme.fade(Theme.TEXT_DIM, a));
 		if (a > 0.5f) search.render(g, mx, my, 0);
 		editHud.render(g, font, mx, my, dt, a);
@@ -192,12 +192,12 @@ public final class HollowMenuScreen extends HollowScreen {
 			Rect r = new Rect(rail.x(), y, rail.w(), 24);
 			boolean selected = !searching() && c == category;
 			float h = animate(c, r.contains(mx, my));
-			int bg = selected ? Theme.CARD_ON : Theme.mix(0x00000000, Theme.CARD, h);
+			int bg = selected ? Theme.cardOn() : Theme.mix(0x00000000, Theme.CARD, h);
 			Draw.roundRect(g, r, 4, Theme.fade(bg, a));
-			if (selected) Draw.roundRect(g, r.x(), r.y() + 5, 2, 14, 1, Theme.fade(Theme.ACCENT, a));
+			if (selected) Draw.roundRect(g, r.x(), r.y() + 5, 2, 14, 1, Theme.fade(Theme.accent(), a));
 			if (a > 0.6f) g.renderItem(iconFor(c), r.x() + 6, r.y() + 4);
 			if (railLabels) {
-				g.drawString(font, c.label(), r.x() + 27, r.y() + 8, Theme.fade(selected ? Theme.TEXT : Theme.mix(Theme.TEXT_DIM, Theme.TEXT, h), a), false);
+				Ui.draw(g, font, c.label(), r.x() + 27, r.y() + 8, Theme.fade(selected ? Theme.TEXT : Theme.mix(Theme.TEXT_DIM, Theme.TEXT, h), a));
 			} else if (r.contains(mx, my)) {
 				g.setTooltipForNextFrame(font, Component.literal(c.label()), mx, my);
 			}
@@ -207,7 +207,7 @@ public final class HollowMenuScreen extends HollowScreen {
 
 	private void renderSection(GuiGraphics g, float a) {
 		String title = searching() ? "Search results" : category.label();
-		g.drawString(font, Component.literal(title).withStyle(st -> st.withBold(true)), section.x() + 1, section.y() + 3, Theme.fade(Theme.TEXT, a), false);
+		Ui.draw(g, font, Ui.bold(title), section.x() + 1, section.y() + 3, Theme.fade(Theme.TEXT, a));
 		String count;
 		if (showingTiles()) {
 			count = "Only you can see your styles";
@@ -216,7 +216,7 @@ public final class HollowMenuScreen extends HollowScreen {
 			long on = mods.stream().filter(Module::isEnabled).count();
 			count = on + " of " + mods.size() + " on";
 		}
-		g.drawString(font, count, section.right() - 4 - font.width(count), section.y() + 3, Theme.fade(Theme.TEXT_FAINT, a), false);
+		Ui.draw(g, font, count, section.right() - 4 - Ui.width(font, count), section.y() + 3, Theme.fade(Theme.TEXT_FAINT, a));
 	}
 
 	private static ItemStack iconFor(Category c) {
@@ -225,6 +225,7 @@ public final class HollowMenuScreen extends HollowScreen {
 			case VISUAL -> new ItemStack(Items.ENDER_EYE);
 			case QOL -> new ItemStack(Items.FEATHER);
 			case STYLES -> new ItemStack(Items.LEATHER_CHESTPLATE);
+			case CLIENT -> new ItemStack(Items.AMETHYST_SHARD);
 		};
 	}
 
@@ -237,14 +238,19 @@ public final class HollowMenuScreen extends HollowScreen {
 			if (r.bottom() < grid.y() || r.y() > grid.bottom()) continue;
 			boolean hovered = inGrid && r.contains(mx, my);
 			float h = animate(m, hovered);
-			int bg = m.isEnabled() ? Theme.mix(Theme.CARD_ON, 0xFF2A2440, h) : Theme.mix(Theme.CARD, Theme.CARD_HOVER, h);
+			boolean lit = m.isEnabled() && m.toggleable();
+			int bg = lit ? Theme.mix(Theme.cardOn(), Theme.mix(Theme.cardOn(), 0xFFFFFFFF, 0.08f), h) : Theme.mix(Theme.CARD, Theme.CARD_HOVER, h);
 			Draw.roundRect(g, r, 5, Theme.fade(bg, a));
-			Draw.roundOutline(g, r, 5, Theme.fade(Theme.mix(m.isEnabled() ? 0x558B6CFF : Theme.STROKE, Theme.ACCENT, h * 0.7f), a));
+			Draw.roundOutline(g, r, 5, Theme.fade(Theme.mix(lit ? Theme.fade(Theme.accent(), 0.33f) : Theme.STROKE, Theme.accent(), h * 0.7f), a));
 
 			int tx = r.right() - 8 - UiToggle.W;
 			int ty = r.y() + 7;
-			toggles.computeIfAbsent(m, k -> new UiToggle()).render(g, tx, ty, m.isEnabled(), inGrid && UiToggle.hit(tx, ty, mx, my), dt, a);
-			g.drawString(font, Text.fit(font, m.name(), tx - r.x() - 14), r.x() + 8, r.y() + 8, Theme.fade(Theme.TEXT, a), false);
+			if (m.toggleable()) {
+				toggles.computeIfAbsent(m, k -> new UiToggle()).render(g, tx, ty, m.isEnabled(), inGrid && UiToggle.hit(tx, ty, mx, my), dt, a);
+			} else {
+				Ui.draw(g, font, "Open >", r.right() - 8 - Ui.width(font, "Open >"), ty + 2, Theme.fade(Theme.mix(Theme.TEXT_FAINT, Theme.accent(), h), a));
+			}
+			Ui.draw(g, font, Text.fit(font, m.name(), tx - r.x() - 14), r.x() + 8, r.y() + 8, Theme.fade(Theme.TEXT, a));
 			Text.wrapped(g, font, m.description(), r.x() + 8, r.y() + 21, r.w() - 30, 2, Theme.fade(Theme.TEXT_DIM, a));
 
 			Rect gear = gearRect(r);
@@ -253,11 +259,11 @@ public final class HollowMenuScreen extends HollowScreen {
 			Draw.settingsIcon(g, gear.x() + 4, gear.y() + 4, Theme.fade(gh ? Theme.TEXT : Theme.TEXT_FAINT, a));
 			if (searching()) {
 				String cat = m.category().label();
-				g.drawString(font, cat, r.right() - 8 - font.width(cat), r.y() + 21 + 10 * 2 - 9, Theme.fade(Theme.TEXT_FAINT, a), false);
+				Ui.draw(g, font, cat, r.right() - 8 - Ui.width(font, cat), r.y() + 21 + 10 * 2 - 9, Theme.fade(Theme.TEXT_FAINT, a));
 			}
 		}
 		if (mods.isEmpty()) {
-			g.drawCenteredString(font, searching() ? "No modules match \"" + query + "\"" : "Nothing here yet.", grid.centerX(), grid.y() + 30, Theme.fade(Theme.TEXT_FAINT, a));
+			Ui.center(g, font, searching() ? "No modules match \"" + query + "\"" : "Nothing here yet.", grid.centerX(), grid.y() + 30, Theme.fade(Theme.TEXT_FAINT, a));
 		}
 	}
 
@@ -302,22 +308,22 @@ public final class HollowMenuScreen extends HollowScreen {
 			Rect r = tileRect(i);
 			float h = animate(t.tab, inGrid && r.contains(mx, my));
 			Draw.roundRect(g, r, 6, Theme.fade(Theme.mix(Theme.CARD, Theme.CARD_HOVER, h), a));
-			Draw.roundOutline(g, r, 6, Theme.fade(Theme.mix(Theme.STROKE, Theme.ACCENT, h * 0.8f), a));
-			Draw.roundRect(g, r.x() + 8, r.y() + 8, 28, 28, 5, Theme.fade(Theme.CARD_ON, a));
+			Draw.roundOutline(g, r, 6, Theme.fade(Theme.mix(Theme.STROKE, Theme.accent(), h * 0.8f), a));
+			Draw.roundRect(g, r.x() + 8, r.y() + 8, 28, 28, 5, Theme.fade(Theme.cardOn(), a));
 			if (a > 0.6f) g.renderItem(t.icon, r.x() + 14, r.y() + 14);
-			g.drawString(font, t.title, r.x() + 44, r.y() + 12, Theme.fade(Theme.TEXT, a), false);
+			Ui.draw(g, font, t.title, r.x() + 44, r.y() + 12, Theme.fade(Theme.TEXT, a));
 			Text.wrapped(g, font, t.subtitle, r.x() + 44, r.y() + 25, r.w() - 52, 2, Theme.fade(Theme.TEXT_DIM, a));
-			g.drawString(font, "Open >", r.right() - 8 - font.width("Open >"), r.bottom() - 13, Theme.fade(Theme.mix(Theme.TEXT_FAINT, Theme.ACCENT, h), a), false);
+			Ui.draw(g, font, "Open >", r.right() - 8 - Ui.width(font, "Open >"), r.bottom() - 13, Theme.fade(Theme.mix(Theme.TEXT_FAINT, Theme.accent(), h), a));
 		}
 	}
 
 	private void renderFooter(GuiGraphics g, float a) {
 		String hint = showingTiles() ? "Click a tile to open it · Right Shift closes"
 				: "Click a card to toggle · Right-click or the slider icon for settings · Right Shift closes";
-		g.drawString(font, Text.fit(font, hint, footer.w() - 80), footer.x() + 10, footer.y() + 4, Theme.fade(Theme.TEXT_FAINT, a), false);
+		Ui.draw(g, font, Text.fit(font, hint, footer.w() - 80), footer.x() + 10, footer.y() + 4, Theme.fade(Theme.TEXT_FAINT, a));
 		String version = "v" + FabricLoader.getInstance().getModContainer(HollowClient.MOD_ID)
 				.map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("?");
-		g.drawString(font, version, footer.right() - 10 - font.width(version), footer.y() + 4, Theme.fade(Theme.TEXT_FAINT, a), false);
+		Ui.draw(g, font, version, footer.right() - 10 - Ui.width(font, version), footer.y() + 4, Theme.fade(Theme.TEXT_FAINT, a));
 	}
 
 	private float animate(Object key, boolean on) {
@@ -339,7 +345,7 @@ public final class HollowMenuScreen extends HollowScreen {
 		int y = rail.y() + 2;
 		for (Category c : Category.values()) {
 			if (new Rect(rail.x(), y, rail.w(), 24).contains(mx, my)) {
-				UiButton.playClick();
+				UiSounds.click();
 				category = c;
 				lastCategory = c;
 				scroll = scrollTarget = 0;
@@ -355,7 +361,7 @@ public final class HollowMenuScreen extends HollowScreen {
 				List<Tile> list = tiles();
 				for (int i = 0; i < list.size(); i++) {
 					if (tileRect(i).contains(mx, my)) {
-						UiButton.playClick();
+						UiSounds.click();
 						open(new StylesScreen(list.get(i).tab, this));
 						return true;
 					}
@@ -366,10 +372,11 @@ public final class HollowMenuScreen extends HollowScreen {
 					Rect r = cardRect(i);
 					if (!r.contains(mx, my)) continue;
 					Module m = mods.get(i);
-					UiButton.playClick();
-					if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT || (left && gearRect(r).contains(mx, my))) {
-						open(settingsFor(m, this));
+					if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT || (left && (gearRect(r).contains(mx, my) || !m.toggleable()))) {
+						UiSounds.click();
+						show(settingsFor(m, this));
 					} else if (left) {
+						UiSounds.toggle(!m.isEnabled());
 						m.toggle();
 					}
 					return true;
@@ -381,8 +388,17 @@ public final class HollowMenuScreen extends HollowScreen {
 		return handled;
 	}
 
-	/** The settings screen for a module, with a "Move on screen" button for HUD modules. */
-	public static ModuleSettingsScreen settingsFor(Module m, Screen parent) {
+	private void show(Screen s) {
+		if (s instanceof HollowScreen hs) open(hs);
+		else if (minecraft != null) minecraft.setScreen(s);
+	}
+
+	/**
+	 * The screen a module's card opens: its own screen (Theme) or the settings screen, with a "Move on screen"
+	 * button for HUD modules.
+	 */
+	public static Screen settingsFor(Module m, Screen parent) {
+		if (m instanceof ScreenProvider provider) return provider.createScreen(parent);
 		ModuleSettingsScreen s = new ModuleSettingsScreen(m, parent);
 		if (m.hudPosition() != null) s.withButton("Move on screen", screen -> screen.openEditor());
 		return s;

@@ -64,6 +64,24 @@ public final class Draw {
 		g.fill(right - 1, edgeTop, right, edgeBottom, color);
 	}
 
+	public enum Corner {TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT}
+
+	/** Only one corner arc of a rounded outline (the box is the (2r+1)-sized corner square). */
+	public static void roundOutline(GuiGraphics g, int x, int y, int w, int h, int r, int color, Corner corner) {
+		if ((color >>> 24) == 0 || r <= 0) return;
+		r = radius(w, h, r);
+		int[] inset = INSETS[r];
+		boolean left = corner == Corner.TOP_LEFT || corner == Corner.BOTTOM_LEFT;
+		boolean top = corner == Corner.TOP_LEFT || corner == Corner.TOP_RIGHT;
+		for (int i = 0; i < r; i++) {
+			int a = inset[i];
+			int b = i == 0 ? r : Math.max(a + 1, inset[i - 1]);
+			int row = top ? y + i : y + h - 1 - i;
+			if (left) g.fill(x + a, row, x + b, row + 1, color);
+			else g.fill(x + w - b, row, x + w - a, row + 1, color);
+		}
+	}
+
 	public static void roundOutline(GuiGraphics g, Rect r, int radius, int color) {
 		roundOutline(g, r.x(), r.y(), r.w(), r.h(), radius, color);
 	}

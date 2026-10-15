@@ -4,7 +4,8 @@ public enum Category {
 	HUD("HUD"),
 	VISUAL("Visual"),
 	QOL("Quality of Life"),
-	STYLES("Styles");
+	STYLES("Styles"),
+	CLIENT("Client");
 
 	private final String label;
 

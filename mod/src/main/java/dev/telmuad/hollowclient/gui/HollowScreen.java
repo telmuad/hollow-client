@@ -1,5 +1,6 @@
 package dev.telmuad.hollowclient.gui;
 
+import dev.telmuad.hollowclient.render.Quality;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -7,7 +8,8 @@ import net.minecraft.util.Util;
 
 /**
  * Shared base for Hollow's screens: a fade/scale-in animation, a frame-time {@code dt} for widget animations,
- * a dimmed (not blurred) background so the HUD stays visible, and "back" to the parent screen on close.
+ * a blurred and dimmed background (blur strength from the theme, off in Performance Mode), and "back" to the
+ * parent screen on close.
  */
 public abstract class HollowScreen extends Screen {
 	protected static final float OPEN_MS = 150f;
@@ -40,8 +42,16 @@ public abstract class HollowScreen extends Screen {
 
 	@Override
 	public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+		if (minecraft != null && minecraft.level == null) renderPanorama(g, partialTick);
+		if (blurRadius(0) >= 1) g.blurBeforeThisStratum();
 		float p = openProgress();
 		g.fillGradient(0, 0, width, height, Theme.fade(Theme.DIM_TOP, p), Theme.fade(Theme.DIM_BOTTOM, p));
+	}
+
+	/** Menu blur radius while this screen is open (0..10, like the Accessibility option). See OptionsMixin. */
+	public int blurRadius(int vanilla) {
+		if (!Quality.heavyAllowed()) return 0;
+		return Math.round(Theme.current().blur() * 10f * openProgress());
 	}
 
 	@Override

@@ -15,15 +15,12 @@ public final class Text {
 	}
 
 	public static String fit(Font font, String text, int width) {
-		if (font.width(text) <= width) return text;
-		int room = width - font.width(ELLIPSIS);
-		if (room <= 0) return "";
-		return font.plainSubstrByWidth(text, room) + ELLIPSIS;
+		return Ui.fit(font, text, width);
 	}
 
 	/** Draw wrapped text, at most {@code maxLines} lines; the last line gets an ellipsis if cut. Returns lines drawn. */
 	public static int wrapped(GuiGraphics g, Font font, String text, int x, int y, int width, int maxLines, int color) {
-		List<FormattedCharSequence> lines = font.split(Component.literal(text), Math.max(1, width));
+		List<FormattedCharSequence> lines = font.split(Ui.text(text), Math.max(1, width));
 		int n = Math.min(maxLines, lines.size());
 		for (int i = 0; i < n; i++) {
 			if (i == n - 1 && lines.size() > n) {
@@ -34,8 +31,8 @@ public final class Text {
 					return true;
 				});
 				String line = sb.toString().stripTrailing();
-				String shown = font.width(line + ELLIPSIS) <= width ? line + ELLIPSIS : fit(font, line, width);
-				g.drawString(font, shown, x, y + i * 10, color, false);
+				String shown = Ui.width(font, line + ELLIPSIS) <= width ? line + ELLIPSIS : fit(font, line, width);
+				Ui.draw(g, font, shown, x, y + i * 10, color);
 			} else {
 				g.drawString(font, lines.get(i), x, y + i * 10, color, false);
 			}

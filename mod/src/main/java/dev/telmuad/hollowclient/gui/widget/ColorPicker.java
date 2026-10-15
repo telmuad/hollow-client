@@ -1,5 +1,6 @@
 package dev.telmuad.hollowclient.gui.widget;
 
+import dev.telmuad.hollowclient.gui.Ui;
 import dev.telmuad.hollowclient.gui.Draw;
 import dev.telmuad.hollowclient.gui.Rect;
 import dev.telmuad.hollowclient.gui.Theme;
@@ -121,9 +122,9 @@ public final class ColorPicker {
 		g.fill(sv.x() + 7, hexBox.y(), sv.x() + 14, hexBox.bottom(), setting.get());
 
 		Draw.roundRect(g, hexBox, 3, hexFocused ? Theme.CARD_HOVER : Theme.CARD);
-		Draw.roundOutline(g, hexBox, 3, hexFocused ? Theme.ACCENT : Theme.STROKE);
+		Draw.roundOutline(g, hexBox, 3, hexFocused ? Theme.accent() : Theme.STROKE);
 		String shown = "#" + hexText + (hexFocused && (System.currentTimeMillis() / 500) % 2 == 0 ? "_" : "");
-		g.drawString(font, shown, hexBox.x() + 4, hexBox.y() + 3, Theme.TEXT, false);
+		Ui.draw(g, font, shown, hexBox.x() + 4, hexBox.y() + 3, Theme.TEXT);
 
 		int sw = 9;
 		int perRow = SWATCHES.length / 2;

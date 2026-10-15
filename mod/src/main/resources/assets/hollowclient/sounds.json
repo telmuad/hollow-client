@@ -1,0 +1,90 @@
+{
+	"ui.click": {
+		"sounds": [
+			{
+				"name": "hollowclient:click",
+				"stream": false
+			}
+		]
+	},
+	"ui.hover": {
+		"sounds": [
+			{
+				"name": "hollowclient:hover",
+				"stream": false
+			}
+		]
+	},
+	"ui.toggle_on": {
+		"sounds": [
+			{
+				"name": "hollowclient:toggle_on",
+				"stream": false
+			}
+		]
+	},
+	"ui.toggle_off": {
+		"sounds": [
+			{
+				"name": "hollowclient:toggle_off",
+				"stream": false
+			}
+		]
+	},
+	"ui.whoosh_open": {
+		"sounds": [
+			{
+				"name": "hollowclient:whoosh_open",
+				"stream": false
+			}
+		]
+	},
+	"ui.whoosh_close": {
+		"sounds": [
+			{
+				"name": "hollowclient:whoosh_close",
+				"stream": false
+			}
+		]
+	},
+	"ui.toast": {
+		"sounds": [
+			{
+				"name": "hollowclient:toast",
+				"stream": false
+			}
+		]
+	},
+	"ui.notify": {
+		"sounds": [
+			{
+				"name": "hollowclient:notify",
+				"stream": false
+			}
+		]
+	},
+	"ui.shutter": {
+		"sounds": [
+			{
+				"name": "hollowclient:shutter",
+				"stream": false
+			}
+		]
+	},
+	"ui.charge": {
+		"sounds": [
+			{
+				"name": "hollowclient:charge",
+				"stream": false
+			}
+		]
+	},
+	"ui.pop": {
+		"sounds": [
+			{
+				"name": "hollowclient:pop",
+				"stream": false
+			}
+		]
+	}
+}

@@ -3,7 +3,11 @@ package dev.telmuad.hollowclient.test;
 import dev.telmuad.hollowclient.HollowClient;
 import dev.telmuad.hollowclient.gui.HollowMenuScreen;
 import dev.telmuad.hollowclient.gui.HudEditorScreen;
+import dev.telmuad.hollowclient.gui.HollowScreen;
 import dev.telmuad.hollowclient.gui.StylesScreen;
+import dev.telmuad.hollowclient.gui.ThemeScreen;
+import dev.telmuad.hollowclient.theme.HollowTheme;
+import dev.telmuad.hollowclient.theme.Themes;
 import dev.telmuad.hollowclient.modules.Modules;
 import dev.telmuad.hollowclient.render.CosmeticModels;
 import dev.telmuad.hollowclient.styles.CapeManager;
@@ -139,11 +143,12 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		check("Right Shift opens the menu", open);
 		ctx.waitTicks(5);
 		screenshot(ctx, "menu_hud");
-		for (Category c : new Category[]{Category.VISUAL, Category.QOL, Category.STYLES}) {
+		for (Category c : new Category[]{Category.VISUAL, Category.QOL, Category.STYLES, Category.CLIENT}) {
 			ctx.setScreen(() -> HollowMenuScreen.at(c));
 			ctx.waitTicks(8);
 			screenshot(ctx, "menu_" + c.name().toLowerCase());
 		}
+		theme(ctx);
 		ctx.setScreen(() -> HollowMenuScreen.settingsFor(module("crosshair"), null));
 		ctx.waitTicks(8);
 		screenshot(ctx, "settings_crosshair");
@@ -169,6 +174,42 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		screenshot(ctx, "settings_coordinates");
 		ctx.setScreen(() -> null);
 		ctx.waitTicks(5);
+	}
+
+	private void theme(ClientGameTestContext ctx) {
+		ctx.setScreen(() -> HollowMenuScreen.settingsFor(module("theme"), null));
+		ctx.waitTicks(8);
+		check("The Theme card opens the theme editor", ctx.computeOnClient(mc -> mc.screen instanceof ThemeScreen));
+		screenshot(ctx, "theme_editor_void");
+		ctx.runOnClient(mc -> Themes.store().setCurrent(HollowTheme.INFERNO));
+		ctx.waitTicks(5);
+		screenshot(ctx, "theme_editor_inferno");
+		ctx.setScreen(() -> HollowMenuScreen.at(Category.VISUAL));
+		ctx.waitTicks(8);
+		screenshot(ctx, "menu_visual_inferno");
+		boolean shared = ctx.computeOnClient(mc -> {
+			try {
+				return java.nio.file.Files.readString(HollowClient.dataDir().resolve("theme.json")).contains("Inferno");
+			} catch (java.io.IOException e) {
+				return false;
+			}
+		});
+		check("The theme is saved to the shared theme.json", shared);
+		int blur = ctx.computeOnClient(mc -> ((HollowScreen) mc.screen).blurRadius(5));
+		ctx.runOnClient(mc -> Modules.PERFORMANCE.performanceModeSetting().set(true));
+		int blurPerf = ctx.computeOnClient(mc -> ((HollowScreen) mc.screen).blurRadius(5));
+		check("Performance Mode turns the menu blur off (" + blur + " -> " + blurPerf + ")", blur > 0 && blurPerf == 0);
+		ctx.runOnClient(mc -> {
+			Modules.PERFORMANCE.performanceModeSetting().set(false);
+			Themes.store().setCurrent(HollowTheme.VOID);
+			Modules.UI_FONT.setEnabled(false);
+		});
+		ctx.setScreen(() -> HollowMenuScreen.at(Category.HUD));
+		ctx.waitTicks(8);
+		screenshot(ctx, "menu_vanilla_font");
+		ctx.runOnClient(mc -> Modules.UI_FONT.setEnabled(true));
+		ctx.setScreen(() -> null);
+		ctx.waitTicks(3);
 	}
 
 	private void hud(ClientGameTestContext ctx) {

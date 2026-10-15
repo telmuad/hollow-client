@@ -65,7 +65,7 @@ public final class HudEditorScreen extends HollowScreen {
 	private Rect placeToolbar(int top) {
 		int doneW = Math.max(done.preferredWidth(font), 50);
 		int snapW = snapButton.preferredWidth(font) + 20;
-		int showW = font.width("Show disabled: Off") + 16;
+		int showW = Ui.width(font, "Show disabled: Off") + 16;
 		int total = resetAll.preferredWidth(font) + 4 + snapW + 4 + showW + 4 + doneW;
 		int x = width / 2 - total / 2;
 		int y = top + 22;
@@ -76,7 +76,7 @@ public final class HudEditorScreen extends HollowScreen {
 		showAll.bounds(new Rect(x, y, showW, 16));
 		x += showW + 4;
 		done.bounds(new Rect(x, y, doneW, 16));
-		int barW = Math.max(total, font.width(HINT)) + 16;
+		int barW = Math.max(total, Ui.width(font, HINT)) + 16;
 		return new Rect(width / 2 - barW / 2, top, barW, 44);
 	}
 
@@ -136,33 +136,33 @@ public final class HudEditorScreen extends HollowScreen {
 			int w = (int) Math.ceil(b.w()) + 2;
 			int h = (int) Math.ceil(b.h()) + 2;
 			boolean sel = m == selected;
-			int color = sel ? Theme.ACCENT : (m == hovered ? 0xCCFFFFFF : 0x55FFFFFF);
+			int color = sel ? Theme.accent() : (m == hovered ? 0xCCFFFFFF : 0x55FFFFFF);
 			if (!m.isEnabled()) color = Theme.fade(color, 0.5f);
 			g.renderOutline(x, y, w, h, Theme.fade(color, a));
 			if (sel || m == hovered) {
 				Rect hr = handle(b);
-				g.fill(hr.x(), hr.y(), hr.right(), hr.bottom(), Theme.fade(sel ? Theme.ACCENT : 0xCCFFFFFF, a));
+				g.fill(hr.x(), hr.y(), hr.right(), hr.bottom(), Theme.fade(sel ? Theme.accent() : 0xCCFFFFFF, a));
 				String label = m.name() + (m.isEnabled() ? "" : " (off)") + "  " + Math.round(m.hudPosition().scale * 100) + "%";
 				int ly = y - 10 >= 0 ? y - 10 : y + h + 2;
-				int lx = Math.max(0, Math.min(width - font.width(label) - 4, x));
-				g.fill(lx, ly - 1, lx + font.width(label) + 4, ly + 9, Theme.fade(0xC0000000, a));
-				g.drawString(font, label, lx + 2, ly, Theme.fade(Theme.TEXT, a), false);
+				int lx = Math.max(0, Math.min(width - Ui.width(font, label) - 4, x));
+				g.fill(lx, ly - 1, lx + Ui.width(font, label) + 4, ly + 9, Theme.fade(0xC0000000, a));
+				Ui.draw(g, font, label, lx + 2, ly, Theme.fade(Theme.TEXT, a));
 			}
 		}
 		if (!Double.isNaN(guideX)) {
 			int gx = (int) Math.round(guideX);
-			g.fill(gx, 0, gx + 1, height, Theme.fade(Theme.GUIDE, a));
+			g.fill(gx, 0, gx + 1, height, Theme.fade(Theme.guide(), a));
 		}
 		if (!Double.isNaN(guideY)) {
 			int gy = (int) Math.round(guideY);
-			g.fill(0, gy, width, gy + 1, Theme.fade(Theme.GUIDE, a));
+			g.fill(0, gy, width, gy + 1, Theme.fade(Theme.guide(), a));
 		}
 
 		if (dragging == null) {
 			Rect bar = chooseToolbar();
 			Draw.roundRect(g, bar, 6, Theme.fade(0xD0101015, a));
 			Draw.roundOutline(g, bar, 6, Theme.fade(Theme.STROKE, a));
-			g.drawCenteredString(font, HINT, width / 2, bar.y() + 7, Theme.fade(Theme.TEXT_DIM, a));
+			Ui.center(g, font, HINT, width / 2, bar.y() + 7, Theme.fade(Theme.TEXT_DIM, a));
 			resetAll.setLabel(confirmReset ? "Click again" : "Reset all");
 			snapButton.setLabel("Snap: " + (snapping ? "On" : "Off"));
 			showAll.setLabel("Show disabled: " + (includeDisabled ? "On" : "Off"));

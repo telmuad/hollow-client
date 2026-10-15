@@ -138,7 +138,7 @@ public final class StylesScreen extends HollowScreen {
 
 		presetName = new EditBox(font, 0, 0, 140, 14, Component.literal("Preset name"));
 		presetName.setMaxLength(Preset.MAX_NAME);
-		presetName.setHint(Component.literal("Preset name").withStyle(ChatFormatting.DARK_GRAY));
+		presetName.setHint(Ui.text("Preset name").withStyle(ChatFormatting.DARK_GRAY));
 		presetName.setBordered(false);
 		presetName.setTextColor(Theme.TEXT);
 		presetName.visible = tab == Tab.PRESETS;
@@ -185,7 +185,7 @@ public final class StylesScreen extends HollowScreen {
 		int outline;
 		switch (style) {
 			case PRIMARY -> {
-				bg = Theme.mix(Theme.ACCENT_SOFT, Theme.ACCENT, t);
+				bg = Theme.mix(Theme.accentSoft(), Theme.accent(), t);
 				fg = 0xFFFFFFFF;
 				outline = 0;
 			}
@@ -197,13 +197,13 @@ public final class StylesScreen extends HollowScreen {
 			default -> {
 				bg = Theme.mix(Theme.CARD, Theme.CARD_HOVER, t);
 				fg = Theme.mix(Theme.TEXT_DIM, Theme.TEXT, t);
-				outline = Theme.mix(Theme.STROKE, Theme.ACCENT, t * 0.6f);
+				outline = Theme.mix(Theme.STROKE, Theme.accent(), t * 0.6f);
 			}
 		}
 		Draw.roundRect(g, r, 3, Theme.fade(bg, a));
 		if (outline != 0) Draw.roundOutline(g, r, 3, Theme.fade(outline, a));
 		String text = Text.fit(font, label, r.w() - 6);
-		g.drawString(font, text, r.x() + (r.w() - font.width(text)) / 2, r.y() + (r.h() - 8) / 2 + 1, Theme.fade(fg, a), false);
+		Ui.draw(g, font, text, r.x() + (r.w() - Ui.width(font, text)) / 2, r.y() + (r.h() - 8) / 2 + 1, Theme.fade(fg, a));
 		hit(r, () -> {
 			UiButton.playClick();
 			action.run();
@@ -211,7 +211,7 @@ public final class StylesScreen extends HollowScreen {
 	}
 
 	private int buttonW(String label) {
-		return font.width(label) + 14;
+		return Ui.width(font, label) + 14;
 	}
 
 	private void toggle(GuiGraphics g, Object key, int x, int y, boolean value, int mx, int my, float a, boolean inList, Runnable action) {
@@ -226,10 +226,10 @@ public final class StylesScreen extends HollowScreen {
 	private void chip(GuiGraphics g, Rect r, String label, boolean selected, int mx, int my, float a, Runnable action) {
 		boolean h = mouseIn(r, mx, my, true);
 		float t = anim("chip" + label + r.y(), h);
-		int bg = selected ? Theme.CARD_ON : Theme.mix(Theme.CARD, Theme.CARD_HOVER, t);
+		int bg = selected ? Theme.cardOn() : Theme.mix(Theme.CARD, Theme.CARD_HOVER, t);
 		Draw.roundRect(g, r, 4, Theme.fade(bg, a));
-		Draw.roundOutline(g, r, 4, Theme.fade(selected ? Theme.ACCENT : Theme.mix(Theme.STROKE, Theme.STROKE_STRONG, t), a));
-		g.drawString(font, label, r.x() + (r.w() - font.width(label)) / 2, r.y() + (r.h() - 8) / 2 + 1, Theme.fade(selected ? Theme.TEXT : Theme.TEXT_DIM, a), false);
+		Draw.roundOutline(g, r, 4, Theme.fade(selected ? Theme.accent() : Theme.mix(Theme.STROKE, Theme.STROKE_STRONG, t), a));
+		Ui.draw(g, font, label, r.x() + (r.w() - Ui.width(font, label)) / 2, r.y() + (r.h() - 8) / 2 + 1, Theme.fade(selected ? Theme.TEXT : Theme.TEXT_DIM, a));
 		hit(r, () -> {
 			UiButton.playClick();
 			action.run();
@@ -273,7 +273,7 @@ public final class StylesScreen extends HollowScreen {
 		Draw.roundOutline(g, panel, 8, Theme.fade(Theme.STROKE, a));
 		back.render(g, font, mx, my, dt, a);
 		hit(back.bounds(), () -> back.click(back.bounds().x() + 1, back.bounds().y() + 1), false);
-		g.drawString(font, Component.literal("Styles").withStyle(s -> s.withBold(true)), back.bounds().right() + 8, panel.y() + 12, Theme.fade(Theme.TEXT, a), false);
+		Ui.draw(g, font, Ui.bold("Styles"), back.bounds().right() + 8, panel.y() + 12, Theme.fade(Theme.TEXT, a));
 		renderTabs(g, mx, my, a);
 		g.fill(panel.x() + 8, panel.y() + 29, panel.right() - 8, panel.y() + 30, Theme.fade(Theme.STROKE, a));
 
@@ -310,7 +310,7 @@ public final class StylesScreen extends HollowScreen {
 						tab == Tab.CAPES ? PlayerPreview.View.BACK : PlayerPreview.View.TURN);
 			}
 			String cap = "Only you see this";
-			g.drawString(font, cap, previewArea.centerX() - font.width(cap) / 2, previewArea.bottom() - 12, Theme.fade(Theme.TEXT_FAINT, a), false);
+			Ui.draw(g, font, cap, previewArea.centerX() - Ui.width(font, cap) / 2, previewArea.bottom() - 12, Theme.fade(Theme.TEXT_FAINT, a));
 		}
 		renderFooter(g, a);
 		hits.clear();
@@ -323,7 +323,7 @@ public final class StylesScreen extends HollowScreen {
 		int[] widths = new int[tabs.size()];
 		int total = 0;
 		for (int i = 0; i < tabs.size(); i++) {
-			widths[i] = font.width(tabs.get(i).label) + 14;
+			widths[i] = Ui.width(font, tabs.get(i).label) + 14;
 			total += widths[i];
 		}
 		x -= total;
@@ -334,9 +334,9 @@ public final class StylesScreen extends HollowScreen {
 			Rect r = new Rect(x, panel.y() + 9, widths[i], 14);
 			boolean sel = t == tab;
 			float h = anim("tab" + t, r.contains(mx, my));
-			if (sel) Draw.roundRect(g, r, 3, Theme.fade(Theme.ACCENT_SOFT, a));
+			if (sel) Draw.roundRect(g, r, 3, Theme.fade(Theme.accentSoft(), a));
 			else if (h > 0.01f) Draw.roundRect(g, r, 3, Theme.fade(Theme.CARD_HOVER, h * a));
-			g.drawString(font, t.label, r.x() + 7, r.y() + 3, Theme.fade(sel ? 0xFFFFFFFF : Theme.mix(Theme.TEXT_DIM, Theme.TEXT, h), a), false);
+			Ui.draw(g, font, t.label, r.x() + 7, r.y() + 3, Theme.fade(sel ? 0xFFFFFFFF : Theme.mix(Theme.TEXT_DIM, Theme.TEXT, h), a));
 			hit(r, () -> {
 				UiButton.playClick();
 				switchTab(t);
@@ -350,7 +350,7 @@ public final class StylesScreen extends HollowScreen {
 		if (status != null && age < 6000) {
 			float fade = age > 5000 ? 1f - (age - 5000) / 1000f : 1f;
 			int color = statusError ? Theme.DANGER : Theme.SUCCESS;
-			g.drawString(font, Text.fit(font, status, footer.w()), footer.x() + 2, footer.y() + 3, Theme.fade(color, a * fade), false);
+			Ui.draw(g, font, Text.fit(font, status, footer.w()), footer.x() + 2, footer.y() + 3, Theme.fade(color, a * fade));
 			return;
 		}
 		String hint = switch (tab) {
@@ -359,7 +359,7 @@ public final class StylesScreen extends HollowScreen {
 			case PACKS -> "Tip: drop a pack .zip or folder on this screen to import it.";
 			case PRESETS -> "A preset saves your cape, hat, wings and texture pack.";
 		};
-		g.drawString(font, Text.fit(font, hint, footer.w()), footer.x() + 2, footer.y() + 3, Theme.fade(Theme.TEXT_FAINT, a), false);
+		Ui.draw(g, font, Text.fit(font, hint, footer.w()), footer.x() + 2, footer.y() + 3, Theme.fade(Theme.TEXT_FAINT, a));
 	}
 
 	// ------------------------------------------------------------------------------------------------ capes
@@ -369,11 +369,11 @@ public final class StylesScreen extends HollowScreen {
 		int y = toolbar.y() + 3;
 		boolean on = Modules.CAPE.isEnabled();
 		toggle(g, "cape_on", x, y, on, mx, my, a, false, Modules.CAPE::toggle);
-		g.drawString(font, "Cape", x + UiToggle.W + 5, y + 2, Theme.fade(Theme.TEXT, a), false);
-		x += UiToggle.W + 5 + font.width("Cape") + 14;
+		Ui.draw(g, font, "Cape", x + UiToggle.W + 5, y + 2, Theme.fade(Theme.TEXT, a));
+		x += UiToggle.W + 5 + Ui.width(font, "Cape") + 14;
 		boolean el = Modules.CAPE.onElytra();
 		toggle(g, "cape_elytra", x, y, el, mx, my, a, false, () -> Modules.CAPE.elytraSetting().toggle());
-		g.drawString(font, "On elytra", x + UiToggle.W + 5, y + 2, Theme.fade(Theme.TEXT, a), false);
+		Ui.draw(g, font, "On elytra", x + UiToggle.W + 5, y + 2, Theme.fade(Theme.TEXT, a));
 
 		int right = toolbar.right();
 		String open = "Open folder";
@@ -404,8 +404,8 @@ public final class StylesScreen extends HollowScreen {
 			if (r.bottom() < list.y() || r.y() > list.bottom()) continue;
 			boolean sel = c.id().equals(current);
 			float h = anim(c.id(), mouseIn(r, mx, my, true));
-			Draw.roundRect(g, r, 5, Theme.fade(sel ? Theme.CARD_ON : Theme.mix(Theme.CARD, Theme.CARD_HOVER, h), a));
-			Draw.roundOutline(g, r, 5, Theme.fade(sel ? Theme.ACCENT : Theme.mix(Theme.STROKE, Theme.STROKE_STRONG, h), a));
+			Draw.roundRect(g, r, 5, Theme.fade(sel ? Theme.cardOn() : Theme.mix(Theme.CARD, Theme.CARD_HOVER, h), a));
+			Draw.roundOutline(g, r, 5, Theme.fade(sel ? Theme.accent() : Theme.mix(Theme.STROKE, Theme.STROKE_STRONG, h), a));
 			Identifier tex = CapeManager.texture(c.id());
 			int cx = r.x() + (tileW - 30) / 2;
 			int cy = r.y() + 7;
@@ -414,12 +414,12 @@ public final class StylesScreen extends HollowScreen {
 				g.blit(tex, cx, cy, cx + 30, cy + 48, 1 / 64f, 11 / 64f, 1 / 32f, 17 / 32f);
 			} else {
 				g.fill(cx, cy, cx + 30, cy + 48, Theme.fade(0xFF3A1E22, a));
-				g.drawCenteredString(font, "?", cx + 15, cy + 20, Theme.fade(Theme.DANGER, a));
+				Ui.center(g, font, "?", cx + 15, cy + 20, Theme.fade(Theme.DANGER, a));
 			}
 			String name = Text.fit(font, c.name(), tileW - 6);
-			g.drawString(font, name, r.x() + (tileW - font.width(name)) / 2, r.bottom() - 18, Theme.fade(sel ? Theme.TEXT : Theme.TEXT_DIM, a), false);
+			Ui.draw(g, font, name, r.x() + (tileW - Ui.width(font, name)) / 2, r.bottom() - 18, Theme.fade(sel ? Theme.TEXT : Theme.TEXT_DIM, a));
 			String sub = c.builtin() ? "Built-in" : "Imported";
-			g.drawString(font, sub, r.x() + (tileW - font.width(sub)) / 2, r.bottom() - 9, Theme.fade(Theme.TEXT_FAINT, a), false);
+			Ui.draw(g, font, sub, r.x() + (tileW - Ui.width(font, sub)) / 2, r.bottom() - 9, Theme.fade(Theme.TEXT_FAINT, a));
 			hit(r, () -> {
 				UiButton.playClick();
 				Modules.CAPE.select(c.id());
@@ -429,7 +429,7 @@ public final class StylesScreen extends HollowScreen {
 				boolean asking = ("cape:" + c.id()).equals(confirm);
 				boolean xh = mouseIn(x, mx, my, true);
 				Draw.roundRect(g, x, 2, Theme.fade(asking ? Theme.DANGER : (xh ? 0xFF4A2024 : 0x80000000), a));
-				g.drawString(font, asking ? "?" : "x", x.x() + (asking ? 2 : 2), x.y(), Theme.fade(0xFFFFFFFF, a), false);
+				Ui.draw(g, font, asking ? "?" : "x", x.x() + (asking ? 2 : 2), x.y(), Theme.fade(0xFFFFFFFF, a));
 				hit(x, () -> {
 					UiButton.playClick();
 					if (asking) {
@@ -462,7 +462,7 @@ public final class StylesScreen extends HollowScreen {
 	// ------------------------------------------------------------------------------------------------ cosmetics
 
 	private void cosmeticsToolbar(GuiGraphics g, float a) {
-		g.drawString(font, "Pick a hat and wings. Changes show right away.", toolbar.x() + 1, toolbar.y() + 5, Theme.fade(Theme.TEXT_DIM, a), false);
+		Ui.draw(g, font, "Pick a hat and wings. Changes show right away.", toolbar.x() + 1, toolbar.y() + 5, Theme.fade(Theme.TEXT_DIM, a));
 	}
 
 	private int cosmeticsList(GuiGraphics g, int top, int mx, int my, float a) {
@@ -480,7 +480,7 @@ public final class StylesScreen extends HollowScreen {
 		NumberSetting flap = Modules.WINGS.flapSetting();
 		Rect sr = new Rect(list.right() - 8 - 90, y - ROW + 6, 90, 10);
 		slider(g, sr, flap, mx, my, a);
-		g.drawString(font, flap.display(), sr.x() - 6 - font.width(flap.display()), y - ROW + 7, Theme.fade(Theme.TEXT_DIM, a), false);
+		Ui.draw(g, font, flap.display(), sr.x() - 6 - Ui.width(font, flap.display()), y - ROW + 7, Theme.fade(Theme.TEXT_DIM, a));
 		y = row(g, y, "Hide while wearing elytra", a);
 		toggle(g, "wings_elytra", list.right() - 8 - UiToggle.W, y - ROW + 5, Modules.WINGS.hideWithElytra(), mx, my, a, true,
 				() -> Modules.WINGS.hideWithElytraSetting().toggle());
@@ -490,7 +490,7 @@ public final class StylesScreen extends HollowScreen {
 	private int section(GuiGraphics g, int y, String title, boolean on, Runnable toggleAction, int mx, int my, float a) {
 		Rect r = new Rect(list.x(), y, list.w() - 6, ROW);
 		Draw.roundRect(g, r, 4, Theme.fade(Theme.RAIL, a));
-		g.drawString(font, Component.literal(title).withStyle(s -> s.withBold(true)), r.x() + 8, y + 7, Theme.fade(Theme.TEXT, a), false);
+		Ui.draw(g, font, Ui.bold(title), r.x() + 8, y + 7, Theme.fade(Theme.TEXT, a));
 		toggle(g, "section_" + title, r.right() - 8 - UiToggle.W, y + 5, on, mx, my, a, true, toggleAction);
 		return y + ROW + 4;
 	}
@@ -499,7 +499,7 @@ public final class StylesScreen extends HollowScreen {
 		int x = list.x() + 8;
 		for (E v : values) {
 			String label = EnumSetting.labelOf(v);
-			int w = font.width(label) + 16;
+			int w = Ui.width(font, label) + 16;
 			if (x + w > list.right() - 8) {
 				x = list.x() + 8;
 				y += 20;
@@ -514,7 +514,7 @@ public final class StylesScreen extends HollowScreen {
 	}
 
 	private int row(GuiGraphics g, int y, String label, float a) {
-		g.drawString(font, label, list.x() + 8, y + 7, Theme.fade(Theme.TEXT, a), false);
+		Ui.draw(g, font, label, list.x() + 8, y + 7, Theme.fade(Theme.TEXT, a));
 		return y + ROW;
 	}
 
@@ -541,7 +541,7 @@ public final class StylesScreen extends HollowScreen {
 		}
 		if (PackManager.busy()) {
 			String dots = ".".repeat((int) (Util.getMillis() / 400 % 4));
-			g.drawString(font, "Importing" + dots, x + 4, toolbar.y() + 5, Theme.fade(Theme.ACCENT, a), false);
+			Ui.draw(g, font, "Importing" + dots, x + 4, toolbar.y() + 5, Theme.fade(Theme.accent(), a));
 		}
 	}
 
@@ -557,8 +557,8 @@ public final class StylesScreen extends HollowScreen {
 			Rect r = new Rect(list.x(), y, list.w() - 6, 28);
 			if (r.bottom() >= list.y() && r.y() <= list.bottom()) {
 				float h = anim("pack" + p.name(), mouseIn(r, mx, my, true));
-				Draw.roundRect(g, r, 5, Theme.fade(p.active() ? Theme.CARD_ON : Theme.mix(Theme.CARD, Theme.CARD_HOVER, h), a));
-				Draw.roundOutline(g, r, 5, Theme.fade(p.active() ? Theme.ACCENT : Theme.STROKE, a));
+				Draw.roundRect(g, r, 5, Theme.fade(p.active() ? Theme.cardOn() : Theme.mix(Theme.CARD, Theme.CARD_HOVER, h), a));
+				Draw.roundOutline(g, r, 5, Theme.fade(p.active() ? Theme.accent() : Theme.STROKE, a));
 				Identifier icon = p.exists() ? PackManager.icon(p.name()) : null;
 				if (icon != null) g.blit(icon, r.x() + 5, r.y() + 4, r.x() + 25, r.y() + 24, 0f, 1f, 0f, 1f);
 				else Draw.roundRect(g, r.x() + 5, r.y() + 4, 20, 20, 3, Theme.fade(Theme.SWITCH_OFF, a));
@@ -571,10 +571,10 @@ public final class StylesScreen extends HollowScreen {
 				if (p.exists()) {
 					if (p.active()) {
 						String act = "In use";
-						int aw = font.width(act) + 12;
+						int aw = Ui.width(font, act) + 12;
 						bx -= aw + 4;
-						Draw.roundRect(g, bx, r.y() + 7, aw, 14, 7, Theme.fade(Theme.ACCENT_SOFT, a));
-						g.drawString(font, act, bx + 6, r.y() + 10, Theme.fade(0xFFFFFFFF, a), false);
+						Draw.roundRect(g, bx, r.y() + 7, aw, 14, 7, Theme.fade(Theme.accentSoft(), a));
+						Ui.draw(g, font, act, bx + 6, r.y() + 10, Theme.fade(0xFFFFFFFF, a));
 					} else {
 						int uw = buttonW("Use");
 						bx -= uw + 4;
@@ -586,9 +586,9 @@ public final class StylesScreen extends HollowScreen {
 				}
 				int textRight = bx - 6;
 				String name = Text.fit(font, p.name(), textRight - (r.x() + 32));
-				g.drawString(font, name, r.x() + 32, r.y() + 5, Theme.fade(Theme.TEXT, a), false);
+				Ui.draw(g, font, name, r.x() + 32, r.y() + 5, Theme.fade(Theme.TEXT, a));
 				String sub = !p.exists() ? "Missing from the resourcepacks folder" : (p.name().toLowerCase(Locale.ROOT).endsWith(".zip") ? "Zip pack" : "Folder pack");
-				g.drawString(font, Text.fit(font, sub, textRight - (r.x() + 32)), r.x() + 32, r.y() + 16, Theme.fade(p.exists() ? Theme.TEXT_FAINT : Theme.DANGER, a), false);
+				Ui.draw(g, font, Text.fit(font, sub, textRight - (r.x() + 32)), r.x() + 32, r.y() + 16, Theme.fade(p.exists() ? Theme.TEXT_FAINT : Theme.DANGER, a));
 			}
 			y += 32;
 		}
@@ -633,7 +633,7 @@ public final class StylesScreen extends HollowScreen {
 		Rect box = new Rect(toolbar.x(), toolbar.y(), boxW, 16);
 		boolean focused = presetName.isFocused();
 		Draw.roundRect(g, box, 3, Theme.fade(focused ? Theme.CARD_HOVER : Theme.CARD, a));
-		Draw.roundOutline(g, box, 3, Theme.fade(focused ? Theme.ACCENT : Theme.STROKE, a));
+		Draw.roundOutline(g, box, 3, Theme.fade(focused ? Theme.accent() : Theme.STROKE, a));
 		presetName.setX(box.x() + 5);
 		presetName.setY(box.y() + 4);
 		presetName.setWidth(boxW - 10);
@@ -705,8 +705,8 @@ public final class StylesScreen extends HollowScreen {
 					else status("Applied \"" + p.name() + "\".", false);
 				});
 				int textW = bx - 6 - (r.x() + 8);
-				g.drawString(font, Text.fit(font, p.name(), textW), r.x() + 8, r.y() + 5, Theme.fade(Theme.TEXT, a), false);
-				g.drawString(font, Text.fit(font, PresetManager.summary(p), textW), r.x() + 8, r.y() + 17, Theme.fade(Theme.TEXT_FAINT, a), false);
+				Ui.draw(g, font, Text.fit(font, p.name(), textW), r.x() + 8, r.y() + 5, Theme.fade(Theme.TEXT, a));
+				Ui.draw(g, font, Text.fit(font, PresetManager.summary(p), textW), r.x() + 8, r.y() + 17, Theme.fade(Theme.TEXT_FAINT, a));
 			}
 			y += 34;
 		}

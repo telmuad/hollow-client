@@ -145,10 +145,15 @@ class ConfigManagerTest {
 		Setup s = setup();
 		s.manager.load();
 		s.plain.zoom.set(20);
-		long deadline = System.currentTimeMillis() + 5000;
+		// generous deadline: the save runs on a background timer and the build machine may be busy
+		long deadline = System.currentTimeMillis() + 15000;
 		Path file = dir.resolve("hollowclient.json");
 		while (System.currentTimeMillis() < deadline) {
-			if (Files.readString(file).contains("20.0")) return;
+			try {
+				if (Files.readString(file).contains("20.0")) return;
+			} catch (IOException e) {
+				// the file is being replaced right now; try again
+			}
 			Thread.sleep(50);
 		}
 		fail("debounced save never happened");

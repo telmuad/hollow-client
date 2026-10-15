@@ -3,6 +3,10 @@ package dev.telmuad.hollowclient.modules;
 import dev.telmuad.hollowclient.gui.HollowMenuScreen;
 import dev.telmuad.hollowclient.hud.HudRenderer;
 import dev.telmuad.hollowclient.module.ModuleRegistry;
+import dev.telmuad.hollowclient.modules.client.PerformanceModule;
+import dev.telmuad.hollowclient.modules.client.ThemeModule;
+import dev.telmuad.hollowclient.modules.client.UiFontModule;
+import dev.telmuad.hollowclient.modules.client.UiSoundsModule;
 import dev.telmuad.hollowclient.modules.hud.ArmorHud;
 import dev.telmuad.hollowclient.modules.hud.ClockHud;
 import dev.telmuad.hollowclient.modules.hud.CoordinatesHud;
@@ -49,6 +53,10 @@ public final class Modules {
 	public static CapeModule CAPE;
 	public static HatModule HAT;
 	public static WingsModule WINGS;
+	public static ThemeModule THEME;
+	public static UiFontModule UI_FONT;
+	public static UiSoundsModule UI_SOUNDS;
+	public static PerformanceModule PERFORMANCE;
 
 	private Modules() {
 	}
@@ -77,6 +85,11 @@ public final class Modules {
 		CAPE = registry.register(new CapeModule());
 		HAT = registry.register(new HatModule());
 		WINGS = registry.register(new WingsModule());
+		// Client: theme, font, sounds and the global Performance Mode
+		THEME = registry.register(new ThemeModule());
+		PERFORMANCE = registry.register(new PerformanceModule());
+		UI_FONT = registry.register(new UiFontModule());
+		UI_SOUNDS = registry.register(new UiSoundsModule());
 	}
 
 	/** Fabric event hooks that aren't tied to one module (HUD layer, crosshair, cosmetics layer, reloads). */

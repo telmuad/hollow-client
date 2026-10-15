@@ -39,7 +39,7 @@ public final class UiSlider {
 		Draw.roundRect(g, bounds.x(), cy - 2, bounds.w(), 4, 2, Theme.fade(Theme.SWITCH_OFF, alpha));
 		float v = (float) Math.max(0, Math.min(1, value.getAsDouble()));
 		int fill = Math.round(bounds.w() * v);
-		Draw.roundRect(g, bounds.x(), cy - 2, Math.max(4, fill), 4, 2, Theme.fade(Theme.ACCENT, alpha));
+		Draw.roundRect(g, bounds.x(), cy - 2, Math.max(4, fill), 4, 2, Theme.fade(Theme.accent(), alpha));
 		int knob = 8;
 		int kx = Math.max(bounds.x(), Math.min(bounds.right() - knob, bounds.x() + fill - knob / 2));
 		Draw.circle(g, kx, cy - knob / 2, knob, Theme.fade(Theme.mix(0xFFD8D9E0, 0xFFFFFFFF, hoverT), alpha));

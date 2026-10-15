@@ -6,6 +6,8 @@ import dev.telmuad.hollowclient.input.Keybinds;
 import dev.telmuad.hollowclient.module.Module;
 import dev.telmuad.hollowclient.module.ModuleRegistry;
 import dev.telmuad.hollowclient.modules.Modules;
+import dev.telmuad.hollowclient.render.Quality;
+import dev.telmuad.hollowclient.theme.Themes;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -48,6 +50,8 @@ public final class HollowClient implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
+		// Shared with the launcher, which reads and writes the same file
+		Themes.init(dataDir().resolve("theme.json"));
 		modules = new ModuleRegistry();
 		Modules.registerAll(modules);
 
@@ -69,6 +73,8 @@ public final class HollowClient implements ClientModInitializer {
 
 	private static void onEndTick(Minecraft mc) {
 		Keybinds.tick(mc);
+		Themes.tick();
+		Quality.tick();
 		for (Module m : modules.all()) {
 			try {
 				m.onTick();

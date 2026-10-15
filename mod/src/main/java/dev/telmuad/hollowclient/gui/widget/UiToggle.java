@@ -16,7 +16,7 @@ public final class UiToggle {
 	public void render(GuiGraphics g, int x, int y, boolean on, boolean hover, float dt, float alpha) {
 		if (t < 0) t = on ? 1f : 0f;
 		t = Anim.approach(t, on ? 1f : 0f, dt, 20f);
-		int track = Theme.mix(Theme.SWITCH_OFF, Theme.ACCENT, t);
+		int track = Theme.mix(Theme.SWITCH_OFF, Theme.accent(), t);
 		if (hover) track = Theme.mix(track, 0xFFFFFFFF, 0.12f);
 		Draw.roundRect(g, x, y, W, H, H / 2, Theme.fade(track, alpha));
 		int knob = 7;

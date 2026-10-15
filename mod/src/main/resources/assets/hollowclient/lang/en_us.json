@@ -19,5 +19,9 @@
 	"key.hollowclient.toggle_sprint": "Toggle Sprint / Sneak module",
 	"key.hollowclient.cape": "Toggle Cape",
 	"key.hollowclient.hat": "Toggle Hat",
-	"key.hollowclient.wings": "Toggle Wings"
+	"key.hollowclient.wings": "Toggle Wings",
+	"key.hollowclient.theme": "Open Theme editor",
+	"key.hollowclient.performance": "Toggle Performance Mode",
+	"key.hollowclient.ui_font": "Toggle UI Font",
+	"key.hollowclient.ui_sounds": "Toggle UI Sounds"
 }
