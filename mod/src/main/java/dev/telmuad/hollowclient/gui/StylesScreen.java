@@ -48,7 +48,7 @@ import java.util.Map;
  */
 public final class StylesScreen extends HollowScreen {
 	public enum Tab {
-		CAPES("Capes"), COSMETICS("Cosmetics"), PACKS("Texture Packs"), PRESETS("Presets");
+		CAPES("Capes"), COSMETICS("Wardrobe"), EMOTES("Emotes"), PACKS("Texture Packs"), PRESETS("Presets");
 		final String label;
 
 		Tab(String label) {
@@ -57,6 +57,12 @@ public final class StylesScreen extends HollowScreen {
 	}
 
 	private static final int ROW = 22;
+
+	private float previewYaw = 180f;
+	private float previewYawTarget = 180f;
+	private boolean draggingPreview;
+	private long lastPreviewDrag;
+	private double previewDragX;
 
 	private record Hit(Rect rect, Runnable action, boolean inList) {
 	}
@@ -89,6 +95,13 @@ public final class StylesScreen extends HollowScreen {
 		super(Component.literal("Styles"), parent);
 		this.tab = tab;
 		CapeManager.refresh();
+		faceFor(tab);
+	}
+
+	/** The preview shows your back for capes and your front for everything else. */
+	private void faceFor(Tab t) {
+		previewYawTarget = t == Tab.CAPES ? 0f : 180f;
+		previewYaw = previewYawTarget;
 	}
 
 	// ------------------------------------------------------------------------------------------------ summaries for the menu tiles
@@ -102,7 +115,11 @@ public final class StylesScreen extends HollowScreen {
 		List<String> on = new ArrayList<>();
 		if (Modules.HAT != null && Modules.HAT.isEnabled()) on.add(Modules.HAT.hat().label());
 		if (Modules.WINGS != null && Modules.WINGS.isEnabled()) on.add(Modules.WINGS.wings().label() + " wings");
-		return on.isEmpty() ? "Off. A hat and wings on your player." : "Wearing: " + String.join(", ", on);
+		if (Modules.HALO != null && Modules.HALO.isEnabled()) on.add("halo");
+		if (Modules.HORNS != null && Modules.HORNS.isEnabled()) on.add("horns");
+		if (Modules.AURA != null && Modules.AURA.isEnabled()) on.add("aura");
+		if (Modules.PET != null && Modules.PET.isEnabled()) on.add("pet");
+		return on.isEmpty() ? "Off. Hats, wings, a halo, horns, an aura and a pet." : "Wearing: " + String.join(", ", on);
 	}
 
 	public static String packSummary() {
@@ -148,6 +165,7 @@ public final class StylesScreen extends HollowScreen {
 	private void switchTab(Tab next) {
 		if (next == tab) return;
 		tab = next;
+		faceFor(next);
 		scroll = scrollTarget = 0;
 		confirm = null;
 		picker = null;
@@ -279,6 +297,7 @@ public final class StylesScreen extends HollowScreen {
 		switch (tab) {
 			case CAPES -> capesToolbar(g, mx, my, a);
 			case COSMETICS -> cosmeticsToolbar(g, a);
+			case EMOTES -> emotesToolbar(g, a);
 			case PACKS -> packsToolbar(g, mx, my, a);
 			case PRESETS -> presetsToolbar(g, mx, my, a);
 		}
@@ -289,6 +308,7 @@ public final class StylesScreen extends HollowScreen {
 		contentHeight = switch (tab) {
 			case CAPES -> capesList(g, top, mx, my, a);
 			case COSMETICS -> cosmeticsList(g, top, mx, my, a);
+			case EMOTES -> emotesList(g, top, mx, my, a);
 			case PACKS -> packsList(g, top, mx, my, a);
 			case PRESETS -> presetsList(g, top, mx, my, a);
 		};
@@ -304,10 +324,12 @@ public final class StylesScreen extends HollowScreen {
 		if (previewArea.w() > 0) {
 			Draw.roundRect(g, previewArea, 6, Theme.fade(0x40000000, a));
 			if (a > 0.6f) {
-				PlayerPreview.render(g, previewArea.x(), previewArea.y() + 4, previewArea.w(), previewArea.h() - 18,
-						tab == Tab.CAPES ? PlayerPreview.View.BACK : PlayerPreview.View.TURN);
+				// drag to spin; after a few idle seconds it turns slowly on its own
+				if (!draggingPreview && Util.getMillis() - lastPreviewDrag > 2500) previewYawTarget += dt * 24f;
+				previewYaw = Anim.approach(previewYaw, previewYawTarget, dt, 10f);
+				PlayerPreview.render(g, previewArea.x(), previewArea.y() + 4, previewArea.w(), previewArea.h() - 18, previewYaw);
 			}
-			String cap = "Only you see this";
+			String cap = draggingPreview ? "Turning..." : "Drag to turn";
 			Ui.draw(g, font, cap, previewArea.centerX() - Ui.width(font, cap) / 2, previewArea.bottom() - 12, Theme.fade(Theme.TEXT_FAINT, a));
 		}
 		renderFooter(g, a);
@@ -352,10 +374,11 @@ public final class StylesScreen extends HollowScreen {
 			return;
 		}
 		String hint = switch (tab) {
-			case CAPES -> "Tip: drop a PNG file on this screen to import it as a cape.";
-			case COSMETICS -> "Cosmetics show in third person (F5) and in your inventory.";
+			case CAPES -> "Tip: drop a PNG or animated GIF on this screen to import it as a cape.";
+			case COSMETICS -> "Drag the preview to turn your player. Cosmetics show in third person (F5).";
+			case EMOTES -> "Hold B in game for the emote wheel. Only you see emotes.";
 			case PACKS -> "Tip: drop a pack .zip or folder on this screen to import it.";
-			case PRESETS -> "A preset saves your cape, hat, wings and texture pack.";
+			case PRESETS -> "A preset saves your look, theme, trail, crosshair, HUD layout and pack.";
 		};
 		Ui.draw(g, font, Text.fit(font, hint, footer.w()), footer.x() + 2, footer.y() + 3, Theme.fade(Theme.TEXT_FAINT, a));
 	}
@@ -386,7 +409,7 @@ public final class StylesScreen extends HollowScreen {
 		String imp = "Import PNG...";
 		Rect impR = new Rect(openR.x() - 4 - buttonW(imp), toolbar.y(), buttonW(imp), 16);
 		button(g, impR, imp, UiButton.Style.PRIMARY, mx, my, a, false, () ->
-				FileDialogs.openFile("Choose a cape image", downloadsDir(), new String[]{"*.png"}, "PNG images", this::importCape));
+				FileDialogs.openFile("Choose a cape image", downloadsDir(), new String[]{"*.png", "*.gif"}, "Cape images (.png, .gif)", this::importCape));
 	}
 
 	private int capesList(GuiGraphics g, int top, int mx, int my, float a) {
@@ -443,7 +466,31 @@ public final class StylesScreen extends HollowScreen {
 			}
 		}
 		int rows = (capes.size() + cols - 1) / cols;
-		return rows * (tileH + gap);
+		int y = top + rows * (tileH + gap) + 4;
+		y = effectRow(g, y, "cape_glow", Modules.CAPE.glowEffect(), mx, my, a);
+		y = effectRow(g, y, "cape_shimmer", Modules.CAPE.shimmerEffect(), mx, my, a);
+		return y - top;
+	}
+
+	/** One effect: its name, a strength slider (while on) and a switch. */
+	private int effectRow(GuiGraphics g, int y, String key, dev.telmuad.hollowclient.setting.Effect effect, int mx, int my, float a) {
+		var on = effect.switchSetting();
+		y = row(g, y, on.name(), a);
+		int tx = list.right() - 8 - UiToggle.W;
+		toggle(g, key, tx, y - ROW + 5, on.on(), mx, my, a, true, on::toggle);
+		if (on.on()) {
+			NumberSetting strength = effect.strengthSetting();
+			Rect sr = new Rect(tx - 10 - 90, y - ROW + 6, 90, 10);
+			slider(g, sr, strength, mx, my, a);
+			Ui.draw(g, font, strength.display(), sr.x() - 6 - Ui.width(font, strength.display()), y - ROW + 7, Theme.fade(Theme.TEXT_DIM, a));
+		}
+		return y;
+	}
+
+	private int colorRow(GuiGraphics g, int y, String label, dev.telmuad.hollowclient.setting.ColorSetting color, int mx, int my, float a) {
+		y = row(g, y, label, a);
+		swatch(g, new Rect(list.right() - 8 - 30, y - ROW + 5, 30, 12), color, mx, my, a);
+		return y;
 	}
 
 	private void importCape(Path file) {
@@ -484,6 +531,65 @@ public final class StylesScreen extends HollowScreen {
 		y = row(g, y, "Hide while wearing elytra", a);
 		toggle(g, "wings_elytra", list.right() - 8 - UiToggle.W, y - ROW + 5, Modules.WINGS.hideWithElytra(), mx, my, a, true,
 				() -> Modules.WINGS.hideWithElytraSetting().toggle());
+		y += 8;
+		var halo = Modules.HALO;
+		y = section(g, y, "Halo", halo.isEnabled(), halo::toggle, mx, my, a);
+		y = chips(g, y, halo.styleSetting(), dev.telmuad.hollowclient.modules.styles.HaloModule.Style.values(), mx, my, a, () -> halo.setEnabled(true));
+		y = row(g, y, "Theme color", a);
+		toggle(g, "halo_theme", list.right() - 8 - UiToggle.W, y - ROW + 5, halo.themeColorSetting().on(), mx, my, a, true, halo.themeColorSetting()::toggle);
+		if (!halo.themeColorSetting().on()) y = colorRow(g, y, "Color", halo.tintSetting(), mx, my, a);
+		y = effectRow(g, y, "halo_glow", halo.glowEffect(), mx, my, a);
+		y = effectRow(g, y, "halo_spin", halo.spinEffect(), mx, my, a);
+		y += 8;
+		var horns = Modules.HORNS;
+		y = section(g, y, "Horns", horns.isEnabled(), horns::toggle, mx, my, a);
+		y = chips(g, y, horns.styleSetting(), dev.telmuad.hollowclient.modules.styles.HornsModule.Style.values(), mx, my, a, () -> horns.setEnabled(true));
+		y = colorRow(g, y, "Tint", horns.tintSetting(), mx, my, a);
+		y += 8;
+		var aura = Modules.AURA;
+		y = section(g, y, "Aura", aura.isEnabled(), aura::toggle, mx, my, a);
+		y = chips(g, y, aura.styleSetting(), dev.telmuad.hollowclient.modules.styles.AuraModule.Style.values(), mx, my, a, () -> aura.setEnabled(true));
+		y = effectRow(g, y, "aura_density", aura.densityEffect(), mx, my, a);
+		y += 8;
+		var pet = Modules.PET;
+		y = section(g, y, "Pet", pet.isEnabled(), pet::toggle, mx, my, a);
+		y = chips(g, y, pet.styleSetting(), dev.telmuad.hollowclient.modules.styles.PetModule.Style.values(), mx, my, a, () -> pet.setEnabled(true));
+		y = colorRow(g, y, "Tint", pet.tintSetting(), mx, my, a);
+		return y - top;
+	}
+
+	// ------------------------------------------------------------------------------------------------ emotes
+
+	private void emotesToolbar(GuiGraphics g, float a) {
+		Ui.draw(g, font, "Click one to play it now. In game, hold B for the wheel.", toolbar.x() + 1, toolbar.y() + 5, Theme.fade(Theme.TEXT_DIM, a));
+	}
+
+	private int emotesList(GuiGraphics g, int top, int mx, int my, float a) {
+		var emotes = Modules.EMOTES;
+		int y = section(g, top, "Emotes", emotes.isEnabled(), emotes::toggle, mx, my, a);
+		var all = dev.telmuad.hollowclient.styles.Emotes.Emote.values();
+		var playing = dev.telmuad.hollowclient.styles.Emotes.current();
+		int x = list.x() + 8;
+		int w = 72;
+		int h = 22;
+		int gap = 6;
+		for (var e : all) {
+			if (x + w > list.right() - 8) {
+				x = list.x() + 8;
+				y += h + gap;
+			}
+			Rect r = new Rect(x, y, w, h);
+			chip(g, r, e.label(), e == playing, mx, my, a, () -> {
+				if (!emotes.isEnabled()) emotes.setEnabled(true);
+				dev.telmuad.hollowclient.styles.Emotes.play(e);
+			});
+			x += w + gap;
+		}
+		y += h + 12;
+		y = row(g, y, "Switch to third person while emoting", a);
+		toggle(g, "emote_third", list.right() - 8 - UiToggle.W, y - ROW + 5, emotes.thirdPerson(), mx, my, a, true, emotes.thirdPersonSetting()::toggle);
+		y = row(g, y, "Stop when you move", a);
+		toggle(g, "emote_stop", list.right() - 8 - UiToggle.W, y - ROW + 5, emotes.stopWhenMoving(), mx, my, a, true, emotes.stopWhenMovingSetting()::toggle);
 		return y - top;
 	}
 
@@ -744,6 +850,12 @@ public final class StylesScreen extends HollowScreen {
 			if (!picker.mouseClicked(mx, my)) picker = null;
 			return true;
 		}
+		if (event.button() == GLFW.GLFW_MOUSE_BUTTON_LEFT && previewArea.contains(mx, my)) {
+			draggingPreview = true;
+			previewDragX = mx;
+			lastPreviewDrag = Util.getMillis();
+			return true;
+		}
 		if (event.button() == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
 			for (int i = hits.size() - 1; i >= 0; i--) {
 				Hit h = hits.get(i);
@@ -764,12 +876,19 @@ public final class StylesScreen extends HollowScreen {
 	public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
 		if (picker != null) return picker.mouseDragged(event.x(), event.y());
 		if (activeSlider != null && activeSlider.drag(event.x())) return true;
+		if (draggingPreview) {
+			previewYawTarget += (float) (event.x() - previewDragX) * 2.2f;
+			previewDragX = event.x();
+			lastPreviewDrag = Util.getMillis();
+			return true;
+		}
 		return super.mouseDragged(event, dx, dy);
 	}
 
 	@Override
 	public boolean mouseReleased(MouseButtonEvent event) {
 		if (picker != null) return picker.mouseReleased();
+		draggingPreview = false;
 		if (activeSlider != null) {
 			activeSlider.release();
 			activeSlider = null;
@@ -811,14 +930,14 @@ public final class StylesScreen extends HollowScreen {
 	public void onFilesDrop(List<Path> paths) {
 		for (Path p : paths) {
 			String name = p.getFileName().toString().toLowerCase(Locale.ROOT);
-			if (name.endsWith(".png")) {
+			if (name.endsWith(".png") || name.endsWith(".gif")) {
 				if (tab != Tab.CAPES) switchTab(Tab.CAPES);
 				importCape(p);
 			} else if (name.endsWith(".zip") || Files.isDirectory(p)) {
 				if (tab != Tab.PACKS) switchTab(Tab.PACKS);
 				importPack(p);
 			} else {
-				status("Drop a .png (cape), a .zip or a folder (texture pack).", true);
+				status("Drop a .png or .gif (cape), a .zip or a folder (texture pack).", true);
 			}
 		}
 	}

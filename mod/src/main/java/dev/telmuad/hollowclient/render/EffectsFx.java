@@ -229,6 +229,7 @@ public final class EffectsFx {
 		RECENT_HITS.values().removeIf(t -> Util.getMillis() - t > HIT_MEMORY_MS);
 		LocalPlayer p = mc.player;
 		ClientLevel level = mc.level;
+		if (p != null && level != null && !mc.isPaused()) aura(mc, p, level);
 		ParticlesModule m = particles();
 		if (p == null || level == null || m == null || mc.isPaused()) {
 			printX = Double.NaN;
@@ -238,6 +239,46 @@ public final class EffectsFx {
 		double speed = Math.sqrt(motion.x * motion.x + motion.z * motion.z);
 		trail(mc, p, level, m, speed);
 		footsteps(p, level, m, speed);
+	}
+
+	private static float auraBudget;
+
+	/** Styles → Aura: glowing particles around you, seen in third person. */
+	private static void aura(Minecraft mc, LocalPlayer p, ClientLevel level) {
+		var m = Modules.AURA;
+		if (m == null || !m.isEnabled() || m.density() <= 0f || p.isInvisible() || p.isSpectator()) return;
+		if (mc.options.getCameraType() == CameraType.FIRST_PERSON) return;
+		float density = m.density() * q();
+		double t = Util.getMillis() / 1000.0 * Theme.speed();
+		switch (m.style()) {
+			case VOID -> {
+				auraBudget += 1.6f * density;
+				while (auraBudget >= 1f) {
+					auraBudget -= 1f;
+					double a = RANDOM.nextDouble() * Math.PI * 2;
+					double r = 0.45 + RANDOM.nextDouble() * 0.2;
+					spark(level, Kind.DOT, p.getX() + Math.cos(a) * r, p.getY() + RANDOM.nextDouble() * 0.4, p.getZ() + Math.sin(a) * r,
+							0, 0.03 + RANDOM.nextDouble() * 0.03, 0, Theme.gradient(RANDOM.nextFloat()), 0.08f, 24 + RANDOM.nextInt(10), -0.02f);
+				}
+			}
+			case SPARKLES -> {
+				auraBudget += 1.2f * density;
+				while (auraBudget >= 1f) {
+					auraBudget -= 1f;
+					spark(level, Kind.SPARKLE, p.getX() + RANDOM.nextGaussian() * 0.35, p.getY() + RANDOM.nextDouble() * 2.0, p.getZ() + RANDOM.nextGaussian() * 0.35,
+							0, 0.005, 0, ColorUtil.mix(0xFFFFFFFF, Theme.accent(), RANDOM.nextFloat() * 0.7f), 0.1f + RANDOM.nextFloat() * 0.08f, 10 + RANDOM.nextInt(6), 0f);
+				}
+			}
+			case ORBIT -> {
+				int rings = density > 0.5f ? 3 : 2;
+				for (int i = 0; i < rings; i++) {
+					double a = t * 3.0 + i * Math.PI * 2 / rings;
+					double y = p.getY() + 1.0 + Math.sin(t * 2 + i) * 0.35;
+					spark(level, Kind.DOT, p.getX() + Math.cos(a) * 0.75, y, p.getZ() + Math.sin(a) * 0.75, 0, 0, 0,
+							Theme.gradient(i / (float) rings), 0.09f, 7, 0f);
+				}
+			}
+		}
 	}
 
 	private static void trail(Minecraft mc, LocalPlayer p, ClientLevel level, ParticlesModule m, double speed) {

@@ -6,15 +6,16 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import dev.telmuad.hollowclient.util.AtomicFiles;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.io.Writer;
+
 import java.nio.charset.StandardCharsets;
-import java.nio.file.AtomicMoveNotSupportedException;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -153,17 +154,7 @@ public final class ThemeStore {
 
 	public void save() {
 		try {
-			Path dir = file.toAbsolutePath().getParent();
-			if (dir != null) Files.createDirectories(dir);
-			Path tmp = file.resolveSibling(file.getFileName() + ".tmp");
-			try (Writer w = Files.newBufferedWriter(tmp, StandardCharsets.UTF_8)) {
-				GSON.toJson(toJson(), w);
-			}
-			try {
-				Files.move(tmp, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-			} catch (AtomicMoveNotSupportedException e) {
-				Files.move(tmp, file, StandardCopyOption.REPLACE_EXISTING);
-			}
+			AtomicFiles.write(file, GSON.toJson(toJson()));
 			remember();
 		} catch (IOException ignored) {
 			// The theme still works for this session; it just isn't shared.

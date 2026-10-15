@@ -55,7 +55,18 @@ public final class CosmeticModels {
 		}
 	}
 
+	public static final Identifier GLOW_WHITE = HollowClient.id("textures/cosmetics/glow_white.png");
+	public static final Identifier HORNS = HollowClient.id("textures/cosmetics/horns.png");
+	public static final Identifier PET_CUBE = HollowClient.id("textures/cosmetics/pet_cube.png");
+
 	private static final Map<Hat, ModelPart> HATS = new EnumMap<>(Hat.class);
+	private static final Map<dev.telmuad.hollowclient.modules.styles.HaloModule.Style, ModelPart> HALOS =
+			new EnumMap<>(dev.telmuad.hollowclient.modules.styles.HaloModule.Style.class);
+	private static final Map<dev.telmuad.hollowclient.modules.styles.HornsModule.Style, ModelPart> HORN_MODELS =
+			new EnumMap<>(dev.telmuad.hollowclient.modules.styles.HornsModule.Style.class);
+	private static ModelPart wispCore;
+	private static ModelPart wispMote;
+	private static ModelPart petCube;
 	private static ModelPart leftWing;
 	private static ModelPart rightWing;
 
@@ -108,5 +119,110 @@ public final class CosmeticModels {
 		if (left) leftWing = part;
 		else rightWing = part;
 		return part;
+	}
+
+	// ------------------------------------------------------------------------------------------------ halo
+
+	/** A ring of short segments around the y axis, in head space (the ring floats above the head). */
+	private static void ring(PartDefinition root, String name, float radius, float y, int segments, float thickness) {
+		float len = (float) (2 * Math.PI * radius / segments) + 0.15f;
+		for (int i = 0; i < segments; i++) {
+			double a = i * Math.PI * 2 / segments;
+			float x = (float) (Math.cos(a) * radius);
+			float z = (float) (Math.sin(a) * radius);
+			root.addOrReplaceChild(name + i, CubeListBuilder.create().texOffs(0, 0)
+							.addBox(-len / 2, -thickness / 2, -thickness / 2, len, thickness, thickness),
+					PartPose.offsetAndRotation(x, y, z, 0f, (float) (-a + Math.PI / 2), 0f));
+		}
+	}
+
+	public static ModelPart halo(dev.telmuad.hollowclient.modules.styles.HaloModule.Style style) {
+		return HALOS.computeIfAbsent(style, st -> {
+			MeshDefinition mesh = new MeshDefinition();
+			PartDefinition root = mesh.getRoot();
+			switch (st) {
+				case RING -> ring(root, "seg", 4.2f, -11.5f, 18, 0.7f);
+				case DOUBLE -> {
+					ring(root, "outer", 4.4f, -11.2f, 18, 0.55f);
+					ring(root, "inner", 3.2f, -12.0f, 14, 0.5f);
+				}
+				case SPIKED -> {
+					ring(root, "seg", 4.0f, -11.2f, 16, 0.6f);
+					for (int i = 0; i < 8; i++) {
+						double a = i * Math.PI * 2 / 8;
+						root.addOrReplaceChild("spike" + i, CubeListBuilder.create().texOffs(0, 0).addBox(-0.3f, -1.8f, -0.3f, 0.6f, 1.8f, 0.6f),
+								PartPose.offset((float) (Math.cos(a) * 4.0), -11.4f, (float) (Math.sin(a) * 4.0)));
+					}
+				}
+			}
+			return LayerDefinition.create(mesh, 32, 16).bakeRoot();
+		});
+	}
+
+	// ------------------------------------------------------------------------------------------------ horns
+
+	/** One horn as a chain of shrinking segments; each bends a little more than the last. */
+	private static void horn(PartDefinition root, String name, float side, float[][] segs, float rootX, float rootY, float rootZ, float outward) {
+		PartDefinition parent = root.addOrReplaceChild(name, CubeListBuilder.create(), PartPose.offsetAndRotation(rootX * side, rootY, rootZ, 0f, 0f, -outward * side));
+		for (int i = 0; i < segs.length; i++) {
+			float w = segs[i][0];
+			float h = segs[i][1];
+			float bendX = segs[i][2];
+			float bendZ = segs[i][3] * side;
+			parent = parent.addOrReplaceChild("s" + i, CubeListBuilder.create().texOffs(0, i * 4).addBox(-w / 2, -h, -w / 2, w, h, w),
+					PartPose.offsetAndRotation(0f, i == 0 ? 0f : -segs[i - 1][1] + 0.2f, 0f, bendX, 0f, bendZ));
+		}
+	}
+
+	public static ModelPart horns(dev.telmuad.hollowclient.modules.styles.HornsModule.Style style) {
+		return HORN_MODELS.computeIfAbsent(style, st -> {
+			MeshDefinition mesh = new MeshDefinition();
+			PartDefinition root = mesh.getRoot();
+			float[][] segs = switch (st) {
+				// width, height, bend back (x), bend out (z)
+				case CURVED -> new float[][]{{1.8f, 2.4f, -0.25f, 0.1f}, {1.4f, 2.2f, -0.45f, 0.05f}, {1.0f, 2.0f, -0.55f, 0f}, {0.6f, 1.6f, -0.6f, 0f}};
+				case DEVIL -> new float[][]{{1.6f, 1.8f, 0.05f, 0.25f}, {1.1f, 1.6f, 0.1f, -0.35f}, {0.6f, 1.4f, 0.15f, -0.45f}};
+				case RAM -> new float[][]{{2.0f, 2.0f, -0.4f, 0.6f}, {1.7f, 2.0f, -0.2f, 0.9f}, {1.4f, 1.8f, 0.3f, 1.0f}, {1.1f, 1.6f, 0.7f, 0.9f}, {0.8f, 1.4f, 0.9f, 0.6f}};
+			};
+			float rootX = st == dev.telmuad.hollowclient.modules.styles.HornsModule.Style.RAM ? 3.6f : 2.6f;
+			float rootY = st == dev.telmuad.hollowclient.modules.styles.HornsModule.Style.RAM ? -6.2f : -7.6f;
+			float outward = st == dev.telmuad.hollowclient.modules.styles.HornsModule.Style.RAM ? 0.9f : 0.35f;
+			horn(root, "left", 1f, segs, rootX, rootY, -1.2f, outward);
+			horn(root, "right", -1f, segs, rootX, rootY, -1.2f, outward);
+			return LayerDefinition.create(mesh, 32, 16).bakeRoot();
+		});
+	}
+
+	// ------------------------------------------------------------------------------------------------ pet
+
+	/** The wisp's glowing core (centered on the origin). */
+	public static ModelPart wispCore() {
+		if (wispCore == null) {
+			MeshDefinition mesh = new MeshDefinition();
+			mesh.getRoot().addOrReplaceChild("core", CubeListBuilder.create().texOffs(0, 0).addBox(-1.5f, -1.5f, -1.5f, 3f, 3f, 3f), PartPose.ZERO);
+			mesh.getRoot().addOrReplaceChild("shell", CubeListBuilder.create().texOffs(0, 0).addBox(-2.2f, -2.2f, -2.2f, 4.4f, 4.4f, 4.4f), PartPose.ZERO);
+			wispCore = LayerDefinition.create(mesh, 32, 16).bakeRoot();
+		}
+		return wispCore;
+	}
+
+	/** A tiny mote that circles the wisp. */
+	public static ModelPart wispMote() {
+		if (wispMote == null) {
+			MeshDefinition mesh = new MeshDefinition();
+			mesh.getRoot().addOrReplaceChild("mote", CubeListBuilder.create().texOffs(0, 0).addBox(-0.5f, -0.5f, -0.5f, 1f, 1f, 1f), PartPose.ZERO);
+			wispMote = LayerDefinition.create(mesh, 32, 16).bakeRoot();
+		}
+		return wispMote;
+	}
+
+	/** The cube pet: an 8x8x8 cube with a face on the front, centered on the origin. */
+	public static ModelPart petCube() {
+		if (petCube == null) {
+			MeshDefinition mesh = new MeshDefinition();
+			mesh.getRoot().addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 0).addBox(-4f, -4f, -4f, 8f, 8f, 8f), PartPose.ZERO);
+			petCube = LayerDefinition.create(mesh, 32, 16).bakeRoot();
+		}
+		return petCube;
 	}
 }

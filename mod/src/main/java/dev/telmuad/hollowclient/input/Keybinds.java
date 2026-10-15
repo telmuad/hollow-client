@@ -27,6 +27,7 @@ public final class Keybinds {
 	public static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(HollowClient.id("main"));
 
 	private static KeyMapping menuKey;
+	private static KeyMapping emoteKey;
 	private static final Map<Module, KeyMapping> MODULE_KEYS = new LinkedHashMap<>();
 	private static Supplier<net.minecraft.client.gui.screens.Screen> menuFactory = () -> null;
 
@@ -37,6 +38,8 @@ public final class Keybinds {
 		menuFactory = menu;
 		menuKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.hollowclient.menu",
 				InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, CATEGORY));
+		emoteKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.hollowclient.emote_wheel",
+				InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, CATEGORY));
 		for (Module m : registry.all()) {
 			KeyDef def = m.keyDef();
 			int key = def.defaultKey() == KeyDef.UNBOUND ? InputConstants.UNKNOWN.getValue() : def.defaultKey();
@@ -47,6 +50,11 @@ public final class Keybinds {
 
 	public static KeyMapping menuKey() {
 		return menuKey;
+	}
+
+	/** Hold to open the emote wheel (B by default). */
+	public static KeyMapping emoteKey() {
+		return emoteKey;
 	}
 
 	public static KeyMapping of(Module module) {
@@ -66,6 +74,12 @@ public final class Keybinds {
 			if (mc.screen == null) {
 				var screen = menuFactory.get();
 				if (screen != null) mc.setScreen(screen);
+			}
+		}
+		while (emoteKey.consumeClick()) {
+			var emotes = dev.telmuad.hollowclient.modules.Modules.EMOTES;
+			if (mc.screen == null && mc.player != null && emotes != null && emotes.isEnabled()) {
+				mc.setScreen(new dev.telmuad.hollowclient.gui.EmoteWheelScreen());
 			}
 		}
 		for (Map.Entry<Module, KeyMapping> e : MODULE_KEYS.entrySet()) {

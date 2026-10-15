@@ -757,6 +757,123 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		boolean gone = ctx.computeOnClient(mc -> !HollowClient.styles().packs.contains("Hollow Test Pack.zip")
 				&& !java.nio.file.Files.exists(PackManager.folder().resolve("Hollow Test Pack.zip")));
 		check("Removing a pack forgets it and deletes Hollow's copy", gone);
+		styles2(ctx, sp);
+	}
+
+	/** E8: wardrobe cosmetics, emotes and the wheel, animated capes, GIF import and full-look presets. */
+	private void styles2(ClientGameTestContext ctx, TestSingleplayerContext sp) {
+		home(sp);
+		sp.getServer().runCommand("time set noon");
+		ctx.runOnClient(mc -> {
+			Modules.HAT.setEnabled(false);
+			Modules.WINGS.setEnabled(false);
+			Modules.HALO.setEnabled(true);
+			Modules.HORNS.setEnabled(true);
+			Modules.PET.setEnabled(true);
+			Modules.AURA.setEnabled(true);
+			Modules.AURA.styleSetting().set(dev.telmuad.hollowclient.modules.styles.AuraModule.Style.ORBIT);
+			mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
+		});
+		ctx.waitTicks(20);
+		screenshot(ctx, "wardrobe_halo_horns_pet_aura");
+		ctx.runOnClient(mc -> {
+			Modules.PET.styleSetting().set(dev.telmuad.hollowclient.modules.styles.PetModule.Style.CUBE);
+			Modules.HORNS.styleSetting().set(dev.telmuad.hollowclient.modules.styles.HornsModule.Style.RAM);
+			Modules.HALO.styleSetting().set(dev.telmuad.hollowclient.modules.styles.HaloModule.Style.SPIKED);
+		});
+		ctx.waitTicks(5);
+		screenshot(ctx, "wardrobe_cube_pet_ram_horns");
+		// presets remember the whole look, including the theme
+		ctx.runOnClient(mc -> {
+			Themes.store().setCurrent(HollowTheme.VOID);
+			PresetManager.save("E8 look");
+			Themes.store().setCurrent(HollowTheme.INFERNO);
+			Modules.HALO.setEnabled(false);
+		});
+		String presetWarning = ctx.computeOnClient(mc -> PresetManager.apply(HollowClient.styles().findPreset("E8 look")));
+		boolean restored = ctx.computeOnClient(mc -> Modules.HALO.isEnabled() && Themes.current().name().equals("Void"));
+		check("A preset brings back the halo and the theme (" + presetWarning + ")", restored);
+		ctx.runOnClient(mc -> {
+			Modules.HALO.setEnabled(false);
+			Modules.HORNS.setEnabled(false);
+			Modules.PET.setEnabled(false);
+			Modules.AURA.setEnabled(false);
+			mc.options.setCameraType(CameraType.FIRST_PERSON);
+		});
+		// emotes: the wheel, then a wave in third person
+		ctx.setScreen(() -> {
+			var wheel = new dev.telmuad.hollowclient.gui.EmoteWheelScreen();
+			return wheel;
+		});
+		ctx.waitTicks(8);
+		screenshot(ctx, "emote_wheel");
+		ctx.setScreen(() -> null);
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.styles.Emotes.play(dev.telmuad.hollowclient.styles.Emotes.Emote.WAVE));
+		ctx.waitTicks(15);
+		boolean waving = ctx.computeOnClient(mc -> dev.telmuad.hollowclient.styles.Emotes.current() == dev.telmuad.hollowclient.styles.Emotes.Emote.WAVE
+				&& mc.options.getCameraType() == CameraType.THIRD_PERSON_FRONT);
+		check("Playing an emote switches to third person and waves", waving);
+		screenshot(ctx, "emote_wave");
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.styles.Emotes.play(dev.telmuad.hollowclient.styles.Emotes.Emote.DAB));
+		ctx.waitTicks(12);
+		screenshot(ctx, "emote_dab");
+		ctx.waitTicks(40);
+		boolean back = ctx.computeOnClient(mc -> dev.telmuad.hollowclient.styles.Emotes.current() == null && mc.options.getCameraType() == CameraType.FIRST_PERSON);
+		check("The emote ends and the camera comes back", back);
+		// animated cape with glow and shimmer, at night
+		sp.getServer().runCommand("time set midnight");
+		ctx.runOnClient(mc -> {
+			Modules.CAPE.select("builtin:void_flow");
+			((dev.telmuad.hollowclient.setting.BooleanSetting) Modules.CAPE.setting("glow")).set(true);
+			((dev.telmuad.hollowclient.setting.BooleanSetting) Modules.CAPE.setting("shimmer")).set(true);
+			mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
+		});
+		ctx.waitTicks(10);
+		screenshot(ctx, "cape_void_flow_glow_shimmer");
+		ctx.runOnClient(mc -> {
+			((dev.telmuad.hollowclient.setting.BooleanSetting) Modules.CAPE.setting("glow")).set(false);
+			((dev.telmuad.hollowclient.setting.BooleanSetting) Modules.CAPE.setting("shimmer")).set(false);
+			mc.options.setCameraType(CameraType.FIRST_PERSON);
+		});
+		sp.getServer().runCommand("time set noon");
+		// import a two-frame GIF cape
+		Path gif = ctx.computeOnClient(mc -> mc.gameDirectory.toPath().resolve("blink-cape.gif"));
+		writeGif(gif);
+		String gifResult = ctx.computeOnClient(mc -> {
+			try {
+				String id = CapeManager.importCape(gif);
+				return CapeManager.texture(id) != null ? id : "no texture for " + id;
+			} catch (PackImporter.ImportException e) {
+				return "ERROR " + e.getMessage();
+			}
+		});
+		check("An animated GIF imports as a cape (" + gifResult + ")", gifResult.startsWith("custom:") && gifResult.endsWith(".gif"));
+		ctx.runOnClient(mc -> CapeManager.remove(gifResult));
+		// the Styles screen's wardrobe and emotes tabs
+		ctx.setScreen(() -> new StylesScreen(StylesScreen.Tab.COSMETICS, null));
+		ctx.waitTicks(8);
+		screenshot(ctx, "styles_wardrobe");
+		ctx.setScreen(() -> new StylesScreen(StylesScreen.Tab.EMOTES, null));
+		ctx.waitTicks(8);
+		screenshot(ctx, "styles_emotes");
+		ctx.setScreen(() -> null);
+	}
+
+	/** A 64x32 GIF with two frames (violet, then cyan). */
+	private static void writeGif(Path file) {
+		try (javax.imageio.stream.ImageOutputStream out = javax.imageio.ImageIO.createImageOutputStream(file.toFile())) {
+			javax.imageio.ImageWriter writer = javax.imageio.ImageIO.getImageWritersByFormatName("gif").next();
+			writer.setOutput(out);
+			writer.prepareWriteSequence(null);
+			for (int color : new int[]{0xFF8B5CF6, 0xFF22D3EE}) {
+				java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(64, 32, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+				for (int y = 0; y < 32; y++) for (int x = 0; x < 64; x++) img.setRGB(x, y, color);
+				writer.writeToSequence(new javax.imageio.IIOImage(img, null, null), null);
+			}
+			writer.endWriteSequence();
+		} catch (java.io.IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	private interface Pixel {

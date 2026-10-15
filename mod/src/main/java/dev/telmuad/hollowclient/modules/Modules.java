@@ -40,7 +40,12 @@ import dev.telmuad.hollowclient.modules.visual.BlockOutlineModule;
 import dev.telmuad.hollowclient.modules.visual.PostProcessingModule;
 import dev.telmuad.hollowclient.modules.visual.SkyModule;
 import dev.telmuad.hollowclient.modules.visual.TimeWeatherModule;
+import dev.telmuad.hollowclient.modules.styles.AuraModule;
 import dev.telmuad.hollowclient.modules.styles.CapeModule;
+import dev.telmuad.hollowclient.modules.styles.EmotesModule;
+import dev.telmuad.hollowclient.modules.styles.HaloModule;
+import dev.telmuad.hollowclient.modules.styles.HornsModule;
+import dev.telmuad.hollowclient.modules.styles.PetModule;
 import dev.telmuad.hollowclient.modules.styles.HatModule;
 import dev.telmuad.hollowclient.modules.styles.WingsModule;
 import dev.telmuad.hollowclient.render.CosmeticsLayer;
@@ -70,6 +75,11 @@ public final class Modules {
 	public static CapeModule CAPE;
 	public static HatModule HAT;
 	public static WingsModule WINGS;
+	public static HaloModule HALO;
+	public static HornsModule HORNS;
+	public static AuraModule AURA;
+	public static PetModule PET;
+	public static EmotesModule EMOTES;
 	public static ThemeModule THEME;
 	public static UiFontModule UI_FONT;
 	public static UiSoundsModule UI_SOUNDS;
@@ -136,6 +146,11 @@ public final class Modules {
 		CAPE = registry.register(new CapeModule());
 		HAT = registry.register(new HatModule());
 		WINGS = registry.register(new WingsModule());
+		HALO = registry.register(new HaloModule());
+		HORNS = registry.register(new HornsModule());
+		AURA = registry.register(new AuraModule());
+		PET = registry.register(new PetModule());
+		EMOTES = registry.register(new EmotesModule());
 		// Client: theme, font, sounds and the global Performance Mode
 		THEME = registry.register(new ThemeModule());
 		PERFORMANCE = registry.register(new PerformanceModule());

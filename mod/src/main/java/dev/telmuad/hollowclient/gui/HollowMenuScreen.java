@@ -166,7 +166,10 @@ public final class HollowMenuScreen extends HollowScreen {
 	}
 
 	private int contentHeight() {
-		if (showingTiles()) return 2 * (TILE_H + gap);
+		if (showingTiles()) {
+			int tcols = grid.w() >= 260 ? 2 : 1;
+			return (tiles().size() + tcols - 1) / tcols * (TILE_H + gap);
+		}
 		int n = visibleModules().size();
 		int rows = (n + cols - 1) / cols;
 		return rows * (CARD_H + gap);
@@ -508,7 +511,8 @@ public final class HollowMenuScreen extends HollowScreen {
 	private List<Tile> tiles() {
 		return List.of(
 				new Tile(StylesScreen.Tab.CAPES, "Capes", StylesScreen.capeSummary(), new ItemStack(Items.WHITE_BANNER)),
-				new Tile(StylesScreen.Tab.COSMETICS, "Cosmetics", StylesScreen.cosmeticsSummary(), new ItemStack(Items.LEATHER_HELMET)),
+				new Tile(StylesScreen.Tab.COSMETICS, "Wardrobe", StylesScreen.cosmeticsSummary(), new ItemStack(Items.LEATHER_HELMET)),
+				new Tile(StylesScreen.Tab.EMOTES, "Emotes", "Wave, dance, cheer ... Hold B in game for the wheel.", new ItemStack(Items.NOTE_BLOCK)),
 				new Tile(StylesScreen.Tab.PACKS, "Texture Packs", StylesScreen.packSummary(), new ItemStack(Items.PAINTING)),
 				new Tile(StylesScreen.Tab.PRESETS, "Presets", StylesScreen.presetSummary(), new ItemStack(Items.WRITABLE_BOOK)));
 	}

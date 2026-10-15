@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import dev.telmuad.hollowclient.setting.StringSetting;
 
 /**
- * A saved style combination: the state of the style modules (cape, hat, wings) plus the texture pack.
+ * A saved style combination: module states (look, trail, crosshair, HUD), the theme ($theme) and the texture pack.
  *
  * @param name    display name, also the key (unique, case-insensitive)
  * @param modules module id → module JSON (same shape as in the config file)

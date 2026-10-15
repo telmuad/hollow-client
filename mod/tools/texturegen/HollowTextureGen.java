@@ -31,6 +31,7 @@ public final class HollowTextureGen {
 		icon();
 		wordmark();
 		particles();
+		moreCosmetics();
 		System.out.println("Textures written to " + root.getAbsolutePath());
 	}
 
@@ -431,5 +432,45 @@ public final class HollowTextureGen {
 			}
 		}
 		save(print, "textures/particle/footprint.png");
+	}
+
+	// ------------------------------------------------------------------------------------------------ halo, horns, pet
+
+	/** Textures for the halo / wisp (plain white, tinted at runtime), horns and the cube pet. 32x16 each. */
+	private static void moreCosmetics() throws IOException {
+		BufferedImage white = new BufferedImage(32, 16, BufferedImage.TYPE_INT_ARGB);
+		for (int y = 0; y < 16; y++) for (int x = 0; x < 32; x++) white.setRGB(x, y, argb(255, 245 + (x + y) % 3 * 5, 245 + (x * 3 + y) % 2 * 5, 255));
+		save(white, "textures/cosmetics/glow_white.png");
+
+		// horns: ivory at the tip, darker toward the base, with faint rings
+		BufferedImage horns = new BufferedImage(32, 16, BufferedImage.TYPE_INT_ARGB);
+		for (int y = 0; y < 16; y++) {
+			for (int x = 0; x < 32; x++) {
+				double t = y / 15.0;
+				int base = mix(rgb(0xF2E8D5), rgb(0x5A4B3C), t);
+				if (y % 4 == 0) base = mix(base, rgb(0x2B2219), 0.25);
+				int noise = ((x * 7 + y * 13) % 5) * 3;
+				horns.setRGB(x, y, mix(base, rgb(0x000000), noise / 100.0));
+			}
+		}
+		save(horns, "textures/cosmetics/horns.png");
+
+		// cube pet: soft violet body with two eyes and a little shine, on the 8x8 front face at (8, 8)
+		BufferedImage pet = new BufferedImage(32, 16, BufferedImage.TYPE_INT_ARGB);
+		for (int y = 0; y < 16; y++) {
+			for (int x = 0; x < 32; x++) {
+				double t = (x + y) / 46.0;
+				pet.setRGB(x, y, mix(rgb(0xB79BFF), rgb(0x7DD3FC), t));
+			}
+		}
+		int fx = 8;
+		int fy = 8;
+		for (int[] eye : new int[][]{{fx + 1, fy + 3}, {fx + 5, fy + 3}}) {
+			for (int dy = 0; dy < 2; dy++) for (int dx = 0; dx < 2; dx++) pet.setRGB(eye[0] + dx, eye[1] + dy, rgb(0x1A1530));
+			pet.setRGB(eye[0], eye[1], rgb(0xFFFFFF));
+		}
+		pet.setRGB(fx + 3, fy + 6, rgb(0x5B3F9E));
+		pet.setRGB(fx + 4, fy + 6, rgb(0x5B3F9E));
+		save(pet, "textures/cosmetics/pet_cube.png");
 	}
 }

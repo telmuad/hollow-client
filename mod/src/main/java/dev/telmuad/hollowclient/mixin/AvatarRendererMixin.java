@@ -22,14 +22,25 @@ abstract class AvatarRendererMixin {
 	private void hollowclient$tagLocalPlayer(Avatar avatar, AvatarRenderState state, float partialTick, CallbackInfo ci) {
 		if (avatar != Minecraft.getInstance().player || Modules.HAT == null) {
 			state.setData(CosmeticsLayer.LOOK, null);
+			state.setData(CosmeticsLayer.CAPE_FX, null);
+			state.setData(dev.telmuad.hollowclient.styles.Emotes.KEY, null);
 			return;
 		}
 		boolean hat = Modules.HAT.isEnabled();
 		boolean elytra = state.chestEquipment.is(Items.ELYTRA);
 		boolean wings = Modules.WINGS.isEnabled() && !(elytra && Modules.WINGS.hideWithElytra());
-		state.setData(CosmeticsLayer.LOOK, hat || wings ? new CosmeticsLayer.Look(
+		var halo = Modules.HALO;
+		var horns = Modules.HORNS;
+		var pet = Modules.PET;
+		CosmeticsLayer.Look look = new CosmeticsLayer.Look(
 				hat ? Modules.HAT.hat() : null, Modules.HAT.tint(),
-				wings ? Modules.WINGS.wings() : null, Modules.WINGS.tint(), Modules.WINGS.flapSpeed()) : null);
+				wings ? Modules.WINGS.wings() : null, Modules.WINGS.tint(), Modules.WINGS.flapSpeed(),
+				halo.isEnabled() ? halo.style() : null, halo.color(), halo.glow(), halo.spin(),
+				horns.isEnabled() ? horns.style() : null, horns.tint(),
+				pet.isEnabled() ? pet.style() : null, pet.tint());
+		state.setData(CosmeticsLayer.LOOK, look.any() ? look : null);
+		state.setData(CosmeticsLayer.CAPE_FX, new CosmeticsLayer.CapeFx(Modules.CAPE.glow(), Modules.CAPE.shimmer()));
+		dev.telmuad.hollowclient.styles.Emotes.apply(state);
 		if (Modules.CAPE.texture() != null) state.showCape = true;
 	}
 }

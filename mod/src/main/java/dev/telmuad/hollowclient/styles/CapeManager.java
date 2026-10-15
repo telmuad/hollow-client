@@ -40,7 +40,8 @@ public final class CapeManager {
 			new Cape("builtin:nightfall", "Nightfall", true),
 			new Cape("builtin:ember", "Ember", true),
 			new Cape("builtin:glacier", "Glacier", true),
-			new Cape("builtin:verdant", "Verdant", true));
+			new Cape("builtin:verdant", "Verdant", true),
+			new Cape("builtin:void_flow", "Void Flow (animated)", true));
 
 	private static final Map<String, Loaded> LOADED = new HashMap<>();
 	private static List<Cape> cached;
@@ -69,10 +70,11 @@ public final class CapeManager {
 		List<Cape> custom = new ArrayList<>();
 		Path dir = folder();
 		if (Files.isDirectory(dir)) {
-			try (DirectoryStream<Path> files = Files.newDirectoryStream(dir, "*.png")) {
+			try (DirectoryStream<Path> files = Files.newDirectoryStream(dir, "*.{png,gif}")) {
 				for (Path f : files) {
 					String file = f.getFileName().toString();
-					custom.add(new Cape("custom:" + file, file.substring(0, file.length() - 4), false));
+					boolean gif = file.toLowerCase(Locale.ROOT).endsWith(".gif");
+					custom.add(new Cape("custom:" + file, file.substring(0, file.length() - 4) + (gif ? " (animated)" : ""), false));
 				}
 			} catch (IOException e) {
 				HollowClient.LOG.warn("Could not list imported capes", e);
@@ -104,6 +106,7 @@ public final class CapeManager {
 		if (id == null) return null;
 		if (id.startsWith("builtin:")) {
 			String name = id.substring("builtin:".length());
+			if (name.equals("void_flow")) return new Loaded(AnimatedCapes.flowTexture(), 128, 64);
 			for (Cape c : BUILTIN) {
 				if (c.id().equals(id)) return new Loaded(HollowClient.id("textures/capes/" + name + ".png"), 64, 32);
 			}
@@ -115,6 +118,24 @@ public final class CapeManager {
 		String file = id.substring("custom:".length());
 		Path path = folder().resolve(file);
 		if (!path.normalize().startsWith(folder().normalize()) || !Files.isRegularFile(path)) {
+			FAILED.add(id);
+			return null;
+		}
+		boolean gif = file.toLowerCase(Locale.ROOT).endsWith(".gif");
+		try {
+			// animated: a GIF, or a PNG strip of 2:1 frames stacked top to bottom
+			AnimatedCapes.Frames frames = AnimatedCapes.read(path);
+			if (gif || frames.images().size() > 1) {
+				List<NativeImage> natives = new ArrayList<>();
+				for (var f : frames.images()) natives.add(AnimatedCapes.toNative(f));
+				Identifier tex = HollowClient.id("capes/custom/" + FileNames.textureId(file));
+				AnimatedCapes.register(tex, natives, frames.delays());
+				Loaded l = new Loaded(tex, natives.get(0).getWidth(), natives.get(0).getHeight());
+				LOADED.put(id, l);
+				return l;
+			}
+		} catch (IOException | RuntimeException e) {
+			HollowClient.LOG.warn("Could not read cape {}", file, e);
 			FAILED.add(id);
 			return null;
 		}
@@ -147,23 +168,36 @@ public final class CapeManager {
 	}
 
 	/**
-	 * Copy a PNG into the capes folder after checking it is a usable cape image. Returns the new cape id.
+	 * Copy a PNG (a still cape, or a strip of frames stacked top to bottom) or an animated GIF into the capes folder,
+	 * after checking that it is a usable cape image. Returns the new cape id.
 	 *
 	 * @throws PackImporter.ImportException with a friendly message when the file can't be used
 	 */
 	public static String importCape(Path source) throws PackImporter.ImportException {
 		if (source == null || !Files.isRegularFile(source)) throw new PackImporter.ImportException("That file doesn't exist anymore.");
+		boolean gif = source.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".gif");
 		String problem;
 		try {
-			problem = PngInfo.capeProblem(PngInfo.read(source));
-		} catch (IOException e) {
+			if (gif) {
+				// GIFs: every frame must be a cape-sized image
+				AnimatedCapes.Frames frames = AnimatedCapes.read(source);
+				var first = frames.images().get(0);
+				problem = PngInfo.capeProblem(new PngInfo.Size(first.getWidth(), first.getHeight()));
+			} else {
+				PngInfo.Size size = PngInfo.read(source);
+				// a strip of at least 3 frames: check one frame (a 2-frame strip would look like a square skin)
+				boolean strip = AnimatedCapes.isStrip(size.width(), size.height());
+				problem = PngInfo.capeProblem(strip ? new PngInfo.Size(size.width(), size.width() / 2) : size);
+			}
+		} catch (IOException | RuntimeException e) {
 			throw new PackImporter.ImportException("Couldn't read that file: " + e.getMessage());
 		}
 		if (problem != null) throw new PackImporter.ImportException(problem);
 		try {
 			Files.createDirectories(folder());
 			String name = FileNames.safeFileName(source.getFileName().toString());
-			if (!name.toLowerCase(Locale.ROOT).endsWith(".png")) name = name + ".png";
+			String lower = name.toLowerCase(Locale.ROOT);
+			if (!lower.endsWith(".png") && !lower.endsWith(".gif")) name = name + (gif ? ".gif" : ".png");
 			Path target = FileNames.unique(folder(), name);
 			Files.copy(source, target);
 			String id = "custom:" + target.getFileName();

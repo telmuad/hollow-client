@@ -8,11 +8,13 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import dev.telmuad.hollowclient.module.ModuleRegistry;
 
+import dev.telmuad.hollowclient.util.AtomicFiles;
+
 import java.io.IOException;
 import java.io.Reader;
-import java.io.Writer;
+
 import java.nio.charset.StandardCharsets;
-import java.nio.file.AtomicMoveNotSupportedException;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -122,17 +124,7 @@ public final class ConfigManager {
 	private void write(String json) {
 		synchronized (lock) {
 			try {
-				Path dir = file.toAbsolutePath().getParent();
-				if (dir != null) Files.createDirectories(dir);
-				Path tmp = file.resolveSibling(file.getFileName() + ".tmp");
-				try (Writer writer = Files.newBufferedWriter(tmp, StandardCharsets.UTF_8)) {
-					writer.write(json);
-				}
-				try {
-					Files.move(tmp, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-				} catch (AtomicMoveNotSupportedException e) {
-					Files.move(tmp, file, StandardCopyOption.REPLACE_EXISTING);
-				}
+				AtomicFiles.write(file, json);
 			} catch (IOException e) {
 				warn.accept("Config could not be saved: " + e.getMessage());
 			}

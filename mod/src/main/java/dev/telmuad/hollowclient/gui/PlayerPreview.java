@@ -23,8 +23,18 @@ public final class PlayerPreview {
 	private PlayerPreview() {
 	}
 
+	/** Draw inside (x, y, w, h), turned to {@code bodyYaw} degrees (180 = facing you). Does nothing outside a world. */
+	public static void render(GuiGraphics g, int x, int y, int w, int h, float bodyYaw) {
+		draw(g, x, y, w, h, bodyYaw);
+	}
+
 	/** Draw inside (x, y, w, h). Does nothing outside a world. */
 	public static void render(GuiGraphics g, int x, int y, int w, int h, View view) {
+		float t = (Util.getMillis() % 14000L) / 14000f * (float) (Math.PI * 2);
+		draw(g, x, y, w, h, view == View.BACK ? Mth.sin(t) * 40f : (Util.getMillis() % 14000L) / 14000f * 360f);
+	}
+
+	private static void draw(GuiGraphics g, int x, int y, int w, int h, float bodyYaw) {
 		Minecraft mc = Minecraft.getInstance();
 		LocalPlayer player = mc.player;
 		if (player == null) return;
@@ -32,9 +42,10 @@ public final class PlayerPreview {
 		state.lightCoords = LightTexture.FULL_BRIGHT;
 		state.shadowPieces.clear();
 		state.outlineColor = 0;
-		float t = (Util.getMillis() % 14000L) / 14000f * (float) (Math.PI * 2);
 		if (state instanceof LivingEntityRenderState living) {
-			living.bodyRot = view == View.BACK ? Mth.sin(t) * 40f : (Util.getMillis() % 14000L) / 14000f * 360f;
+			// keep an emote's spin on top of the chosen angle
+			float spin = living.bodyRot - player.yBodyRot;
+			living.bodyRot = bodyYaw + (dev.telmuad.hollowclient.styles.Emotes.current() != null ? spin : 0f);
 			living.yRot = 0f;
 			living.xRot = 0f;
 			living.boundingBoxWidth /= living.scale;

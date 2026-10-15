@@ -5,15 +5,25 @@ import com.google.gson.JsonObject;
 import dev.telmuad.hollowclient.HollowClient;
 import dev.telmuad.hollowclient.config.ConfigCodec;
 import dev.telmuad.hollowclient.config.Preset;
+import dev.telmuad.hollowclient.theme.HollowTheme;
+import dev.telmuad.hollowclient.theme.Themes;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-/** Save the current cape + hat + wings + pack as a named preset, and switch presets with one click. */
+/**
+ * Save your whole look as a named preset and switch presets with one click: cape, hat, wings, halo, horns, aura,
+ * pet, the theme, your trail, crosshair, HUD Style and HUD layout, and the texture pack. Applying a preset only
+ * changes what it contains, so presets saved by older versions (cape, hat, wings, pack) still work.
+ */
 public final class PresetManager {
-	/** The modules a preset covers. */
-	public static final List<String> MODULES = List.of("cape", "hat", "wings");
+	/** Your look. */
+	public static final List<String> MODULES = List.of("cape", "hat", "wings", "halo", "horns", "aura", "pet");
+	/** Other things a preset remembers. HUD elements are added on top, with their positions. */
+	public static final List<String> EXTRAS = List.of("crosshair", "particles", "hud_style");
+	/** Key for the theme inside a preset. */
+	public static final String THEME = "$theme";
 
 	private PresetManager() {
 	}
@@ -23,6 +33,13 @@ public final class PresetManager {
 		for (String id : MODULES) {
 			HollowClient.modules().get(id).ifPresent(m -> modules.add(id, ConfigCodec.encodeModule(m, false)));
 		}
+		for (String id : EXTRAS) {
+			HollowClient.modules().get(id).ifPresent(m -> modules.add(id, ConfigCodec.encodeModule(m, false)));
+		}
+		for (var m : HollowClient.modules().all()) {
+			if (m.hudPosition() != null) modules.add(m.id(), ConfigCodec.encodeModule(m, true));
+		}
+		modules.add(THEME, Themes.current().toJson());
 		return new Preset(name, modules, PackManager.active());
 	}
 
@@ -36,8 +53,13 @@ public final class PresetManager {
 
 	/** Apply a preset. Returns a warning for the screen (for example a missing pack), or null if all went well. */
 	public static String apply(Preset preset) {
-		for (String id : MODULES) {
-			HollowClient.modules().get(id).ifPresent(m -> ConfigCodec.decodeModule(m, preset.modules().get(id), false, false));
+		for (String key : preset.modules().keySet()) {
+			JsonElement value = preset.modules().get(key);
+			if (THEME.equals(key)) {
+				Themes.store().setCurrent(HollowTheme.fromJson(value, Themes.current()));
+				continue;
+			}
+			HollowClient.modules().get(key).ifPresent(m -> ConfigCodec.decodeModule(m, value, false, m.hudPosition() != null));
 		}
 		String warning = null;
 		String pack = preset.pack();
@@ -78,6 +100,8 @@ public final class PresetManager {
 		if (enabled(hat)) parts.add(pretty(setting(hat, "style", "top_hat")));
 		JsonObject wings = obj(p.modules().get("wings"));
 		if (enabled(wings)) parts.add("Wings: " + pretty(setting(wings, "style", "shadow")));
+		JsonObject theme = obj(p.modules().get(THEME));
+		if (theme.has("name") && theme.get("name").isJsonPrimitive()) parts.add("Theme: " + theme.get("name").getAsString());
 		if (!p.pack().isEmpty()) parts.add("Pack: " + p.pack());
 		return parts.isEmpty() ? "Nothing on" : String.join(" · ", parts);
 	}
