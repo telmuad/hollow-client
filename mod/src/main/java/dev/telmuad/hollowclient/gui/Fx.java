@@ -6,7 +6,6 @@ import dev.telmuad.hollowclient.util.ColorUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
 
@@ -15,8 +14,10 @@ import net.minecraft.util.Util;
  * as nine pieces, so any size of glow costs the same few quads.
  */
 public final class Fx {
-	public static final Identifier SIGIL = HollowClient.id("textures/gui/sigil.png");
-	public static final Identifier SIGIL_GLOW = HollowClient.id("textures/gui/sigil_glow.png");
+	public static final JarTexture SIGIL = new JarTexture("textures/gui/sigil.png", "sigil");
+	public static final JarTexture SIGIL_GLOW = new JarTexture("textures/gui/sigil_glow.png", "sigil_glow");
+	public static final JarTexture WORDMARK_HOLLOW = new JarTexture("textures/gui/wordmark_hollow.png", "wordmark_hollow");
+	public static final JarTexture WORDMARK_CLIENT = new JarTexture("textures/gui/wordmark_client.png", "wordmark_client");
 	private static final Identifier GLOW = HollowClient.id("generated/soft_glow");
 	private static final Identifier DOT = HollowClient.id("generated/soft_dot");
 	private static final Identifier DISC = HollowClient.id("generated/disc");
@@ -33,14 +34,43 @@ public final class Fx {
 
 	/** The sigil at (x, y) with a pulsing glow. {@code alpha} fades everything. */
 	public static void sigil(GuiGraphics g, int x, int y, int size, float alpha, boolean pulse) {
-		float glow = Theme.glow();
-		float p = pulse ? 0.65f + 0.35f * (float) Math.sin(Util.getMillis() * Theme.speed() / 520.0) : 0.8f;
-		int glowColor = ColorUtil.fade(Theme.accent2(), alpha * glow * p);
-		int pad = size / 3;
-		g.blit(RenderPipelines.GUI_TEXTURED, SIGIL_GLOW, x - pad, y - pad, 0f, 0f, size + 2 * pad, size + 2 * pad, 256, 256, 256, 256, glowColor);
-		g.blit(RenderPipelines.GUI_TEXTURED, SIGIL_GLOW, x, y, 0f, 0f, size, size, 256, 256, 256, 256, ColorUtil.fade(Theme.accent(), alpha * glow * p));
-		g.blit(RenderPipelines.GUI_TEXTURED, SIGIL, x, y, 0f, 0f, size, size, 256, 256, 256, 256,
-				ColorUtil.fade(ColorUtil.mix(Theme.accent(), 0xFFFFFFFF, 0.25f), alpha));
+		sigil(g, (float) x, (float) y, size, alpha, pulse ? 1f : 0f, Theme.glow());
+	}
+
+	/**
+	 * The sigil with float position and size. {@code pulse} 0..1 is how much the glow breathes, {@code glow} 0..1 how
+	 * bright it is.
+	 */
+	public static void sigil(GuiGraphics g, float x, float y, float size, float alpha, float pulse, float glow) {
+		float p = 0.8f + pulse * 0.35f * ((float) Math.sin(Util.getMillis() * Theme.speed() / 520.0) - 0.43f);
+		float pad = size / 3f;
+		if (glow > 0f) {
+			SIGIL_GLOW.draw(g, x - pad, y - pad, size + 2 * pad, size + 2 * pad, ColorUtil.fade(Theme.accent2(), alpha * glow * p));
+			SIGIL_GLOW.draw(g, x, y, size, size, ColorUtil.fade(Theme.accent(), alpha * glow * p));
+		}
+		SIGIL.draw(g, x, y, size, size, ColorUtil.fade(ColorUtil.mix(Theme.accent(), 0xFFFFFFFF, 0.25f), alpha));
+	}
+
+	/**
+	 * The "HOLLOW CLIENT" wordmark, {@code height} GUI pixels tall: HOLLOW in a slowly moving theme gradient, CLIENT
+	 * in a dim tone next to it. Returns the total width.
+	 */
+	public static float wordmark(GuiGraphics g, float x, float y, float height, float alpha, boolean withClient) {
+		float hw = height * WORDMARK_HOLLOW.aspect();
+		int strips = 12;
+		float phase = (float) ((Util.getMillis() * Theme.speed() / 4000.0) % 1.0);
+		for (int i = 0; i < strips; i++) {
+			float u0 = i / (float) strips;
+			float u1 = (i + 1) / (float) strips;
+			float t = (u0 + u1) / 2f;
+			int c = Theme.current().gradientAt(Math.abs(((t * 0.8f + phase) % 1f) * 2 - 1), Util.getMillis());
+			WORDMARK_HOLLOW.drawSlice(g, x + hw * u0, y, hw * (u1 - u0), height, u0, u1, ColorUtil.fade(c, alpha));
+		}
+		if (!withClient) return hw;
+		float gap = height * 0.35f;
+		float cw = height * WORDMARK_CLIENT.aspect();
+		WORDMARK_CLIENT.draw(g, x + hw + gap, y, cw, height, ColorUtil.fade(Theme.TEXT_DIM, alpha));
+		return hw + gap + cw;
 	}
 
 	// ------------------------------------------------------------------------------------------------ soft glow
@@ -59,7 +89,7 @@ public final class Fx {
 				img.setPixel(x, y, ColorUtil.withAlpha(0xFFFFFF, (int) Math.round(a * a * 255)));
 			}
 		}
-		Minecraft.getInstance().getTextureManager().register(GLOW, new DynamicTexture(GLOW::toString, img));
+		Minecraft.getInstance().getTextureManager().register(GLOW, new JarTexture.Smooth(GLOW::toString, img));
 		glowReady = true;
 	}
 
@@ -106,8 +136,8 @@ public final class Fx {
 			}
 		}
 		var tm = Minecraft.getInstance().getTextureManager();
-		tm.register(DOT, new DynamicTexture(DOT::toString, soft));
-		tm.register(DISC, new DynamicTexture(DISC::toString, disc));
+		tm.register(DOT, new JarTexture.Smooth(DOT::toString, soft));
+		tm.register(DISC, new JarTexture.Smooth(DISC::toString, disc));
 		dotsReady = true;
 	}
 

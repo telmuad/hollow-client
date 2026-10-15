@@ -117,6 +117,15 @@ public abstract class Module {
 		return setting;
 	}
 
+	/** Register an effect: a switch plus a strength slider (0-100 %) that shows while the switch is on. */
+	protected final dev.telmuad.hollowclient.setting.Effect effect(String id, String name, boolean on, int strength, String description) {
+		var toggle = add(new dev.telmuad.hollowclient.setting.BooleanSetting(id, name, on));
+		toggle.describe(description);
+		var slider = add(new dev.telmuad.hollowclient.setting.NumberSetting(id + "Strength", name + " strength", strength, 0, 100, 5).format(0, "%"));
+		slider.visibleWhen(toggle::get);
+		return new dev.telmuad.hollowclient.setting.Effect(toggle, slider);
+	}
+
 	public final void setChangeListener(Consumer<Module> listener) {
 		this.changeListener = listener == null ? m -> {
 		} : listener;

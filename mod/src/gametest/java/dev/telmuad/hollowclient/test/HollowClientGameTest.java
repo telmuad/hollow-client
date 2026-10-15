@@ -4,6 +4,7 @@ import dev.telmuad.hollowclient.HollowClient;
 import dev.telmuad.hollowclient.gui.HollowMenuScreen;
 import dev.telmuad.hollowclient.gui.HudEditorScreen;
 import dev.telmuad.hollowclient.gui.HollowScreen;
+import dev.telmuad.hollowclient.gui.HollowTitleScreen;
 import dev.telmuad.hollowclient.gui.StylesScreen;
 import dev.telmuad.hollowclient.gui.ThemeScreen;
 import dev.telmuad.hollowclient.gui.Toasts;
@@ -57,8 +58,15 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 
 	@Override
 	public void runTest(ClientGameTestContext ctx) {
-		ctx.waitTicks(20);
+		ctx.waitTicks(40);
+		check("Hollow's title screen replaces vanilla's", ctx.computeOnClient(mc -> mc.screen instanceof HollowTitleScreen));
 		screenshot(ctx, "title_screen");
+		// a resource reload shows the loading screen
+		ctx.runOnClient(mc -> mc.reloadResourcePacks());
+		ctx.waitTicks(4);
+		screenshot(ctx, "loading_screen");
+		ctx.waitFor(mc -> mc.getOverlay() == null, 1200);
+		ctx.waitTicks(10);
 		ctx.getInput().pressKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
 		ctx.waitTicks(5);
 		boolean fromTitle = ctx.computeOnClient(mc -> mc.screen instanceof HollowMenuScreen);
@@ -88,6 +96,7 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 			screenshot(ctx, "world_default_hud");
 
 			menus(ctx);
+			screens(ctx);
 			hud(ctx);
 			qolAndVisual(ctx, sp);
 			styles(ctx, sp);
@@ -212,6 +221,31 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		screenshot(ctx, "settings_coordinates");
 		ctx.setScreen(() -> null);
 		ctx.waitTicks(5);
+	}
+
+	private void screens(ClientGameTestContext ctx) {
+		// pause menu: blurred, glass panel, Hollow buttons
+		ctx.setScreen(() -> new net.minecraft.client.gui.screens.PauseScreen(true));
+		ctx.waitTicks(8);
+		screenshot(ctx, "pause_menu");
+		// inventory with blur
+		ctx.setScreen(() -> new net.minecraft.client.gui.screens.inventory.InventoryScreen(Minecraft.getInstance().player));
+		ctx.waitTicks(6);
+		screenshot(ctx, "inventory_blur");
+		ctx.setScreen(() -> null);
+		// chat: a few messages, the newest one mid slide-in, then the chat screen
+		ctx.runOnClient(mc -> {
+			for (int i = 1; i <= 4; i++) mc.gui.getChat().addMessage(net.minecraft.network.chat.Component.literal("Hollow chat line " + i));
+		});
+		ctx.waitTicks(20);
+		ctx.runOnClient(mc -> mc.gui.getChat().addMessage(net.minecraft.network.chat.Component.literal("A new message slides in")));
+		ctx.waitTicks(1);
+		screenshot(ctx, "chat_slide_in");
+		ctx.setScreen(() -> new net.minecraft.client.gui.screens.ChatScreen("hello", false));
+		ctx.waitTicks(6);
+		screenshot(ctx, "chat_open");
+		ctx.setScreen(() -> null);
+		ctx.waitTicks(3);
 	}
 
 	private void theme(ClientGameTestContext ctx) {

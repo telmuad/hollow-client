@@ -298,6 +298,7 @@ public final class HollowMenuScreen extends HollowScreen {
 	private static ItemStack iconFor(Category c) {
 		return switch (c) {
 			case HUD -> new ItemStack(Items.COMPASS);
+			case INTERFACE -> new ItemStack(Items.ITEM_FRAME);
 			case VISUAL -> new ItemStack(Items.ENDER_EYE);
 			case QOL -> new ItemStack(Items.FEATHER);
 			case STYLES -> new ItemStack(Items.LEATHER_CHESTPLATE);

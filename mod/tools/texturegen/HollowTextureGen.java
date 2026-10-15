@@ -29,6 +29,7 @@ public final class HollowTextureGen {
 		hats();
 		wings();
 		icon();
+		wordmark();
 		System.out.println("Textures written to " + root.getAbsolutePath());
 	}
 
@@ -346,5 +347,46 @@ public final class HollowTextureGen {
 		}
 		g.dispose();
 		save(img, "icon.png");
+	}
+
+	// ------------------------------------------------------------------------------------------------ wordmark
+
+	/**
+	 * "HOLLOW" and "CLIENT" set in Inter (SIL OFL, bundled in font/) with wide letter spacing, as white masks. Used
+	 * where text must look crisp at large sizes or before fonts are loaded (loading screen, title screen).
+	 */
+	private static void wordmark() throws IOException {
+		save(textMask("HOLLOW", new File(root, "font/inter_semibold.ttf"), 112f, 0.16f), "textures/gui/wordmark_hollow.png");
+		save(textMask("CLIENT", new File(root, "font/inter_medium.ttf"), 112f, 0.30f), "textures/gui/wordmark_client.png");
+	}
+
+	private static BufferedImage textMask(String text, File fontFile, float size, float tracking) throws IOException {
+		java.awt.Font font;
+		try {
+			font = java.awt.Font.createFont(java.awt.Font.TRUETYPE_FONT, fontFile).deriveFont(size);
+		} catch (java.awt.FontFormatException e) {
+			throw new IOException("Bad font " + fontFile, e);
+		}
+		java.util.Map<java.awt.font.TextAttribute, Object> attrs = new java.util.HashMap<>();
+		attrs.put(java.awt.font.TextAttribute.TRACKING, tracking);
+		font = font.deriveFont(attrs);
+		BufferedImage probe = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+		java.awt.Graphics2D pg = probe.createGraphics();
+		java.awt.font.FontRenderContext frc = new java.awt.font.FontRenderContext(null, true, true);
+		java.awt.font.GlyphVector gv = font.createGlyphVector(frc, text);
+		java.awt.Rectangle bounds = gv.getPixelBounds(frc, 0, 0);
+		pg.dispose();
+		int pad = 6;
+		int w = bounds.width + pad * 2;
+		int h = bounds.height + pad * 2;
+		BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		java.awt.Graphics2D g = img.createGraphics();
+		g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+		g.setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING, java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		g.setRenderingHint(java.awt.RenderingHints.KEY_FRACTIONALMETRICS, java.awt.RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+		g.setColor(java.awt.Color.WHITE);
+		g.fill(gv.getOutline(pad - bounds.x, pad - bounds.y));
+		g.dispose();
+		return img;
 	}
 }

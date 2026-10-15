@@ -79,11 +79,19 @@ public abstract class HollowScreen extends Screen {
 
 	@Override
 	public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-		if (minecraft != null && minecraft.level == null) renderPanorama(g, partialTick);
-		if (blurRadius(0) >= 1) g.blurBeforeThisStratum();
+		if (minecraft != null && minecraft.level == null && !titleBackground(g, mouseX, mouseY)) renderPanorama(g, partialTick);
+		if (blurRadius(0) >= 1) ScreenStyles.tryBlur(g);
 		float p = openProgress();
 		g.fillGradient(0, 0, width, height, Theme.fade(Theme.DIM_TOP, p), Theme.fade(Theme.DIM_BOTTOM, p));
 		renderParticles(g, mouseX, mouseY, p);
+	}
+
+	/** On the title screen (no world), Hollow menus use the title screen's nebula when it is on. */
+	private boolean titleBackground(GuiGraphics g, int mouseX, int mouseY) {
+		var m = Modules.TITLE_SCREEN;
+		if (m == null || !m.isEnabled() || m.background() != dev.telmuad.hollowclient.modules.ui.TitleScreenModule.Background.NEBULA) return false;
+		if (!Quality.heavyAllowed()) return false;
+		return dev.telmuad.hollowclient.render.Nebula.draw(g, width, height, mouseX, mouseY, m.parallax(), m.brightness());
 	}
 
 	protected void renderParticles(GuiGraphics g, int mouseX, int mouseY, float alpha) {

@@ -9,6 +9,11 @@ import dev.telmuad.hollowclient.modules.client.ThemeModule;
 import dev.telmuad.hollowclient.modules.client.ToastsModule;
 import dev.telmuad.hollowclient.modules.client.UiFontModule;
 import dev.telmuad.hollowclient.modules.client.UiSoundsModule;
+import dev.telmuad.hollowclient.modules.ui.ChatStyleModule;
+import dev.telmuad.hollowclient.modules.ui.InventoryBlurModule;
+import dev.telmuad.hollowclient.modules.ui.LoadingScreenModule;
+import dev.telmuad.hollowclient.modules.ui.PauseMenuModule;
+import dev.telmuad.hollowclient.modules.ui.TitleScreenModule;
 import dev.telmuad.hollowclient.modules.hud.ArmorHud;
 import dev.telmuad.hollowclient.modules.hud.ClockHud;
 import dev.telmuad.hollowclient.modules.hud.CoordinatesHud;
@@ -61,6 +66,11 @@ public final class Modules {
 	public static PerformanceModule PERFORMANCE;
 	public static MenuFxModule MENU_FX;
 	public static ToastsModule TOASTS;
+	public static TitleScreenModule TITLE_SCREEN;
+	public static LoadingScreenModule LOADING_SCREEN;
+	public static PauseMenuModule PAUSE_MENU;
+	public static InventoryBlurModule INVENTORY_BLUR;
+	public static ChatStyleModule CHAT_STYLE;
 
 	private Modules() {
 	}
@@ -76,6 +86,12 @@ public final class Modules {
 		registry.register(new PingHud());
 		registry.register(new ClockHud());
 		registry.register(new ToggleStatusHud());
+		// Interface: Hollow's look for vanilla screens
+		TITLE_SCREEN = registry.register(new TitleScreenModule());
+		LOADING_SCREEN = registry.register(new LoadingScreenModule());
+		PAUSE_MENU = registry.register(new PauseMenuModule());
+		INVENTORY_BLUR = registry.register(new InventoryBlurModule());
+		CHAT_STYLE = registry.register(new ChatStyleModule());
 		// Visual
 		FULLBRIGHT = registry.register(new FullbrightModule());
 		CROSSHAIR = registry.register(new CrosshairModule());

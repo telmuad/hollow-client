@@ -2,6 +2,7 @@ package dev.telmuad.hollowclient.module;
 
 public enum Category {
 	HUD("HUD"),
+	INTERFACE("Interface"),
 	VISUAL("Visual"),
 	QOL("Quality of Life"),
 	STYLES("Styles"),
