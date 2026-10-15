@@ -82,3 +82,24 @@ This file is the source of truth for where the build is. A new session should re
 - The "close launcher on start" option discards the game's output (by design); turn it off to see logs.
 - The menu key doesn't work inside other screens (inventory, chat), the same as every other keybind.
 - Hit Color changes the hurt tint for every entity (that's how Minecraft draws it), not only mobs you hit.
+
+---
+
+# Expansion: visuals & features (add-on plan, started 2026-10-14)
+
+- [ ] **E1. Identity core**: theme engine (accent/gradient/glow/blur/roundness/animation speed, 6 presets + custom), shared theme file for the launcher, H sigil logo, OFL UI font (Inter) with vanilla toggle, original UI sounds + volume, Performance Mode, FPS-aware Auto Quality, Iris detection
+- [ ] **E2. Menu remake**: world blur, spring open/close, staggered cards, glass panels, animated gradient borders, hover glow, card tilt, click ripples, live animated search, reactive particle field; toast notifications
+- [ ] **E3. Custom screens**: splash/loading screen, title screen (nebula shader, parallax, glowing logo, animated buttons, clock + FPS), pause menu, inventory blur, chat restyle (rounded, translucent, slide-in)
+- [ ] **E4. HUD upgrades**: glass/gradient text/glow/rounded themes, rolling numbers, fade/slide-in, animated hotbar, keystroke glow + ripple
+- [ ] **E5. Post-processing**: bloom, motion blur, chromatic aberration, vignette, film grain, color grading presets, damage screen shake; Iris auto-off
+- [ ] **E6. Sky & world look**: sky gradient/colors, star density, shooting stars, aurora, client time and weather changer, block outline customizer, prettier rain/snow
+- [ ] **E7. Particles & animations**: hit particle multiplier/color, crit sparks, block-break particles, own trails, footsteps, item physics, smoother switching, swing speed, 1.7-style animations, crit flash, kill burst, own nametag style
+- [ ] **E8. Styles upgrades**: animated capes (frames/GIF, glow, scrolling gradient), halo, horns, aura, pet, emotes + radial wheel (B), wardrobe with drag-to-spin, presets save theme/trails/crosshair/HUD layout
+- [ ] **E9. Features A**: screenshot manager, chat upgrades (timestamps, stacking, copy, search, keyword highlight), Auto GG + auto-text hotkeys, session stats
+- [ ] **E10. Features B**: music player + visualizer, singleplayer waypoints, scoreboard/boss bar/title customizer, Discord Rich Presence, profiles, singleplayer cinematic camera
+- [ ] **E11. Launcher in QML**: frameless window + own title bar + shadow, nebula shader background, glass panels, page transitions, intro, charging PLAY, 3D skin viewer, animated install progress, stats dashboard, theme sync
+- [ ] **E12. Finish**: all effects vs Performance Mode FPS measurements, TESTING/USER_GUIDE/CREDITS, build_all, push
+
+## Expansion notes / blockers
+
+(none yet)
