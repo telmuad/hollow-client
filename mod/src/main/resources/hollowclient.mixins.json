@@ -9,10 +9,13 @@
 		"ChatComponentMixin",
 		"ChatLineMixin",
 		"ChatScreenMixin",
+		"FogRendererMixin",
 		"GameRendererMixin",
 		"GameRendererPostMixin",
 		"GuiMixin",
 		"KeyboardInputMixin",
+		"LevelMixin",
+		"LevelRendererOutlineMixin",
 		"LightTextureMixin",
 		"LoadingOverlayMixin",
 		"MinecraftMixin",
@@ -22,9 +25,11 @@
 		"PauseScreenMixin",
 		"ScreenEffectRendererMixin",
 		"ScreenMixin",
+		"SkyRendererMixin",
 		"TitleScreenAccessor",
 		"ToastManagerMixin",
-		"WaterFogEnvironmentMixin"
+		"WaterFogEnvironmentMixin",
+		"WeatherEffectRendererMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

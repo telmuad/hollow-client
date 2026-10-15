@@ -32,5 +32,8 @@
 	"key.hollowclient.inventory_blur": "Toggle Inventory Blur",
 	"key.hollowclient.chat_style": "Toggle Chat Style",
 	"key.hollowclient.hud_style": "Toggle HUD Style",
-	"key.hollowclient.post_processing": "Toggle Post Processing"
+	"key.hollowclient.post_processing": "Toggle Post Processing",
+	"key.hollowclient.sky": "Toggle Sky effects",
+	"key.hollowclient.time_weather": "Toggle Time & Weather",
+	"key.hollowclient.block_outline": "Toggle Block Outline"
 }

@@ -100,6 +100,7 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 			hud(ctx);
 			qolAndVisual(ctx, sp);
 			postProcessing(ctx, sp);
+			skyAndWorld(ctx, sp);
 			styles(ctx, sp);
 		}
 		if (!failures.isEmpty()) throw new AssertionError("Hollow Client checks failed: " + failures);
@@ -462,6 +463,59 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		}
 		screenshot(ctx, "motion_blur_turning");
 		ctx.runOnClient(mc -> setBool("post_processing", "motionBlur", false));
+		home(sp);
+		ctx.waitTicks(5);
+	}
+
+	private void skyAndWorld(ClientGameTestContext ctx, TestSingleplayerContext sp) {
+		home(sp);
+		sp.getServer().runCommand("weather clear");
+		sp.getServer().runCommand("time set midnight");
+		// look north and up at the night sky: aurora, brighter stars and a shooting star
+		sp.getServer().runCommand("tp @a " + (x + 0.5) + " " + y + " " + (z + 0.5) + " 180 -30");
+		ctx.waitTicks(10);
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.render.SkyFx.spawnTestStreak());
+		ctx.waitTicks(2);
+		screenshot(ctx, "night_sky_aurora");
+		ctx.runOnClient(mc -> setBool("sky", "moreStars", true));
+		ctx.waitTicks(3);
+		screenshot(ctx, "night_sky_more_stars");
+		ctx.runOnClient(mc -> setBool("sky", "moreStars", false));
+		// sky colors (theme) at day
+		sp.getServer().runCommand("time set noon");
+		ctx.runOnClient(mc -> setBool("sky", "tint", true));
+		ctx.waitTicks(5);
+		screenshot(ctx, "sky_tint_day");
+		ctx.runOnClient(mc -> setBool("sky", "tint", false));
+		// client-only time: sunset on screen while the server stays at noon
+		ctx.runOnClient(mc -> {
+			setBool("time_weather", "fixTime", true);
+			((dev.telmuad.hollowclient.setting.NumberSetting) module("time_weather").setting("hour")).set(18.5);
+			mc.player.setYRot(-90f);
+			mc.player.setXRot(-10f);
+		});
+		ctx.waitTicks(5);
+		long shown = ctx.computeOnClient(mc -> mc.level.getDayTime() % 24000);
+		long server = sp.getServer().computeOnServer(s -> s.overworld().getDayTime() % 24000);
+		check("Client time changer shows 18:30 while the server stays at noon (" + shown + " / " + server + ")", shown == 12500 && server == 6000);
+		screenshot(ctx, "client_time_sunset");
+		ctx.runOnClient(mc -> setBool("time_weather", "fixTime", false));
+		// client-only weather
+		setEnum(ctx, "time_weather", "weather", "thunder");
+		ctx.waitTicks(20);
+		float rain = ctx.computeOnClient(mc -> mc.level.getRainLevel(1f));
+		check("Client weather changer shows rain (" + rain + ")", rain >= 0.99f);
+		screenshot(ctx, "client_weather_rain");
+		setEnum(ctx, "time_weather", "weather", "server");
+		// block outline with fill: a stone block right in front at eye level
+		sp.getServer().runCommand("setblock " + at(0, 1, 2) + " stone");
+		ctx.runOnClient(mc -> {
+			mc.player.setYRot(0f);
+			mc.player.setXRot(20f);
+		});
+		ctx.waitTicks(5);
+		screenshot(ctx, "block_outline");
+		sp.getServer().runCommand("setblock " + at(0, 1, 2) + " air");
 		home(sp);
 		ctx.waitTicks(5);
 	}

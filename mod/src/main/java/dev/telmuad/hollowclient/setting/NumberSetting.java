@@ -12,6 +12,7 @@ public final class NumberSetting extends Setting<Double> {
 	private final double step;
 	private int decimals;
 	private String suffix = "";
+	private java.util.function.DoubleFunction<String> displayAs;
 
 	public NumberSetting(String id, String name, double defaultValue, double min, double max, double step) {
 		super(id, name, defaultValue);
@@ -52,6 +53,12 @@ public final class NumberSetting extends Setting<Double> {
 		return this;
 	}
 
+	/** Show the value in a custom way (for example a clock time) instead of number + suffix. */
+	public NumberSetting display(java.util.function.DoubleFunction<String> formatter) {
+		this.displayAs = formatter;
+		return this;
+	}
+
 	/** Position of the value along the slider, 0..1. */
 	public double fraction() {
 		return (get() - min) / (max - min);
@@ -88,6 +95,7 @@ public final class NumberSetting extends Setting<Double> {
 
 	@Override
 	public String display() {
+		if (displayAs != null) return displayAs.apply(get());
 		return String.format(Locale.ROOT, "%." + decimals + "f", get()) + suffix;
 	}
 }

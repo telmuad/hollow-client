@@ -92,7 +92,7 @@ This file is the source of truth for where the build is. A new session should re
 - [x] **E3. Custom screens**: splash/loading screen, title screen (nebula shader, parallax, glowing logo, animated buttons, clock + FPS), pause menu, inventory blur, chat restyle (rounded, translucent, slide-in)
 - [x] **E4. HUD upgrades**: glass/gradient text/glow/rounded themes, rolling numbers, fade/slide-in, animated hotbar, keystroke glow + ripple
 - [x] **E5. Post-processing**: bloom, motion blur, chromatic aberration, vignette, film grain, color grading presets, damage screen shake; Iris auto-off
-- [ ] **E6. Sky & world look**: sky gradient/colors, star density, shooting stars, aurora, client time and weather changer, block outline customizer, prettier rain/snow
+- [x] **E6. Sky & world look**: sky gradient/colors, star density, shooting stars, aurora, client time and weather changer, block outline customizer, prettier rain/snow
 - [ ] **E7. Particles & animations**: hit particle multiplier/color, crit sparks, block-break particles, own trails, footsteps, item physics, smoother switching, swing speed, 1.7-style animations, crit flash, kill burst, own nametag style
 - [ ] **E8. Styles upgrades**: animated capes (frames/GIF, glow, scrolling gradient), halo, horns, aura, pet, emotes + radial wheel (B), wardrobe with drag-to-spin, presets save theme/trails/crosshair/HUD layout
 - [ ] **E9. Features A**: screenshot manager, chat upgrades (timestamps, stacking, copy, search, keyword highlight), Auto GG + auto-text hotkeys, session stats
@@ -103,6 +103,7 @@ This file is the source of truth for where the build is. A new session should re
 ## Expansion notes / blockers
 
 - E1: theme editor first overflowed at small GUI sizes (854x480, GUI scale 2); reworked to adaptive row heights and a scrolling theme list. Inter's license file had an uppercase name inside `assets/` (invalid resource path, logged an error); moved to `licenses/`. The config debounce unit test was flaky under load; it now waits up to 15 s.
+- E6: works as planned; the aurora test first faced the wrong way (the test's teleport overrode the client rotation), fixed by rotating through the teleport. Gametest 25/25 (new: client time shows 18:30 while the server stays at noon; client weather shows rain).
 - E5: bloom was barely visible at first (threshold too high for Minecraft's low-range colors, and too small a blur); now ¼-size with two blur rounds and a lower threshold, measured +10 brightness on glowstone and +6 spill past its edge. Gametest 23/23 (new: post shaders compile and run).
 - E4: done as planned; screenshots show glass/outline/classic looks, gradient text and the hotbar mid-glide. Gametest 22/22.
 - E3: title-screen column ran into the footer on short windows (button height now adapts); Language/Accessibility became icon buttons with tooltips; nebula clouds brightened; chat panel corners/edge made more visible. Gametest 22/22 (new: Hollow title screen replaces vanilla's).

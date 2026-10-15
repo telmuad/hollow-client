@@ -31,7 +31,10 @@ import dev.telmuad.hollowclient.modules.visual.CrosshairModule;
 import dev.telmuad.hollowclient.modules.visual.FullbrightModule;
 import dev.telmuad.hollowclient.modules.visual.HitColorModule;
 import dev.telmuad.hollowclient.modules.visual.LowFireModule;
+import dev.telmuad.hollowclient.modules.visual.BlockOutlineModule;
 import dev.telmuad.hollowclient.modules.visual.PostProcessingModule;
+import dev.telmuad.hollowclient.modules.visual.SkyModule;
+import dev.telmuad.hollowclient.modules.visual.TimeWeatherModule;
 import dev.telmuad.hollowclient.modules.styles.CapeModule;
 import dev.telmuad.hollowclient.modules.styles.HatModule;
 import dev.telmuad.hollowclient.modules.styles.WingsModule;
@@ -75,6 +78,9 @@ public final class Modules {
 	public static ChatStyleModule CHAT_STYLE;
 	public static HudStyleModule HUD_STYLE;
 	public static PostProcessingModule POST_PROCESSING;
+	public static SkyModule SKY;
+	public static TimeWeatherModule TIME_WEATHER;
+	public static BlockOutlineModule BLOCK_OUTLINE;
 
 	private Modules() {
 	}
@@ -104,6 +110,9 @@ public final class Modules {
 		CLEAR_WATER = registry.register(new ClearWaterModule());
 		HIT_COLOR = registry.register(new HitColorModule());
 		POST_PROCESSING = registry.register(new PostProcessingModule());
+		SKY = registry.register(new SkyModule());
+		TIME_WEATHER = registry.register(new TimeWeatherModule());
+		BLOCK_OUTLINE = registry.register(new BlockOutlineModule());
 		// Quality of life
 		ZOOM = registry.register(new ZoomModule());
 		TOGGLE_SPRINT = registry.register(new ToggleSprintModule());
