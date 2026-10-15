@@ -239,7 +239,8 @@ public final class HollowMenuScreen extends HollowScreen {
 		g.fill(panel.x() + 8, header.bottom() - 2, panel.right() - 8, header.bottom() - 1, Theme.fade(Theme.STROKE, a));
 	}
 
-	private static void drawMagnifier(GuiGraphics g, int x, int y, int color) {
+	/** A small magnifying glass (search fields). */
+	public static void drawMagnifier(GuiGraphics g, int x, int y, int color) {
 		Draw.roundOutline(g, x, y, 6, 6, 3, color);
 		g.fill(x + 5, y + 5, x + 6, y + 6, color);
 		g.fill(x + 6, y + 6, x + 8, y + 8, color);

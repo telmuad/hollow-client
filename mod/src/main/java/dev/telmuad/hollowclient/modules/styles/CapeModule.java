@@ -17,6 +17,7 @@ public final class CapeModule extends Module {
 
 	public CapeModule() {
 		super("cape", "Cape", "Wear a built-in or imported cape. Only you can see it.", Category.STYLES, false);
+		cape.visibleWhen(() -> false); // picked in Styles → Capes, not typed
 	}
 
 	public String capeId() {

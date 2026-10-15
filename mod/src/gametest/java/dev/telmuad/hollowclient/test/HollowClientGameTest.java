@@ -103,6 +103,7 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 			skyAndWorld(ctx, sp);
 			effects(ctx, sp);
 			styles(ctx, sp);
+			featuresA(ctx, sp);
 		}
 		if (!failures.isEmpty()) throw new AssertionError("Hollow Client checks failed: " + failures);
 	}
@@ -905,6 +906,152 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 			out.closeEntry();
 		} catch (java.io.IOException e) {
 			throw new java.io.UncheckedIOException(e);
+		}
+	}
+
+	// ------------------------------------------------------------------------------------------------ features A
+
+	private static List<net.minecraft.client.GuiMessage> chatMessages(Minecraft mc) {
+		return ((dev.telmuad.hollowclient.mixin.ChatComponentAccessor) mc.gui.getChat()).hollowclient$allMessages();
+	}
+
+	private static long historyCount(String suffix) {
+		return dev.telmuad.hollowclient.chat.ChatFx.history().stream().filter(e -> e.text().endsWith(suffix)).count();
+	}
+
+	private void featuresA(ClientGameTestContext ctx, TestSingleplayerContext sp) {
+		home(sp);
+		sp.getServer().runCommand("time set noon");
+		sp.getServer().runCommand("kill @e[type=!player]");
+		ctx.runOnClient(mc -> {
+			for (Module m : HollowClient.modules().all()) if (m instanceof HudModule) m.setEnabled(false);
+			Modules.CHAT_PLUS.setEnabled(true);
+			((dev.telmuad.hollowclient.setting.StringSetting) Modules.CHAT_PLUS.setting("words")).set("diamond, hollow");
+			mc.gui.getChat().clearMessages(false);
+		});
+		// chat+: three identical lines stack into one "(x3)" line, every line gets a timestamp
+		ctx.runOnClient(mc -> {
+			for (int i = 0; i < 3; i++) mc.gui.getChat().addMessage(net.minecraft.network.chat.Component.literal("Server restarting soon"));
+		});
+		String top = ctx.computeOnClient(mc -> chatMessages(mc).get(0).content().getString());
+		long copies = ctx.computeOnClient(mc -> chatMessages(mc).stream().filter(m -> m.content().getString().contains("Server restarting soon")).count());
+		check("Chat+ stacks repeated messages (\"" + top + "\", " + copies + " line)", top.endsWith("(x3)") && copies == 1);
+		check("Chat+ adds timestamps", top.matches("^\\[\\d{1,2}:\\d{2}\\] .*"));
+		// keyword highlight: accent tag on the line
+		ctx.runOnClient(mc -> {
+			mc.gui.getChat().addMessage(net.minecraft.network.chat.Component.literal("<Steve> I found a diamond over here"));
+			mc.gui.getChat().addMessage(net.minecraft.network.chat.Component.literal("<Alex> nice, see you at spawn"));
+		});
+		boolean highlighted = ctx.computeOnClient(mc -> chatMessages(mc).stream()
+				.anyMatch(m -> m.content().getString().contains("diamond") && m.tag() != null && "Hollow highlight".equals(m.tag().logTag())));
+		boolean plain = ctx.computeOnClient(mc -> chatMessages(mc).stream()
+				.anyMatch(m -> m.content().getString().contains("nice, see you") && (m.tag() == null || !"Hollow highlight".equals(m.tag().logTag()))));
+		check("Chat+ highlights keywords (" + highlighted + ") and leaves other lines alone (" + plain + ")", highlighted && plain);
+		ctx.setScreen(() -> new net.minecraft.client.gui.screens.ChatScreen("", false));
+		ctx.waitTicks(8);
+		screenshot(ctx, "chat_plus");
+		// right-click copies the message under the mouse
+		ctx.runOnClient(mc -> mc.keyboardHandler.setClipboard(""));
+		double[] linePos = ctx.computeOnClient(mc -> {
+			int h = mc.getWindow().getGuiScaledHeight();
+			return new double[]{20, h - 40 - 4};
+		});
+		double scale = ctx.computeOnClient(mc -> mc.getWindow().getGuiScale());
+		ctx.getInput().setCursorPos(linePos[0] * scale, linePos[1] * scale);
+		ctx.waitTick();
+		ctx.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+		ctx.waitTicks(3);
+		String clip = ctx.computeOnClient(mc -> mc.keyboardHandler.getClipboard());
+		check("Right-clicking a chat line copies it without Hollow's timestamp (\"" + clip + "\")", clip.equals("<Alex> nice, see you at spawn"));
+		// ctrl+f: chat search
+		ctx.getInput().holdKey(GLFW.GLFW_KEY_LEFT_CONTROL);
+		ctx.getInput().pressKey(GLFW.GLFW_KEY_F);
+		ctx.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_CONTROL);
+		ctx.waitTicks(4);
+		check("Ctrl+F in chat opens the chat search", ctx.computeOnClient(mc -> mc.screen instanceof dev.telmuad.hollowclient.gui.ChatSearchScreen));
+		ctx.getInput().typeChars("diamond");
+		ctx.waitTicks(8);
+		screenshot(ctx, "chat_search");
+		ctx.setScreen(() -> null);
+
+		// auto gg: once per game end, never during the cooldown
+		ctx.runOnClient(mc -> {
+			Modules.AUTO_GG.setEnabled(true);
+			((dev.telmuad.hollowclient.setting.NumberSetting) Modules.AUTO_GG.setting("delay")).set(0.5);
+			mc.gui.getChat().addMessage(net.minecraft.network.chat.Component.literal("Steve has won the game!"));
+		});
+		ctx.waitTicks(30);
+		long ggs = historyCount("> gg");
+		ctx.runOnClient(mc -> mc.gui.getChat().addMessage(net.minecraft.network.chat.Component.literal("GAME OVER")));
+		ctx.waitTicks(30);
+		long ggs2 = historyCount("> gg");
+		check("Auto GG says gg once when a game ends (" + ggs + ", then " + ggs2 + " during the cooldown)", ggs == 1 && ggs2 == 1);
+		ctx.runOnClient(mc -> Modules.AUTO_GG.setEnabled(false));
+
+		// chat macros
+		ctx.runOnClient(mc -> {
+			Modules.CHAT_MACROS.setEnabled(true);
+			((dev.telmuad.hollowclient.setting.StringSetting) Modules.CHAT_MACROS.setting("text1")).set("Hello from macro one");
+			dev.telmuad.hollowclient.chat.ChatFx.macro(mc, 0);
+		});
+		ctx.waitTicks(10);
+		check("A chat macro sends its text", historyCount("> Hello from macro one") == 1);
+		ctx.runOnClient(mc -> Modules.CHAT_MACROS.setEnabled(false));
+
+		// session stats: a block broken (creative, instant) and a kill
+		ctx.runOnClient(mc -> Modules.AUTO_GG.setEnabled(false));
+		setEnabled(ctx, "session_stats", true);
+		setEnabled(ctx, "fps", true);
+		int blocksBefore = ctx.computeOnClient(mc -> dev.telmuad.hollowclient.modules.hud.SessionStatsHud.blocks());
+		sp.getServer().runCommand("gamemode creative @a");
+		sp.getServer().runCommand("setblock " + at(0, 0, 2) + " stone");
+		sp.getServer().runCommand("tp @a " + (x + 0.5) + " " + y + " " + (z + 0.5) + " 0 25");
+		ctx.waitTicks(10);
+		ctx.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+		ctx.waitTicks(5);
+		int blocksAfter = ctx.computeOnClient(mc -> dev.telmuad.hollowclient.modules.hud.SessionStatsHud.blocks());
+		check("Session Stats counts broken blocks (" + blocksBefore + " -> " + blocksAfter + ")", blocksAfter == blocksBefore + 1);
+		sp.getServer().runCommand("gamemode survival @a");
+		int killsBefore = ctx.computeOnClient(mc -> dev.telmuad.hollowclient.modules.hud.SessionStatsHud.kills());
+		sp.getServer().runCommand("summon pig " + (x + 0.5) + " " + y + " " + (z + 2.5) + " {NoAI:1b,Health:1f}");
+		sp.getServer().runCommand("tp @a " + (x + 0.5) + " " + y + " " + (z + 0.5) + " 0 20");
+		ctx.waitTicks(10);
+		ctx.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+		ctx.waitTicks(20);
+		int killsAfter = ctx.computeOnClient(mc -> dev.telmuad.hollowclient.modules.hud.SessionStatsHud.kills());
+		check("Session Stats counts your kills (" + killsBefore + " -> " + killsAfter + ")", killsAfter == killsBefore + 1);
+		sp.getServer().runCommand("tp @a " + (x + 4.5) + " " + y + " " + (z + 4.5));
+		ctx.waitTicks(10);
+		screenshot(ctx, "session_stats");
+
+		// screenshots: F2 takes one (shutter + notification), the manager shows the folder
+		Path dir = ctx.computeOnClient(mc -> dev.telmuad.hollowclient.gui.ScreenshotsScreen.folderPath());
+		long pngsBefore = countPngs(dir);
+		ctx.runOnClient(mc -> Toasts.clear());
+		ctx.getInput().pressKey(GLFW.GLFW_KEY_F2);
+		ctx.waitTicks(30);
+		long pngsAfter = countPngs(dir);
+		check("F2 saves a screenshot (" + pngsBefore + " -> " + pngsAfter + ")", pngsAfter == pngsBefore + 1);
+		check("Taking a screenshot shows a notification", ctx.computeOnClient(mc -> Toasts.count() >= 1));
+		screenshot(ctx, "screenshot_toast");
+		ctx.runOnClient(mc -> Toasts.clear());
+		ctx.setScreen(() -> new dev.telmuad.hollowclient.gui.ScreenshotsScreen(null));
+		ctx.waitTicks(60);
+		screenshot(ctx, "screenshot_manager");
+		ctx.runOnClient(mc -> {
+			if (mc.screen instanceof dev.telmuad.hollowclient.gui.ScreenshotsScreen s) s.viewFirst();
+		});
+		ctx.waitTicks(40);
+		screenshot(ctx, "screenshot_viewer");
+		ctx.setScreen(() -> null);
+		setEnabled(ctx, "session_stats", false);
+	}
+
+	private static long countPngs(Path dir) {
+		try (var s = java.nio.file.Files.list(dir)) {
+			return s.filter(p -> p.toString().endsWith(".png")).count();
+		} catch (java.io.IOException e) {
+			return -1;
 		}
 	}
 }

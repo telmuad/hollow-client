@@ -77,6 +77,8 @@ public final class HollowClient implements ClientModInitializer {
 		Quality.tick();
 		dev.telmuad.hollowclient.render.EffectsFx.tick(mc);
 		dev.telmuad.hollowclient.styles.Emotes.tick(mc);
+		dev.telmuad.hollowclient.chat.ChatFx.tick(mc);
+		dev.telmuad.hollowclient.modules.hud.SessionStatsHud.tick(mc);
 		for (Module m : modules.all()) {
 			try {
 				m.onTick();

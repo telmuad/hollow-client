@@ -12,6 +12,8 @@ import dev.telmuad.hollowclient.setting.ColorSetting;
 import dev.telmuad.hollowclient.setting.EnumSetting;
 import dev.telmuad.hollowclient.setting.NumberSetting;
 import dev.telmuad.hollowclient.setting.Setting;
+import dev.telmuad.hollowclient.setting.StringSetting;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -88,13 +90,32 @@ public class ModuleSettingsScreen extends HollowScreen {
 		buildRows();
 	}
 
+	/** Text fields for text settings (chat macros, highlight words ...), kept per setting. */
+	private final Map<StringSetting, EditBox> textBoxes = new HashMap<>();
+
+	private EditBox textBox(StringSetting setting) {
+		return textBoxes.computeIfAbsent(setting, st -> {
+			EditBox box = new EditBox(font, 0, 0, 150, 12, Component.literal(st.name()));
+			box.setBordered(false);
+			box.setMaxLength(256);
+			box.setTextColor(Theme.TEXT);
+			box.setValue(st.get());
+			box.setResponder(st::set);
+			return box;
+		});
+	}
+
 	private void buildRows() {
+		textBoxes.clear();
 		rows.clear();
 		KeyMapping key = Keybinds.of(module);
 		if (key != null) rows.add(new Row("Keybind", "Also in Options > Controls > Hollow Client. Backspace clears it.", key));
 		for (Setting<?> s : module.settings()) {
 			if (s instanceof BooleanSetting || s instanceof NumberSetting || s instanceof EnumSetting<?> || s instanceof ColorSetting) {
 				rows.add(new Row(s.name(), s.description(), s));
+			} else if (s instanceof StringSetting ss) {
+				rows.add(new Row(s.name(), s.description(), s));
+				addWidget(textBox(ss));
 			}
 		}
 	}
@@ -198,6 +219,16 @@ public class ModuleSettingsScreen extends HollowScreen {
 			Ui.draw(g, font, "<", b.x() + 4, b.y() + 3, Theme.fade(Theme.TEXT_DIM, a));
 			Ui.draw(g, font, ">", b.right() - 4 - Ui.width(font, ">"), b.y() + 3, Theme.fade(Theme.TEXT_DIM, a));
 			Ui.center(g, font, Text.fit(font, es.display(), b.w() - 20), b.centerX(), b.y() + 3, Theme.fade(Theme.TEXT, a));
+		} else if (t instanceof StringSetting ss) {
+			EditBox box = textBox(ss);
+			Rect b = textRect(r);
+			boolean focused = box.isFocused();
+			Draw.roundRect(g, b, 3, Theme.fade(focused ? Theme.CARD_HOVER : Theme.CARD, a));
+			Draw.roundOutline(g, b, 3, Theme.fade(focused ? Theme.accent() : Theme.STROKE, a));
+			box.setX(b.x() + 4);
+			box.setY(b.y() + 3);
+			box.setWidth(b.w() - 8);
+			if (a > 0.5f) box.render(g, mx, my, 0);
 		} else if (t instanceof ColorSetting cs) {
 			Rect sw = new Rect(right - 26, cy - 6, 26, 12);
 			Draw.checker(g, sw.x(), sw.y(), sw.w(), sw.h(), 3);
@@ -206,6 +237,12 @@ public class ModuleSettingsScreen extends HollowScreen {
 			String hex = cs.display();
 			Ui.draw(g, font, hex, sw.x() - 6 - Ui.width(font, hex), textY, Theme.fade(Theme.TEXT_DIM, a));
 		}
+	}
+
+	/** Text fields take the right half of the row. */
+	private Rect textRect(Rect row) {
+		int w = Math.max(90, Math.min(220, row.w() / 2));
+		return new Rect(row.right() - 6 - w, row.y() + (ROW_H - 2 - 14) / 2, w, 14);
 	}
 
 	private Rect keyButton(Rect row) {
@@ -288,6 +325,12 @@ public class ModuleSettingsScreen extends HollowScreen {
 			UiButton.playClick();
 			Rect b = new Rect(r.right() - 6 - 100, 0, 100, 0);
 			es.cycle(!left || mx < b.centerX() ? -1 : 1);
+		} else if (t instanceof StringSetting ss) {
+			EditBox box = textBox(ss);
+			for (EditBox other : textBoxes.values()) if (other != box) other.setFocused(false);
+			setFocused(box);
+			box.setFocused(true);
+			box.mouseClicked(event, doubleClick);
 		} else if (t instanceof ColorSetting cs && left) {
 			UiButton.playClick();
 			picker = new ColorPicker(cs);
@@ -335,6 +378,13 @@ public class ModuleSettingsScreen extends HollowScreen {
 			}
 			if (picker.keyPressed(event.key())) return true;
 			return true;
+		}
+		for (EditBox box : textBoxes.values()) {
+			if (box.isFocused() && (event.isEscape() || event.key() == GLFW.GLFW_KEY_ENTER || event.key() == GLFW.GLFW_KEY_KP_ENTER)) {
+				box.setFocused(false);
+				setFocused(null);
+				return true;
+			}
 		}
 		return super.keyPressed(event);
 	}

@@ -46,5 +46,15 @@
 	"key.hollowclient.horns": "Toggle Horns",
 	"key.hollowclient.aura": "Toggle Aura",
 	"key.hollowclient.pet": "Toggle Pet",
-	"key.hollowclient.emotes": "Toggle Emotes"
+	"key.hollowclient.emotes": "Toggle Emotes",
+	"key.hollowclient.chat_plus": "Toggle Chat+",
+	"key.hollowclient.auto_gg": "Toggle Auto GG",
+	"key.hollowclient.chat_macros": "Toggle Chat Macros",
+	"key.hollowclient.screenshots": "Open the screenshot manager",
+	"key.hollowclient.session_stats": "Toggle Session Stats",
+	"key.hollowclient.macro1": "Chat macro 1",
+	"key.hollowclient.macro2": "Chat macro 2",
+	"key.hollowclient.macro3": "Chat macro 3",
+	"key.hollowclient.macro4": "Chat macro 4",
+	"key.hollowclient.macro5": "Chat macro 5"
 }

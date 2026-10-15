@@ -95,7 +95,7 @@ This file is the source of truth for where the build is. A new session should re
 - [x] **E6. Sky & world look**: sky gradient/colors, star density, shooting stars, aurora, client time and weather changer, block outline customizer, prettier rain/snow
 - [x] **E7. Particles & animations**: hit particle multiplier/color, crit sparks, block-break particles, own trails, footsteps, item physics, smoother switching, swing speed, 1.7-style animations, crit flash, kill burst, own nametag style
 - [x] **E8. Styles upgrades**: animated capes (frames/GIF, glow, scrolling gradient), halo, horns, aura, pet, emotes + radial wheel (B), wardrobe with drag-to-spin, presets save theme/trails/crosshair/HUD layout
-- [ ] **E9. Features A**: screenshot manager, chat upgrades (timestamps, stacking, copy, search, keyword highlight), Auto GG + auto-text hotkeys, session stats
+- [x] **E9. Features A**: screenshot manager, chat upgrades (timestamps, stacking, copy, search, keyword highlight), Auto GG + auto-text hotkeys, session stats
 - [ ] **E10. Features B**: music player + visualizer, singleplayer waypoints, scoreboard/boss bar/title customizer, Discord Rich Presence, profiles, singleplayer cinematic camera
 - [ ] **E11. Launcher in QML**: frameless window + own title bar + shadow, nebula shader background, glass panels, page transitions, intro, charging PLAY, 3D skin viewer, animated install progress, stats dashboard, theme sync
 - [ ] **E12. Finish**: all effects vs Performance Mode FPS measurements, TESTING/USER_GUIDE/CREDITS, build_all, push
@@ -103,6 +103,7 @@ This file is the source of truth for where the build is. A new session should re
 ## Expansion notes / blockers
 
 - E1: theme editor first overflowed at small GUI sizes (854x480, GUI scale 2); reworked to adaptive row heights and a scrolling theme list. Inter's license file had an uppercase name inside `assets/` (invalid resource path, logged an error); moved to `licenses/`. The config debounce unit test was flaky under load; it now waits up to 15 s.
+- E9: the test harness sends key presses without modifier flags, so Ctrl+F also checks the physical Ctrl key (works the same for real players). Copying a chat line drops Hollow's own timestamp and "(x3)"; the capture toast shows the file name instead of a hint that got cut off. Gametest 43/43 (new: stacking, timestamps, highlight, right-click copy, Ctrl+F search, Auto GG once per game end, chat macro, block and kill counters, F2 capture + toast).
 - E8: found a real Windows race (a reader holding the file made the atomic save fail silently) through the flaky config test; added retrying `AtomicFiles`. PNG strips need 3+ frames so the "square image is refused" check still holds. Gametest 32/32 (new: preset restores theme + halo, emote + camera, GIF cape import).
 - E7: found and fixed a crash in rolling numbers (switching HUD Style off and on left stale arrays; the HUD editor has no per-element try/catch). Crit sparks first spawned inside mobs' heads (models stick out of hitboxes), so they moved forward. Gametest 28/28 (new: hit burst, crit sparks, footprints).
 - E6: works as planned; the aurora test first faced the wrong way (the test's teleport overrode the client rotation), fixed by rotating through the teleport. Gametest 25/25 (new: client time shows 18:30 while the server stays at noon; client weather shows rain).

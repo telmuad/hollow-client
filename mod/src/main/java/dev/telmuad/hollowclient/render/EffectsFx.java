@@ -3,6 +3,7 @@ package dev.telmuad.hollowclient.render;
 import dev.telmuad.hollowclient.gui.Theme;
 import dev.telmuad.hollowclient.modules.Modules;
 import dev.telmuad.hollowclient.modules.effects.HitEffectsModule;
+import dev.telmuad.hollowclient.modules.hud.SessionStatsHud;
 import dev.telmuad.hollowclient.modules.effects.ParticlesModule;
 import dev.telmuad.hollowclient.render.HollowParticle.Kind;
 import dev.telmuad.hollowclient.util.ColorUtil;
@@ -153,8 +154,10 @@ public final class EffectsFx {
 	public static void onDeath(LivingEntity e) {
 		HitEffectsModule m = hits();
 		Minecraft mc = Minecraft.getInstance();
-		if (m == null || m.killBurst() <= 0f || mc.level == null || !recentlyHitByMe(e, HIT_MEMORY_MS)) return;
+		if (!recentlyHitByMe(e, HIT_MEMORY_MS)) return;
 		RECENT_HITS.remove(e.getId());
+		SessionStatsHud.addKill();
+		if (m == null || m.killBurst() <= 0f || mc.level == null) return;
 		Vec3 c = e.getBoundingBox().getCenter();
 		int ring = count(14 + 26 * m.killBurst());
 		for (int i = 0; i < ring; i++) {

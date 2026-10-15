@@ -28,7 +28,12 @@ import dev.telmuad.hollowclient.modules.hud.HudStyleModule;
 import dev.telmuad.hollowclient.modules.hud.KeystrokesHud;
 import dev.telmuad.hollowclient.modules.hud.PingHud;
 import dev.telmuad.hollowclient.modules.hud.PotionHud;
+import dev.telmuad.hollowclient.modules.hud.SessionStatsHud;
 import dev.telmuad.hollowclient.modules.hud.ToggleStatusHud;
+import dev.telmuad.hollowclient.modules.qol.AutoGgModule;
+import dev.telmuad.hollowclient.modules.qol.ChatMacrosModule;
+import dev.telmuad.hollowclient.modules.qol.ChatPlusModule;
+import dev.telmuad.hollowclient.modules.qol.ScreenshotsModule;
 import dev.telmuad.hollowclient.modules.qol.ToggleSprintModule;
 import dev.telmuad.hollowclient.modules.qol.ZoomModule;
 import dev.telmuad.hollowclient.modules.visual.ClearWaterModule;
@@ -101,6 +106,10 @@ public final class Modules {
 	public static ItemPhysicsModule ITEM_PHYSICS;
 	public static HandAnimationsModule HAND_ANIMATIONS;
 	public static OwnNametagModule OWN_NAMETAG;
+	public static ChatPlusModule CHAT_PLUS;
+	public static AutoGgModule AUTO_GG;
+	public static ChatMacrosModule CHAT_MACROS;
+	public static ScreenshotsModule SCREENSHOTS;
 
 	private Modules() {
 	}
@@ -116,6 +125,7 @@ public final class Modules {
 		registry.register(new PingHud());
 		registry.register(new ClockHud());
 		registry.register(new ToggleStatusHud());
+		registry.register(new SessionStatsHud());
 		HUD_STYLE = registry.register(new HudStyleModule());
 		// Interface: Hollow's look for vanilla screens
 		TITLE_SCREEN = registry.register(new TitleScreenModule());
@@ -142,6 +152,10 @@ public final class Modules {
 		// Quality of life
 		ZOOM = registry.register(new ZoomModule());
 		TOGGLE_SPRINT = registry.register(new ToggleSprintModule());
+		CHAT_PLUS = registry.register(new ChatPlusModule());
+		AUTO_GG = registry.register(new AutoGgModule());
+		CHAT_MACROS = registry.register(new ChatMacrosModule());
+		SCREENSHOTS = registry.register(new ScreenshotsModule());
 		// Styles (shown as tiles in the menu; picked in the Styles screen)
 		CAPE = registry.register(new CapeModule());
 		HAT = registry.register(new HatModule());
