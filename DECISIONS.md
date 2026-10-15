@@ -220,3 +220,10 @@ Choices made while building Hollow Client, with the reason for each. Newest sect
 - **Theme sync**: the launcher reads the same `config/hollowclient/theme.json` as the game (checked every second) and picking a theme in Settings writes it back, keeping custom themes. Writes retry briefly on Windows' "access denied" while the game has the file open, like the mod's `AtomicFiles`.
 - **Hollow jar updates by content**: the mod's version number didn't change during the expansion, so the launcher now compares the installed jar's hash with its bundled jar and updates it before PLAY (and in "Update all").
 
+## E12 Finish
+
+- **FPS measured, not estimated**: the gametest ends with a benchmark that switches each effect on alone in the same night scene (1280x720, vsync off, no FPS limit, Minecraft's AFK frame limit off) and averages FPS over about 5 seconds, then everything together, then everything with Performance Mode. It writes the table that TESTING.md shows, with and without Sodium.
+- **What Performance Mode covers**: the GPU-heavy, full-screen effects (post-processing, menu blur and the like). The HUD turned out to be the biggest single cost on a fast PC (+0.58 ms for six elements with HUD Style, CPU-side drawing); it isn't switched off by Performance Mode because it's information, not decoration. The guide says to remove unneeded HUD elements on slow PCs.
+- **Version 1.1.0** for both the mod and the launcher, so the jar name shows the expansion; the launcher also compares the jar by content, so even a rebuild with the same number is picked up.
+- **Settings for features with their own screen**: right-clicking those cards opens their screen, so each such screen has a Settings button leading to the usual settings page.
+

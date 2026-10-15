@@ -105,6 +105,7 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 			styles(ctx, sp);
 			featuresA(ctx, sp);
 			featuresB(ctx, sp);
+			fpsBenchmark(ctx, sp);
 		}
 		if (!failures.isEmpty()) throw new AssertionError("Hollow Client checks failed: " + failures);
 	}
@@ -1277,5 +1278,142 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		boolean back = ctx.computeOnClient(mc -> module("fps").isEnabled() == fpsBefore && Modules.POST_PROCESSING.isEnabled() == postBefore
 				&& !module("keystrokes").isEnabled() && dev.telmuad.hollowclient.config.Profiles.active() == null);
 		check("\"Back to my settings\" undoes profiles", back);
+	}
+
+	// ------------------------------------------------------------------------------------------------ FPS cost
+
+	private final List<String> fpsRows = new ArrayList<>();
+	private int fpsBase;
+
+	/** Average FPS over about four seconds (after a short settle). */
+	private int measureFps(ClientGameTestContext ctx) {
+		ctx.waitTicks(40);
+		int sum = 0;
+		for (int i = 0; i < 5; i++) {
+			ctx.waitTicks(21);
+			sum += ctx.computeOnClient(Minecraft::getFps);
+		}
+		return sum / 5;
+	}
+
+	private void fpsRow(ClientGameTestContext ctx, String label, Runnable setup) {
+		ctx.runOnClient(mc -> {
+			allEffectsOff(mc);
+			setup.run();
+		});
+		int fps = measureFps(ctx);
+		double ms = 1000.0 / Math.max(1, fps) - 1000.0 / Math.max(1, fpsBase);
+		String row = String.format(java.util.Locale.ROOT, "| %s | %d | %+.2f ms |", label, fps, ms);
+		fpsRows.add(row);
+		LOG.info("FPS {}", row);
+	}
+
+	private static void post(String... on) {
+		Modules.POST_PROCESSING.setEnabled(true);
+		for (String s : new String[]{"bloom", "motionBlur", "chromatic", "vignette", "grain", "shake"}) setBool("post_processing", s, false);
+		for (String s : on) setBool("post_processing", s, true);
+	}
+
+	private static void allEffectsOff(Minecraft mc) {
+		Modules.POST_PROCESSING.setEnabled(false);
+		setGrade("NONE");
+		Modules.SKY.setEnabled(false);
+		Modules.WAYPOINTS.setEnabled(false);
+		Modules.BLOCK_OUTLINE.setEnabled(false);
+		Modules.HUD_STYLE.setEnabled(false);
+		for (Module m : HollowClient.modules().all()) if (m instanceof HudModule) m.setEnabled(false);
+		for (Module m : new Module[]{Modules.CAPE, Modules.HAT, Modules.WINGS, Modules.HALO, Modules.HORNS, Modules.AURA, Modules.PET}) m.setEnabled(false);
+		setBool("performance", "performanceMode", false);
+		mc.options.setCameraType(CameraType.FIRST_PERSON);
+	}
+
+	@SuppressWarnings({"unchecked", "rawtypes"})
+	private static void setGrade(String value) {
+		EnumSetting e = (EnumSetting) module("post_processing").setting("grade");
+		for (Object v : e.values()) if (((Enum<?>) v).name().equals(value)) e.set((Enum) v);
+	}
+
+	private static void hud() {
+		for (String id : new String[]{"fps", "coordinates", "cps", "keystrokes", "armor", "clock"}) module(id).setEnabled(true);
+		Modules.HUD_STYLE.setEnabled(true);
+	}
+
+	private static void cosmetics() {
+		for (Module m : new Module[]{Modules.CAPE, Modules.WINGS, Modules.HALO, Modules.AURA, Modules.PET}) m.setEnabled(true);
+	}
+
+	private void fpsBenchmark(ClientGameTestContext ctx, TestSingleplayerContext sp) {
+		home(sp);
+		sp.getServer().runCommand("time set 18000");
+		sp.getServer().runCommand("weather clear");
+		sp.getServer().runCommand("kill @e[type=!player]");
+		sp.getServer().runCommand("gamemode survival @a");
+		sp.getServer().runCommand("tp @a " + (x + 0.5) + " " + y + " " + (z - 6.5) + " 0 25");
+		ctx.getInput().resizeWindow(1280, 720);
+		ctx.runOnClient(mc -> {
+			mc.options.enableVsync().set(false);
+			mc.options.framerateLimit().set(260);
+			// otherwise Minecraft drops to 30 FPS after a while without input (its AFK limit)
+			mc.options.inactivityFpsLimit().set(net.minecraft.client.InactivityFpsLimit.MINIMIZED);
+			setBool("performance", "autoQuality", false);
+			mc.gui.getChat().clearMessages(false);
+			Toasts.clear();
+			dev.telmuad.hollowclient.music.MusicPlayer.stop();
+		});
+		String gpu = ctx.computeOnClient(mc -> com.mojang.blaze3d.systems.RenderSystem.getDevice().getRenderer());
+		ctx.runOnClient(HollowClientGameTest::allEffectsOff);
+		fpsBase = measureFps(ctx);
+		fpsRows.add(String.format(java.util.Locale.ROOT, "| Baseline: every Hollow effect off | %d | |", fpsBase));
+		fpsRow(ctx, "Bloom", () -> post("bloom"));
+		fpsRow(ctx, "Motion blur", () -> post("motionBlur"));
+		fpsRow(ctx, "Chromatic aberration", () -> post("chromatic"));
+		fpsRow(ctx, "Vignette", () -> post("vignette"));
+		fpsRow(ctx, "Film grain", () -> post("grain"));
+		fpsRow(ctx, "Color grade (Cinematic)", () -> {
+			post();
+			setGrade("CINEMATIC");
+		});
+		fpsRow(ctx, "Sky: more stars, aurora, shooting stars", () -> Modules.SKY.setEnabled(true));
+		fpsRow(ctx, "Waypoint beams and labels (3 waypoints)", () -> Modules.WAYPOINTS.setEnabled(true));
+		fpsRow(ctx, "Block outline with fill and pulse", () -> {
+			Modules.BLOCK_OUTLINE.setEnabled(true);
+			setBool("block_outline", "fill", true);
+			setBool("block_outline", "pulse", true);
+		});
+		fpsRow(ctx, "HUD Style + 6 HUD elements", HollowClientGameTest::hud);
+		fpsRow(ctx, "Third person, no cosmetics", () -> Minecraft.getInstance().options.setCameraType(CameraType.THIRD_PERSON_BACK));
+		fpsRow(ctx, "Third person with cape, wings, halo, aura, pet", () -> {
+			Minecraft.getInstance().options.setCameraType(CameraType.THIRD_PERSON_BACK);
+			cosmetics();
+		});
+		Runnable everything = () -> {
+			post("bloom", "motionBlur", "chromatic", "vignette", "grain");
+			setGrade("CINEMATIC");
+			Modules.SKY.setEnabled(true);
+			Modules.WAYPOINTS.setEnabled(true);
+			Modules.BLOCK_OUTLINE.setEnabled(true);
+			setBool("block_outline", "fill", true);
+			hud();
+			cosmetics();
+			Minecraft.getInstance().options.setCameraType(CameraType.THIRD_PERSON_BACK);
+		};
+		fpsRow(ctx, "**Everything above at once**", everything);
+		fpsRow(ctx, "**Everything + Performance Mode**", () -> {
+			everything.run();
+			setBool("performance", "performanceMode", true);
+		});
+		screenshot(ctx, "fps_benchmark_everything_performance_mode");
+		ctx.runOnClient(mc -> {
+			allEffectsOff(mc);
+			try {
+				java.nio.file.Files.writeString(mc.gameDirectory.toPath().resolve("hollow_fps_results.md"),
+						"GPU: " + gpu + ", window 1280x720, vsync off, no FPS limit, night, superflat\n\n"
+								+ "| Effect (alone, default strength) | FPS | Frame time vs baseline |\n|---|---|---|\n"
+								+ String.join("\n", fpsRows) + "\n");
+			} catch (java.io.IOException e) {
+				throw new RuntimeException(e);
+			}
+		});
+		check("FPS benchmark ran (" + fpsRows.size() + " rows)", fpsRows.size() == 15);
 	}
 }

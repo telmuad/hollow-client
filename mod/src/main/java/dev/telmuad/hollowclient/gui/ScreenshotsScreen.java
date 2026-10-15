@@ -3,6 +3,7 @@ package dev.telmuad.hollowclient.gui;
 import com.mojang.blaze3d.platform.NativeImage;
 import dev.telmuad.hollowclient.HollowClient;
 import dev.telmuad.hollowclient.gui.widget.UiButton;
+import dev.telmuad.hollowclient.modules.Modules;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -61,6 +62,7 @@ public final class ScreenshotsScreen extends HollowScreen {
 	private final Map<Path, Float> hover = new HashMap<>();
 	private final UiButton back = new UiButton("< Back", this::backPressed);
 	private final UiButton folder = new UiButton("Open folder", this::openFolder);
+	private final UiButton settings = new UiButton("Settings", () -> open(new ModuleSettingsScreen(Modules.SCREENSHOTS, this)));
 	private final UiButton prev = new UiButton("<", () -> step(-1));
 	private final UiButton next = new UiButton(">", () -> step(1));
 	private final UiButton open = new UiButton("Open", () -> Util.getPlatform().openPath(current()));
@@ -114,6 +116,8 @@ public final class ScreenshotsScreen extends HollowScreen {
 		panel = new Rect((width - pw) / 2, (height - ph) / 2, pw, ph);
 		back.bounds(new Rect(panel.x() + 8, panel.y() + 8, back.preferredWidth(font), 16));
 		folder.bounds(new Rect(panel.right() - 8 - folder.preferredWidth(font), panel.y() + 8, folder.preferredWidth(font), 16));
+		int sw = settings.preferredWidth(font);
+		settings.bounds(new Rect(folder.bounds().x() - 6 - sw, panel.y() + 8, sw, 16));
 		grid = new Rect(panel.x() + 8, panel.y() + 32, pw - 16, ph - 32 - 20);
 		if (viewing >= files.size()) viewing = files.isEmpty() ? -1 : files.size() - 1;
 	}
@@ -224,6 +228,7 @@ public final class ScreenshotsScreen extends HollowScreen {
 		drawPanel(g, panel, 8, a);
 		back.render(g, font, mx, my, dt, a);
 		folder.render(g, font, mx, my, dt, a);
+		settings.render(g, font, mx, my, dt, a);
 		String title = viewing >= 0 ? (viewing + 1) + " of " + files.size() : "Screenshots";
 		Ui.draw(g, font, Ui.bold(title), back.bounds().right() + 8, panel.y() + 12, Theme.fade(Theme.TEXT, a));
 		if (viewing >= 0 && current() != null) renderViewer(g, mx, my, a);
@@ -400,7 +405,7 @@ public final class ScreenshotsScreen extends HollowScreen {
 		double mx = event.x();
 		double my = event.y();
 		if (event.button() != GLFW.GLFW_MOUSE_BUTTON_LEFT) return super.mouseClicked(event, doubleClick);
-		if (back.click(mx, my) || folder.click(mx, my)) return true;
+		if (back.click(mx, my) || folder.click(mx, my) || settings.click(mx, my)) return true;
 		if (viewing >= 0) {
 			for (UiButton b : new UiButton[]{prev, next, open, copy, delete}) if (b.click(mx, my)) return true;
 			return true;

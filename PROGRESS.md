@@ -98,11 +98,12 @@ This file is the source of truth for where the build is. A new session should re
 - [x] **E9. Features A**: screenshot manager, chat upgrades (timestamps, stacking, copy, search, keyword highlight), Auto GG + auto-text hotkeys, session stats
 - [x] **E10. Features B**: music player + visualizer, singleplayer waypoints, scoreboard/boss bar/title customizer, Discord Rich Presence, profiles, singleplayer cinematic camera
 - [x] **E11. Launcher in QML**: frameless window + own title bar + shadow, nebula shader background, glass panels, page transitions, intro, charging PLAY, 3D skin viewer, animated install progress, stats dashboard, theme sync
-- [ ] **E12. Finish**: all effects vs Performance Mode FPS measurements, TESTING/USER_GUIDE/CREDITS, build_all, push
+- [x] **E12. Finish**: all effects vs Performance Mode FPS measurements, TESTING/USER_GUIDE/CREDITS, build_all, push
 
 ## Expansion notes / blockers
 
 - E1: theme editor first overflowed at small GUI sizes (854x480, GUI scale 2); reworked to adaptive row heights and a scrolling theme list. Inter's license file had an uppercase name inside `assets/` (invalid resource path, logged an error); moved to `licenses/`. The config debounce unit test was flaky under load; it now waits up to 15 s.
+- E12: the first FPS benchmark showed everything after the sixth effect at exactly 30 FPS: Minecraft's own AFK frame limit, not Hollow; the benchmark now sets the inactivity limit to "minimized". While writing the guide I found that Screenshots, Waypoints, Music Player and Camera Paths had no way to reach their settings (right-click opens their own screen), so each screen got a Settings button. Versions bumped to 1.1.0 (mod and launcher); build_all now clears old jars so only the new one is bundled. Final: JUnit 98, gametest 60/60 with and without Sodium, launcher pytest 80, build_all green with the packaged self-test.
 - E11: the background nebula first drew nothing while the glass panels worked: a relative shader path in a QML component resolves against the file that *creates* it, so only the instance made in Main.qml looked in the wrong folder (fixed with Qt.resolvedUrl). Icons first collapsed to dots (a Shape sizes itself from its path, which looped with a size taken from width). Found while reviewing: the launcher only compared the Hollow jar's version number, so a rebuilt jar with the same number was never installed; it now compares file hashes, shows "Update available" and refreshes the jar before PLAY. Launcher tests 80 (new: backend, theme file, stats, skin viewer, QML loads without errors); the packaged exe renders the same pages as the source run.
 - E10: first screenshots showed waypoint beams as solid columns that swallowed the screen up close and labels piled on top of each other; beams are now softer and fade out as you walk up, and labels stack. Camera paths switched to centripetal Catmull-Rom after a unit test showed the plain version doubling back with unevenly spaced points. Music HUD moved to the top right (it covered chat). One gametest run died in the old E7 item-physics step with Fabric's "network synchronizer" assertion; the identical rerun passed, so it is logged as a harness flake. Unit tests 98, gametest 59/59 (new: waypoints rename/save/death point, camera flight starts and ends, music scan/tags/playback/visualizer/pause/next, Discord waits for an app ID, profiles apply and undo).
 - E9: the test harness sends key presses without modifier flags, so Ctrl+F also checks the physical Ctrl key (works the same for real players). Copying a chat line drops Hollow's own timestamp and "(x3)"; the capture toast shows the file name instead of a hint that got cut off. Gametest 43/43 (new: stacking, timestamps, highlight, right-click copy, Ctrl+F search, Auto GG once per game end, chat macro, block and kill counters, F2 capture + toast).
@@ -114,3 +115,24 @@ This file is the source of truth for where the build is. A new session should re
 - E3: title-screen column ran into the footer on short windows (button height now adapts); Language/Accessibility became icon buttons with tooltips; nebula clouds brightened; chat panel corners/edge made more visible. Gametest 22/22 (new: Hollow title screen replaces vanilla's).
 - E2: particles were too faint at first (made bigger/brighter); the search category label overlapped descriptions (now a tag before the switch). Gametest 21/21 (new: notifications show, menu close is animated).
 - E1 gametest: 19/19 checks pass (new: theme card opens the editor, theme saved to the shared file, Performance Mode turns menu blur off).
+
+## Expansion final summary (2026-10-15)
+
+Everything in the expansion plan is done, built, tested and pushed. Versions: mod `hollowclient-1.1.0.jar`, launcher 1.1.0.
+
+### What's new (verified)
+- **Identity**: theme engine with 6 presets and your own themes, shared live with the launcher through `theme.json`; the H sigil; Inter UI font; original UI sounds; Performance Mode, Auto Quality, Iris detection.
+- **Menu and screens**: spring-animated glass menu (staggered cards, tilt, hover glow, ripples, particles, live search), notifications, Hollow title/loading/pause screens, inventory blur, restyled chat.
+- **HUD**: HUD Style looks, rolling numbers, fade-in, animated hotbar, keystroke glow; Session Stats and Music HUD elements.
+- **Visuals and effects**: post-processing (bloom, motion blur, chromatic aberration, vignette, film grain, grades, damage shake) that turns itself off under Iris shaders; sky colors, stars, aurora, shooting stars; client time and weather; block outline; hit/crit/kill effects, trails, footprints, item physics, hand animations, own nametag.
+- **Styles**: animated capes (Void Flow, GIF, strips), cape glow and shimmer, halo, horns, aura, pet, emotes on a radial wheel (B), wardrobe preview, presets that save the whole look.
+- **Features**: screenshot manager, Chat+ (timestamps, stacking, copy, search, highlights), Auto GG, chat macros, singleplayer waypoints with beams and death points, music player with a visualizer, singleplayer camera paths, scoreboard/boss bar/title customizer, Discord Rich Presence (private by default), profiles with undo.
+- **Launcher**: rebuilt in Qt Quick on the same backend: frameless window with its own title bar and shadow, nebula shader that follows the mouse, frosted glass panels, springy pages, intro, charging PLAY, 3D skin viewer with your cosmetics, animated install progress, play-time stats dashboard, theme sync, sounds; updates the Hollow jar by content.
+- **Fair play**: every feature is visual or quality of life. Nothing sees through walls, no radar or entity markers, no freelook (waypoints and camera paths are singleplayer only and off while open to LAN), no aim or click help, nothing changes the packets sent to servers.
+
+### Tests
+- `gradlew build`: 98 JUnit tests. `gradlew runClientGameTest`: 60 in-game checks with screenshots, passing with and without Sodium, plus the FPS benchmark (TESTING.md has the table: every effect alone costs at most +0.12 ms per frame on an RTX 3080 at 720p except the HUD at +0.58 ms; everything at once +1.26 ms).
+- Launcher: 80 pytest tests; `--screenshots` reviewed for every page, the intro and the PLAY burst; packaged exe self-test and screenshots.
+
+### Next
+- Sign in and launch end to end through the launcher with your Microsoft account now that the app ID is approved (you sign in yourself in the browser).

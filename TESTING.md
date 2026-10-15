@@ -6,11 +6,64 @@ From the `mod` folder:
 
 | Command | What it checks |
 |---|---|
-| `gradlew.bat build` | Compiles the mod and runs the unit tests (config loading/saving, HUD layout math, click counting, zoom math, colors, PNG/cape sizes, resource-pack import rules). Produces `build\libs\hollowclient-1.0.0.jar`. |
-| `gradlew.bat runClientGameTest` | Starts a real game window by itself, creates a test world and runs 16 in-game checks: the menu key (in game and on the title screen), CPS counting, zoom and zoom scrolling, toggle sprint, built-in cape, PNG cape import (and refusing a wrong size), pack import, pack switching, presets and pack removal. It saves a screenshot of every screen and feature to `build\run\clientGameTest\screenshots`. Don't touch the game window while it runs (about a minute). It fails if any check fails. |
-| `gradlew.bat runClientGameTest -PwithSodium` | The same run with Sodium 0.8.14 loaded, to check the two work together. |
+| `gradlew.bat build` | Compiles the mod and runs 98 unit tests: config loading and saving (including the Windows "file in use" retry), HUD layout math, click counting, zoom math, colors, themes, springs, PNG/GIF/strip cape rules, resource-pack import rules, the camera path curve, waypoint files, MP3/Ogg tags and lengths, MP3/Ogg decoding (440 Hz and 880 Hz test tones), the FFT, and the Discord frames and privacy rules. Produces `build\libs\hollowclient-1.1.0.jar`. |
+| `gradlew.bat runClientGameTest` | Starts a real game window by itself, makes a test world and runs 60 in-game checks with a screenshot of every screen and feature (`build\run\clientGameTest\screenshots`): menus, theme editor and shared theme file, Performance Mode, title/loading/pause screens, HUD and HUD editor, zoom, toggle sprint, fullbright, fire, water, post-processing shaders, sky and client time/weather, block outline, hit bursts, crits, footprints, cosmetics, emotes, animated capes, presets, Chat+, Auto GG, macros, session stats, screenshots, waypoints, camera paths, the music player and visualizer, the scoreboard customizer, Discord Presence and profiles. It ends with the FPS benchmark below and writes `hollow_fps_results.md` in the run folder. Don't touch the window while it runs (about four minutes). |
+| `gradlew.bat runClientGameTest -PwithSodium` | The same run with Sodium 0.8.14 loaded. All 60 checks pass with Sodium too. |
 
-From the `launcher` folder: `.venv\Scripts\python -m pytest` (after `build.bat` has created the venv).
+From the `launcher` folder: `.venv\Scripts\python -m pytest` runs 80 tests (installer, Modrinth, sign-in error handling, token storage, launch command, settings, the QML backend, the shared theme file, play-time stats, the skin viewer, and that every QML page loads without errors). `.venv\Scripts\python -m hollow_launcher --screenshots <folder>` saves a picture of every launcher page, the intro and the PLAY burst for a visual check.
+
+## What each effect costs (measured)
+
+Measured by the gametest's benchmark: each effect switched on alone at its default strength, in the same night scene on the superflat test world, 1280x720, vsync off, no FPS limit, FPS averaged over about 5 seconds. "Frame time vs baseline" is the extra time per frame; differences under about 0.03 ms are measurement noise (that's why a few are slightly negative).
+
+Test PC: NVIDIA GeForce RTX 3080, AMD Ryzen 5 5600X.
+
+**Without Sodium**
+
+| Effect (alone, default strength) | FPS | Frame time vs baseline |
+|---|---|---|
+| Baseline: every Hollow effect off | 940 | |
+| Bloom | 893 | +0.06 ms |
+| Motion blur | 920 | +0.02 ms |
+| Chromatic aberration | 962 | -0.02 ms |
+| Vignette | 964 | -0.03 ms |
+| Film grain | 944 | -0.00 ms |
+| Color grade (Cinematic) | 960 | -0.02 ms |
+| Sky: more stars, aurora, shooting stars | 948 | -0.01 ms |
+| Waypoint beams and labels (3 waypoints) | 895 | +0.05 ms |
+| Block outline with fill and pulse | 981 | -0.04 ms |
+| HUD Style + 6 HUD elements | 610 | +0.58 ms |
+| Third person, no cosmetics | 956 | -0.02 ms |
+| Third person with cape, wings, halo, aura, pet | 821 | +0.15 ms |
+| **Everything above at once** | 430 | +1.26 ms |
+| **Everything + Performance Mode** | 452 | +1.15 ms |
+
+**With Sodium 0.8.14**
+
+| Effect (alone, default strength) | FPS | Frame time vs baseline |
+|---|---|---|
+| Baseline: every Hollow effect off | 992 | |
+| Bloom | 927 | +0.07 ms |
+| Motion blur | 993 | -0.00 ms |
+| Chromatic aberration | 987 | +0.01 ms |
+| Vignette | 987 | +0.01 ms |
+| Film grain | 995 | -0.00 ms |
+| Color grade (Cinematic) | 1006 | -0.01 ms |
+| Sky: more stars, aurora, shooting stars | 1001 | -0.01 ms |
+| Waypoint beams and labels (3 waypoints) | 953 | +0.04 ms |
+| Block outline with fill and pulse | 1017 | -0.02 ms |
+| HUD Style + 6 HUD elements | 638 | +0.56 ms |
+| Third person, no cosmetics | 977 | +0.02 ms |
+| Third person with cape, wings, halo, aura, pet | 848 | +0.17 ms |
+| **Everything above at once** | 442 | +1.25 ms |
+| **Everything + Performance Mode** | 481 | +1.07 ms |
+
+What this means:
+
+- On this PC every effect costs a fraction of a millisecond. At 144 FPS a frame takes 6.9 ms, so even everything at once (+1.25 ms) leaves plenty of room.
+- The biggest single cost is the HUD (+0.58 ms for six elements with HUD Style), which is CPU-side drawing, not the GPU. HUD elements you don't need are the first thing to switch off on a slow PC.
+- Bloom, motion blur and film grain work on every pixel, so on a weaker graphics card or at 1440p/4K they cost more than here. Those are exactly what **Performance Mode** switches off (it saved about 0.1-0.2 ms here; on a laptop GPU the saving is larger). **Auto Quality** lowers effect quality by itself when FPS drops below your target.
+- Hollow doesn't change chunk rendering, so Sodium's speed-up is kept (about 5% more FPS here even in a tiny superflat world).
 
 ## In-game checklist
 
@@ -60,6 +113,48 @@ Start the dev client with `gradlew.bat runClient` (or use the real launcher / th
 - [ ] Other players (open to LAN with a second account, or a server) never see your cape, hat or wings.
 - [ ] **Texture Packs**: "Import .zip..." with a real resource pack, "Import folder..." with a pack folder, and drop a zip on the screen. Each appears in the list with its icon. "Use" switches to it (short reload), "Use none" switches back. A zip without `pack.mcmeta`, a renamed text file, and a zip with the pack inside an extra folder each behave as described in DECISIONS.md. "Remove" asks twice and deletes only Hollow's copy in `resourcepacks`.
 - [ ] **Presets**: type a name, "Save current", change your cape/hat/wings/pack, "Apply" brings them all back. "Rename" uses the text in the box. "Delete" asks twice.
+
+### Expansion features
+
+**Look and feel**
+- [ ] Menu → Client → **Theme**: each preset changes the menu, HUD and chat colors right away. Make and save your own theme; it appears in the launcher's Settings → Theme too, and picking a theme in the launcher changes the game within a second.
+- [ ] The menu opens with a spring, cards slide in one after another, hovering tilts and glows a card, clicks ripple, and particles drift behind it. Menu Effects can switch each of these off.
+- [ ] Title screen (nebula, glowing logo), loading screen, pause menu and inventory blur all use the theme.
+- [ ] **Performance Mode** (Client → Performance) turns off the menu blur, post-processing and other heavy effects at once; with an Iris shader pack active, post-processing switches itself off.
+
+**HUD and effects**
+- [ ] HUD Style: glass / flat / outline / text only, gradient text, glow, rolling numbers, the fade-in, the hotbar glide, keystroke glow.
+- [ ] Post-processing: each effect alone and together; every color grade. Bloom makes torches and the sky glow.
+- [ ] Sky at night: more stars, aurora to the north, shooting stars. Time & Weather shows your chosen time/weather while a server's stays the same.
+- [ ] Hit a mob: hit burst, crit sparks on a jump-crit, a kill burst. Trails and footprints in third person. Item physics on dropped items. Hand animations (switching, swing speed, 1.7 style).
+
+**Styles**
+- [ ] Animated capes (Void Flow, an imported GIF, a frame strip), cape glow and shimmer.
+- [ ] Halo, horns, aura, pet; each style's colors; the Wardrobe preview turns when dragged.
+- [ ] Hold **B**: the emote wheel; each emote plays in third person and walking away stops it.
+- [ ] Presets save and restore the theme, cosmetics, trail, crosshair and HUD layout.
+
+**Quality of life**
+- [ ] Chat+: timestamps, "(x3)" stacking, right-click copy (without Hollow's timestamp), Ctrl+F search, a highlight with a sound for your name.
+- [ ] Auto GG says gg once per game end (try "won the game" in chat in singleplayer), never again within the cooldown.
+- [ ] Chat macros: set a text and a key; "/" texts run as commands.
+- [ ] F2: shutter sound and a notification. Screenshots screen: thumbnails, the viewer with arrow keys, Copy image (paste into Paint), Delete (goes to `screenshots\deleted`), Settings button.
+- [ ] Session Stats counts time, kills, deaths, blocks and distance, and resets in another world.
+- [ ] Waypoints (singleplayer): add, rename, recolor, hide, delete; beams and labels; a death point after dying. Open the world to LAN or join a server: no waypoints show.
+- [ ] Music Player: drop an MP3 and an Ogg on its screen; play, pause, next, previous, seek, shuffle, repeat, volume; the Music HUD shows the song and the visualizer moves with it; the game's music stays quiet.
+- [ ] Camera Paths (singleplayer): add three points, Play; the camera flies smoothly and comes back; pressing W stops it. On a server the screen says it's singleplayer only.
+- [ ] Scoreboard & Titles on a server with a scoreboard: glass look, left side, size, numbers hidden; boss bars and titles resized or hidden.
+- [ ] Discord Presence with your own application ID: Discord shows "Playing Hollow Client"; the server address only appears after switching it on.
+- [ ] Profiles: PvP, Building and Cinematic each change things as described; "Back to my settings" brings everything back; save and apply your own profile.
+
+**Launcher**
+- [ ] The intro plays (click skips it); the window moves by its title bar, snaps to screen edges, maximizes on double-click and resizes from the edges.
+- [ ] The nebula follows the mouse; glass panels show it softly; page changes spring; buttons ripple and click.
+- [ ] PLAY charges and bursts, then installs / signs in / launches as before; the install steps and the bar move during an install.
+- [ ] Wardrobe shows your skin with your cape, wings and halo, and turns when dragged.
+- [ ] Stats fills in after you've played; the chart's bars show the exact time on hover.
+- [ ] Settings: memory, Java options, window size, theme, animated background, sounds, intro.
+- [ ] Rebuild the mod and copy the new launcher: the Mods card shows Hollow Client as "Update available" and PLAY puts the new jar in place.
 
 ### With Sodium
 - [ ] Put Sodium in `mods` (the launcher does this). Everything above still works, especially fullbright, clear water, the crosshair and the cosmetics.

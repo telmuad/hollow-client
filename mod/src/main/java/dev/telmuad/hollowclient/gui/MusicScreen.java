@@ -29,6 +29,7 @@ public final class MusicScreen extends HollowScreen {
 
 	private final UiButton back = new UiButton("< Back", this::onClose);
 	private final UiButton folder = new UiButton("Open folder", this::openFolder);
+	private final UiButton settings = new UiButton("Settings", () -> open(new ModuleSettingsScreen(Modules.MUSIC, this)));
 	private final UiButton prev = new UiButton("|<", MusicPlayer::previous);
 	private final UiButton playPause = new UiButton("Play", MusicPlayer::togglePause).style(UiButton.Style.PRIMARY);
 	private final UiButton next = new UiButton(">|", MusicPlayer::next);
@@ -67,6 +68,8 @@ public final class MusicScreen extends HollowScreen {
 		back.bounds(new Rect(panel.x() + 8, panel.y() + 8, back.preferredWidth(font), 16));
 		int fw = folder.preferredWidth(font);
 		folder.bounds(new Rect(panel.right() - 8 - fw, panel.y() + 8, fw, 16));
+		int sw = settings.preferredWidth(font);
+		settings.bounds(new Rect(folder.bounds().x() - 6 - sw, panel.y() + 8, sw, 16));
 		int listW = Math.max(150, (pw - 24) * 2 / 5);
 		list = new Rect(panel.x() + 8, panel.y() + 32, listW, ph - 32 - 22);
 		now = new Rect(list.right() + 8, panel.y() + 32, panel.right() - 8 - list.right() - 8, ph - 32 - 22);
@@ -91,6 +94,7 @@ public final class MusicScreen extends HollowScreen {
 		drawPanel(g, panel, 8, a);
 		back.render(g, font, mx, my, dt, a);
 		folder.render(g, font, mx, my, dt, a);
+		settings.render(g, font, mx, my, dt, a);
 		Ui.draw(g, font, Ui.bold("Music"), back.bounds().right() + 8, panel.y() + 12, Theme.fade(Theme.TEXT, a));
 		renderList(g, mx, my, a);
 		renderNowPlaying(g, mx, my, a);
@@ -201,7 +205,7 @@ public final class MusicScreen extends HollowScreen {
 		double mx = event.x();
 		double my = event.y();
 		if (event.button() != GLFW.GLFW_MOUSE_BUTTON_LEFT) return super.mouseClicked(event, doubleClick);
-		for (UiButton b : new UiButton[]{back, folder, prev, playPause, next, shuffle, repeat}) if (b.click(mx, my)) return true;
+		for (UiButton b : new UiButton[]{back, folder, settings, prev, playPause, next, shuffle, repeat}) if (b.click(mx, my)) return true;
 		if (volume.click(mx, my)) return true;
 		MusicPlayer.Track cur = MusicPlayer.current();
 		if (cur != null && cur.info().seconds > 0 && bar.inset(-3).contains(mx, my)) {

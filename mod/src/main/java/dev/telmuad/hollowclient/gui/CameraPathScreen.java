@@ -21,6 +21,7 @@ public final class CameraPathScreen extends HollowScreen {
 
 	private final UiButton back = new UiButton("< Back", this::onClose);
 	private final UiButton play = new UiButton("Play", () -> CameraPaths.start(Minecraft.getInstance())).style(UiButton.Style.PRIMARY);
+	private final UiButton settings = new UiButton("Settings", () -> open(new ModuleSettingsScreen(Modules.CAMERA_PATH, this)));
 	private final UiButton addPoint = new UiButton("+ Add point here", () -> CameraPaths.addPoint(Minecraft.getInstance()));
 	private final UiButton removeLast = new UiButton("Remove last", CameraPaths::removeLast);
 	private final UiButton clear = new UiButton("Clear", this::clearPressed).style(UiButton.Style.DANGER);
@@ -43,6 +44,8 @@ public final class CameraPathScreen extends HollowScreen {
 		back.bounds(new Rect(panel.x() + 8, panel.y() + 8, back.preferredWidth(font), 16));
 		int pwid = Math.max(54, play.preferredWidth(font));
 		play.bounds(new Rect(panel.right() - 8 - pwid, panel.y() + 8, pwid, 16));
+		int sw = settings.preferredWidth(font);
+		settings.bounds(new Rect(play.bounds().x() - 6 - sw, panel.y() + 8, sw, 16));
 		int x = panel.x() + 8;
 		for (UiButton b : new UiButton[]{addPoint, removeLast, clear}) {
 			int w = b.preferredWidth(font);
@@ -67,6 +70,7 @@ public final class CameraPathScreen extends HollowScreen {
 		Minecraft mc = Minecraft.getInstance();
 		drawPanel(g, panel, 8, a);
 		back.render(g, font, mx, my, dt, a);
+		settings.render(g, font, mx, my, dt, a);
 		Ui.draw(g, font, Ui.bold("Camera Paths"), back.bounds().right() + 8, panel.y() + 12, Theme.fade(Theme.TEXT, a));
 		boolean allowed = Waypoints.allowed(mc);
 		boolean on = Modules.CAMERA_PATH != null && Modules.CAMERA_PATH.isEnabled();
@@ -125,7 +129,7 @@ public final class CameraPathScreen extends HollowScreen {
 			double mx = event.x();
 			double my = event.y();
 			if (!clear.bounds().contains(mx, my)) confirmClear = false;
-			for (UiButton b : new UiButton[]{back, play, addPoint, removeLast, clear}) if (b.click(mx, my)) return true;
+			for (UiButton b : new UiButton[]{back, play, settings, addPoint, removeLast, clear}) if (b.click(mx, my)) return true;
 		}
 		return super.mouseClicked(event, doubleClick);
 	}

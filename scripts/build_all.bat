@@ -8,6 +8,8 @@ cd /d "%~dp0.."
 
 echo.
 echo [1/3] Building the Hollow Client mod...
+rem remove jars from earlier versions so only the new one gets bundled
+del /q "mod\build\libs\hollowclient-*.jar" 2>nul
 pushd mod
 call .\gradlew.bat build
 if errorlevel 1 (

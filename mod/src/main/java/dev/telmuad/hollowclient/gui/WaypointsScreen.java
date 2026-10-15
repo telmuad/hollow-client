@@ -1,6 +1,7 @@
 package dev.telmuad.hollowclient.gui;
 
 import dev.telmuad.hollowclient.gui.widget.UiButton;
+import dev.telmuad.hollowclient.modules.Modules;
 import dev.telmuad.hollowclient.render.WaypointFx;
 import dev.telmuad.hollowclient.waypoints.Waypoint;
 import dev.telmuad.hollowclient.waypoints.Waypoints;
@@ -26,6 +27,7 @@ public final class WaypointsScreen extends HollowScreen {
 
 	private final UiButton back = new UiButton("< Back", this::onClose);
 	private final UiButton add = new UiButton("+ Add here", this::addHere).style(UiButton.Style.PRIMARY);
+	private final UiButton settings = new UiButton("Settings", () -> open(new ModuleSettingsScreen(Modules.WAYPOINTS, this)));
 	private Rect panel = Rect.EMPTY;
 	private Rect list = Rect.EMPTY;
 	private EditBox rename;
@@ -46,6 +48,8 @@ public final class WaypointsScreen extends HollowScreen {
 		back.bounds(new Rect(panel.x() + 8, panel.y() + 8, back.preferredWidth(font), 16));
 		int aw = add.preferredWidth(font);
 		add.bounds(new Rect(panel.right() - 8 - aw, panel.y() + 8, aw, 16));
+		int sw = settings.preferredWidth(font);
+		settings.bounds(new Rect(add.bounds().x() - 6 - sw, panel.y() + 8, sw, 16));
 		list = new Rect(panel.x() + 8, panel.y() + 32, pw - 16, ph - 32 - 20);
 		rename = new EditBox(font, 0, 0, 120, 10, Component.literal("Name"));
 		rename.setBordered(false);
@@ -113,6 +117,7 @@ public final class WaypointsScreen extends HollowScreen {
 		Minecraft mc = Minecraft.getInstance();
 		drawPanel(g, panel, 8, a);
 		back.render(g, font, mx, my, dt, a);
+		settings.render(g, font, mx, my, dt, a);
 		boolean allowed = Waypoints.allowed(mc);
 		add.setEnabled(allowed);
 		add.render(g, font, mx, my, dt, a);
@@ -183,7 +188,7 @@ public final class WaypointsScreen extends HollowScreen {
 		double mx = event.x();
 		double my = event.y();
 		if (event.button() != GLFW.GLFW_MOUSE_BUTTON_LEFT) return super.mouseClicked(event, doubleClick);
-		if (back.click(mx, my) || add.click(mx, my)) return true;
+		if (back.click(mx, my) || add.click(mx, my) || settings.click(mx, my)) return true;
 		if (renaming != null && rename.isMouseOver(mx, my)) return super.mouseClicked(event, doubleClick);
 		if (renaming != null) finishRename(true);
 		if (!list.contains(mx, my) || !Waypoints.allowed(Minecraft.getInstance())) return super.mouseClicked(event, doubleClick);
