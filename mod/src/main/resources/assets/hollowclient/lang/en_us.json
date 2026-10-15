@@ -56,5 +56,18 @@
 	"key.hollowclient.macro2": "Chat macro 2",
 	"key.hollowclient.macro3": "Chat macro 3",
 	"key.hollowclient.macro4": "Chat macro 4",
-	"key.hollowclient.macro5": "Chat macro 5"
+	"key.hollowclient.macro5": "Chat macro 5",
+	"key.hollowclient.music": "Open the music player",
+	"key.hollowclient.music_hud": "Toggle Music HUD",
+	"key.hollowclient.waypoints": "Open waypoints",
+	"key.hollowclient.camera_path": "Open camera paths",
+	"key.hollowclient.scoreboard_titles": "Toggle Scoreboard & Titles",
+	"key.hollowclient.discord": "Toggle Discord Presence",
+	"key.hollowclient.profiles": "Open profiles",
+	"key.hollowclient.waypoint_add": "Add waypoint here",
+	"key.hollowclient.camera_point": "Add camera point",
+	"key.hollowclient.camera_play": "Play / stop camera path",
+	"key.hollowclient.music_play": "Music: play / pause",
+	"key.hollowclient.music_next": "Music: next song",
+	"key.hollowclient.music_previous": "Music: previous song"
 }

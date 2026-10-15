@@ -104,6 +104,7 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 			effects(ctx, sp);
 			styles(ctx, sp);
 			featuresA(ctx, sp);
+			featuresB(ctx, sp);
 		}
 		if (!failures.isEmpty()) throw new AssertionError("Hollow Client checks failed: " + failures);
 	}
@@ -1053,5 +1054,228 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		} catch (java.io.IOException e) {
 			return -1;
 		}
+	}
+
+	// ------------------------------------------------------------------------------------------------ features B
+
+	private static Path audioFixtures(Minecraft mc) {
+		Path p = mc.gameDirectory.toPath().toAbsolutePath();
+		for (int i = 0; i < 6 && p != null; i++, p = p.getParent()) {
+			Path candidate = p.resolve("src/test/resources/audio");
+			if (java.nio.file.Files.isDirectory(candidate)) return candidate;
+		}
+		return null;
+	}
+
+	private void featuresB(ClientGameTestContext ctx, TestSingleplayerContext sp) {
+		home(sp);
+		sp.getServer().runCommand("time set noon");
+		sp.getServer().runCommand("kill @e[type=!player]");
+		ctx.runOnClient(mc -> {
+			for (Module m : HollowClient.modules().all()) if (m instanceof HudModule) m.setEnabled(false);
+			Toasts.clear();
+		});
+
+		// ---- waypoints: singleplayer only, saved per world, a death point
+		check("Waypoints are allowed in singleplayer", ctx.computeOnClient(dev.telmuad.hollowclient.waypoints.Waypoints::allowed));
+		ctx.runOnClient(mc -> {
+			Modules.WAYPOINTS.setEnabled(true);
+			var w = dev.telmuad.hollowclient.waypoints.Waypoints.addHere(mc, "Spawn");
+			var near = new dev.telmuad.hollowclient.waypoints.Waypoint("Tower", x + 0.5, y, z + 14.5, w.dimension, 0xFF22D3EE);
+			var far = new dev.telmuad.hollowclient.waypoints.Waypoint("Far village", x + 60.5, y, z + 900.5, w.dimension, 0xFFF59E0B);
+			dev.telmuad.hollowclient.waypoints.Waypoints.data().waypoints.add(near);
+			dev.telmuad.hollowclient.waypoints.Waypoints.data().waypoints.add(far);
+			dev.telmuad.hollowclient.waypoints.Waypoints.changed();
+		});
+		ctx.setScreen(() -> new dev.telmuad.hollowclient.gui.WaypointsScreen(null));
+		ctx.waitTicks(8);
+		ctx.runOnClient(mc -> {
+			if (mc.screen instanceof dev.telmuad.hollowclient.gui.WaypointsScreen s) s.renameLast("Far village (renamed)");
+		});
+		ctx.waitTicks(4);
+		screenshot(ctx, "waypoints_screen");
+		ctx.setScreen(() -> null);
+		boolean renamed = ctx.computeOnClient(mc -> dev.telmuad.hollowclient.waypoints.Waypoints.data().waypoints.stream()
+				.anyMatch(w -> w.name.equals("Far village (renamed)")));
+		check("Waypoints can be renamed", renamed);
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.waypoints.Waypoints.saveNow());
+		Path worldFile = ctx.computeOnClient(mc -> HollowClient.dataDir().resolve("worlds"));
+		boolean saved = false;
+		try (var files = java.nio.file.Files.list(worldFile)) {
+			for (Path p : files.toList()) saved |= java.nio.file.Files.readString(p).contains("Tower");
+		} catch (java.io.IOException e) {
+			saved = false;
+		}
+		check("Waypoints are saved per world", saved);
+		sp.getServer().runCommand("time set 18000");
+		sp.getServer().runCommand("tp @a " + (x + 0.5) + " " + y + " " + (z - 6.5) + " 0 -8");
+		ctx.waitTicks(30);
+		screenshot(ctx, "waypoint_beams_night");
+		// death point
+		sp.getServer().runCommand("kill @a");
+		ctx.waitTicks(10);
+		boolean deathPoint = ctx.computeOnClient(mc -> dev.telmuad.hollowclient.waypoints.Waypoints.data().waypoints.stream().anyMatch(w -> w.death));
+		check("Dying saves a death point", deathPoint);
+		ctx.runOnClient(mc -> mc.player.respawn());
+		ctx.waitTicks(20);
+		ctx.setScreen(() -> null);
+		home(sp);
+		sp.getServer().runCommand("time set noon");
+		ctx.waitTicks(10);
+
+		// ---- camera paths
+		ctx.runOnClient(mc -> {
+			Modules.CAMERA_PATH.setEnabled(true);
+			((dev.telmuad.hollowclient.setting.NumberSetting) Modules.CAMERA_PATH.setting("duration")).set(3);
+			dev.telmuad.hollowclient.camera.CameraPaths.clear();
+		});
+		sp.getServer().runCommand("gamemode creative @a");
+		ctx.runOnClient(mc -> mc.player.getAbilities().flying = true);
+		double[][] points = {{-7, 3, 6, -130, 15}, {0, 6, 12, -180, 25}, {7, 3, 6, 130, 15}};
+		for (double[] p : points) {
+			sp.getServer().runCommand("tp @a " + (x + 0.5 + p[0]) + " " + (y + p[1]) + " " + (z + 0.5 + p[2]) + " " + p[3] + " " + p[4]);
+			ctx.waitTicks(4);
+			ctx.runOnClient(mc -> dev.telmuad.hollowclient.camera.CameraPaths.addPoint(mc));
+		}
+		check("Camera points are added", ctx.computeOnClient(mc -> dev.telmuad.hollowclient.camera.CameraPaths.keys().size() == 3));
+		sp.getServer().runCommand("tp @a " + (x + 0.5) + " " + (y + 2) + " " + (z - 8.5) + " 0 10");
+		ctx.waitTicks(10);
+		ctx.runOnClient(mc -> Toasts.clear());
+		ctx.waitTicks(2);
+		screenshot(ctx, "camera_path_preview");
+		var cameraBefore = ctx.computeOnClient(mc -> mc.options.getCameraType());
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.camera.CameraPaths.start(mc));
+		ctx.waitTicks(30);
+		boolean flying = ctx.computeOnClient(mc -> dev.telmuad.hollowclient.camera.CameraPaths.playing());
+		double away = ctx.computeOnClient(mc -> mc.gameRenderer.getMainCamera().position().distanceTo(mc.player.getEyePosition()));
+		check("The camera flies the path away from the player (" + String.format("%.1f", away) + " blocks)", flying && away > 3);
+		screenshot(ctx, "camera_path_flying");
+		ctx.waitTicks(50);
+		boolean stopped = ctx.computeOnClient(mc -> !dev.telmuad.hollowclient.camera.CameraPaths.playing()
+				&& mc.options.getCameraType() == cameraBefore && !mc.options.hideGui);
+		check("The flight ends by itself and the camera comes back", stopped);
+		ctx.runOnClient(mc -> Modules.CAMERA_PATH.setEnabled(false));
+		sp.getServer().runCommand("gamemode survival @a");
+		home(sp);
+		ctx.waitTicks(10);
+
+		// ---- music player (two test tones made for the unit tests)
+		Path fixtures = ctx.computeOnClient(HollowClientGameTest::audioFixtures);
+		check("Test tones found", fixtures != null);
+		if (fixtures != null) {
+			ctx.runOnClient(mc -> {
+				try {
+					Path music = dev.telmuad.hollowclient.music.MusicPlayer.folder();
+					java.nio.file.Files.createDirectories(music);
+					java.nio.file.Files.copy(fixtures.resolve("tone440.mp3"), music.resolve("tone440.mp3"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+					java.nio.file.Files.copy(fixtures.resolve("tone880.ogg"), music.resolve("tone880.ogg"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				} catch (java.io.IOException e) {
+					throw new RuntimeException(e);
+				}
+				dev.telmuad.hollowclient.music.MusicPlayer.rescan();
+			});
+			ctx.waitTicks(10);
+			String titles = ctx.computeOnClient(mc -> dev.telmuad.hollowclient.music.MusicPlayer.tracks().stream()
+					.map(t -> t.info().title).sorted().toList().toString());
+			check("The music folder is scanned and tagged (" + titles + ")", titles.equals("[Hollow Ogg Tone, Hollow Test Tone]"));
+			ctx.runOnClient(mc -> {
+				((dev.telmuad.hollowclient.setting.NumberSetting) Modules.MUSIC.setting("volume")).set(5);
+				dev.telmuad.hollowclient.music.MusicPlayer.play(0);
+			});
+			setEnabled(ctx, "music_hud", true);
+			ctx.waitTicks(16);
+			double pos = ctx.computeOnClient(mc -> dev.telmuad.hollowclient.music.MusicPlayer.position());
+			float loudest = ctx.computeOnClient(mc -> {
+				float[] bands = new float[24];
+				if (!dev.telmuad.hollowclient.music.MusicPlayer.spectrum(bands)) return -1f;
+				float max = 0f;
+				for (float b : bands) max = Math.max(max, b);
+				return max;
+			});
+			check("A song plays (" + String.format("%.2f", pos) + " s in) and the visualizer hears it (" + String.format("%.2f", loudest) + ")",
+					pos > 0.2 && loudest > 0.3f);
+			screenshot(ctx, "music_hud");
+			ctx.setScreen(() -> new dev.telmuad.hollowclient.gui.MusicScreen(null));
+			ctx.waitTicks(10);
+			screenshot(ctx, "music_screen");
+			ctx.setScreen(() -> null);
+			ctx.runOnClient(mc -> dev.telmuad.hollowclient.music.MusicPlayer.togglePause());
+			ctx.waitTicks(10);
+			double p1 = ctx.computeOnClient(mc -> dev.telmuad.hollowclient.music.MusicPlayer.position());
+			ctx.waitTicks(10);
+			double p2 = ctx.computeOnClient(mc -> dev.telmuad.hollowclient.music.MusicPlayer.position());
+			check("Pause holds the position (" + String.format("%.2f -> %.2f", p1, p2) + ")", Math.abs(p2 - p1) < 0.05);
+			String was = ctx.computeOnClient(mc -> {
+				var t = dev.telmuad.hollowclient.music.MusicPlayer.current();
+				return t == null ? "" : t.info().title;
+			});
+			ctx.runOnClient(mc -> dev.telmuad.hollowclient.music.MusicPlayer.next());
+			ctx.waitTicks(4);
+			String now = ctx.computeOnClient(mc -> {
+				var t = dev.telmuad.hollowclient.music.MusicPlayer.current();
+				return t == null ? "" : t.info().title;
+			});
+			check("Next plays the other song (" + was + " -> " + now + ")", !now.isEmpty() && !now.equals(was));
+			ctx.runOnClient(mc -> dev.telmuad.hollowclient.music.MusicPlayer.stop());
+			setEnabled(ctx, "music_hud", false);
+		}
+
+		// ---- scoreboard, boss bar and titles
+		sp.getServer().runCommand("scoreboard objectives add hollow dummy \"Hollow Test\"");
+		sp.getServer().runCommand("scoreboard objectives setdisplay sidebar hollow");
+		sp.getServer().runCommand("scoreboard players set Steve hollow 12");
+		sp.getServer().runCommand("scoreboard players set Alex hollow 7");
+		sp.getServer().runCommand("scoreboard players set Notch hollow 3");
+		sp.getServer().runCommand("bossbar add hollowclient:test \"Test Boss\"");
+		sp.getServer().runCommand("bossbar set hollowclient:test players @a");
+		sp.getServer().runCommand("bossbar set hollowclient:test value 60");
+		sp.getServer().runCommand("title @a times 0 400 10");
+		sp.getServer().runCommand("title @a subtitle \"subtitle line\"");
+		sp.getServer().runCommand("title @a title \"Hollow\"");
+		ctx.waitTicks(10);
+		screenshot(ctx, "scoreboard_vanilla");
+		ctx.runOnClient(mc -> {
+			Modules.SCOREBOARD_TITLES.setEnabled(true);
+			((EnumSetting<?>) Modules.SCOREBOARD_TITLES.setting("side")).cycle(1);
+			((dev.telmuad.hollowclient.setting.NumberSetting) Modules.SCOREBOARD_TITLES.setting("scoreboardScale")).set(120);
+			((dev.telmuad.hollowclient.setting.BooleanSetting) Modules.SCOREBOARD_TITLES.setting("numbers")).set(false);
+			((dev.telmuad.hollowclient.setting.NumberSetting) Modules.SCOREBOARD_TITLES.setting("titleScale")).set(60);
+			((dev.telmuad.hollowclient.setting.NumberSetting) Modules.SCOREBOARD_TITLES.setting("titleOffset")).set(-60);
+			((dev.telmuad.hollowclient.setting.NumberSetting) Modules.SCOREBOARD_TITLES.setting("bossOffset")).set(20);
+		});
+		ctx.waitTicks(4);
+		screenshot(ctx, "scoreboard_glass_left");
+		ctx.runOnClient(mc -> Modules.SCOREBOARD_TITLES.setEnabled(false));
+		sp.getServer().runCommand("title @a clear");
+		sp.getServer().runCommand("bossbar remove hollowclient:test");
+		sp.getServer().runCommand("scoreboard objectives remove hollow");
+
+		// ---- discord presence: no app ID does nothing, and a missing Discord is handled quietly
+		ctx.runOnClient(mc -> Modules.DISCORD.setEnabled(true));
+		ctx.waitTicks(5);
+		String noId = ctx.computeOnClient(mc -> dev.telmuad.hollowclient.discord.DiscordPresence.status());
+		check("Discord presence waits for an app ID (" + noId + ")", noId.contains("application ID"));
+		ctx.runOnClient(mc -> Modules.DISCORD.setEnabled(false));
+
+		// ---- profiles
+		boolean fpsBefore = ctx.computeOnClient(mc -> module("fps").isEnabled());
+		boolean postBefore = ctx.computeOnClient(mc -> Modules.POST_PROCESSING.isEnabled());
+		int missing = 0;
+		for (var p : dev.telmuad.hollowclient.config.Profiles.BUILTIN) {
+			missing += ctx.computeOnClient(mc -> dev.telmuad.hollowclient.config.Profiles.apply(HollowClient.modules(), p));
+			ctx.waitTick();
+		}
+		check("Built-in profiles only name real modules and settings (" + missing + " missing)", missing == 0);
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.config.Profiles.apply(HollowClient.modules(), dev.telmuad.hollowclient.config.Profiles.BUILTIN.get(0)));
+		boolean pvp = ctx.computeOnClient(mc -> module("keystrokes").isEnabled() && !Modules.POST_PROCESSING.isEnabled());
+		check("The PvP profile shows keystrokes and turns screen effects off", pvp);
+		ctx.setScreen(() -> new dev.telmuad.hollowclient.gui.ProfilesScreen(null));
+		ctx.waitTicks(10);
+		screenshot(ctx, "profiles_screen");
+		ctx.setScreen(() -> null);
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.config.Profiles.goBack(HollowClient.modules()));
+		boolean back = ctx.computeOnClient(mc -> module("fps").isEnabled() == fpsBefore && Modules.POST_PROCESSING.isEnabled() == postBefore
+				&& !module("keystrokes").isEnabled() && dev.telmuad.hollowclient.config.Profiles.active() == null);
+		check("\"Back to my settings\" undoes profiles", back);
 	}
 }

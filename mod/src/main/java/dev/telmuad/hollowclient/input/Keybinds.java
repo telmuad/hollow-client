@@ -28,6 +28,8 @@ public final class Keybinds {
 
 	private static KeyMapping menuKey;
 	private static KeyMapping emoteKey;
+	private static final String[] ACTIONS = {"waypoint_add", "camera_point", "camera_play", "music_play", "music_next", "music_previous"};
+	private static final KeyMapping[] ACTION_KEYS = new KeyMapping[ACTIONS.length];
 	private static final KeyMapping[] MACRO_KEYS = new KeyMapping[dev.telmuad.hollowclient.modules.qol.ChatMacrosModule.SLOTS];
 	private static final Map<Module, KeyMapping> MODULE_KEYS = new LinkedHashMap<>();
 	private static Supplier<net.minecraft.client.gui.screens.Screen> menuFactory = () -> null;
@@ -41,6 +43,10 @@ public final class Keybinds {
 				InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, CATEGORY));
 		emoteKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.hollowclient.emote_wheel",
 				InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, CATEGORY));
+		for (int i = 0; i < ACTIONS.length; i++) {
+			ACTION_KEYS[i] = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.hollowclient." + ACTIONS[i],
+					InputConstants.Type.KEYSYM, InputConstants.UNKNOWN.getValue(), CATEGORY));
+		}
 		for (int i = 0; i < MACRO_KEYS.length; i++) {
 			MACRO_KEYS[i] = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.hollowclient.macro" + (i + 1),
 					InputConstants.Type.KEYSYM, InputConstants.UNKNOWN.getValue(), CATEGORY));
@@ -87,6 +93,11 @@ public final class Keybinds {
 				mc.setScreen(new dev.telmuad.hollowclient.gui.EmoteWheelScreen());
 			}
 		}
+		for (int i = 0; i < ACTION_KEYS.length; i++) {
+			while (ACTION_KEYS[i].consumeClick()) {
+				if (mc.screen == null) action(mc, ACTIONS[i]);
+			}
+		}
 		for (int i = 0; i < MACRO_KEYS.length; i++) {
 			while (MACRO_KEYS[i].consumeClick()) {
 				if (mc.screen == null) dev.telmuad.hollowclient.chat.ChatFx.macro(mc, i);
@@ -121,6 +132,22 @@ public final class Keybinds {
 							.append(on ? Component.literal("ON").withStyle(ChatFormatting.GREEN)
 									: Component.literal("OFF").withStyle(ChatFormatting.RED)), false);
 				}
+			}
+		}
+	}
+
+	private static void action(Minecraft mc, String action) {
+		switch (action) {
+			case "waypoint_add" -> {
+				var w = dev.telmuad.hollowclient.waypoints.Waypoints.addHere(mc, null);
+				if (w != null) dev.telmuad.hollowclient.gui.Toasts.success("Waypoint added", w.name + " (rename it in Waypoints)");
+			}
+			case "camera_point" -> dev.telmuad.hollowclient.camera.CameraPaths.addPoint(mc);
+			case "camera_play" -> dev.telmuad.hollowclient.camera.CameraPaths.toggle(mc);
+			case "music_play" -> dev.telmuad.hollowclient.music.MusicPlayer.togglePause();
+			case "music_next" -> dev.telmuad.hollowclient.music.MusicPlayer.next();
+			case "music_previous" -> dev.telmuad.hollowclient.music.MusicPlayer.previous();
+			default -> {
 			}
 		}
 	}

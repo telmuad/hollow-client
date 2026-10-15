@@ -65,7 +65,14 @@ public final class HollowClient implements ClientModInitializer {
 		Keybinds.register(modules, Modules::createMenu);
 
 		ClientTickEvents.END_CLIENT_TICK.register(HollowClient::onEndTick);
-		ClientLifecycleEvents.CLIENT_STOPPING.register(client -> config.saveNow());
+		ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
+			config.saveNow();
+			dev.telmuad.hollowclient.waypoints.Waypoints.saveNow();
+			dev.telmuad.hollowclient.music.MusicPlayer.stop();
+			dev.telmuad.hollowclient.discord.DiscordPresence.stop();
+		});
+		dev.telmuad.hollowclient.config.Profiles.load();
+		dev.telmuad.hollowclient.render.WaypointFx.register();
 		Modules.registerHooks();
 
 		LOG.info("Hollow Client ready: {} modules", modules.all().size());
@@ -79,6 +86,10 @@ public final class HollowClient implements ClientModInitializer {
 		dev.telmuad.hollowclient.styles.Emotes.tick(mc);
 		dev.telmuad.hollowclient.chat.ChatFx.tick(mc);
 		dev.telmuad.hollowclient.modules.hud.SessionStatsHud.tick(mc);
+		dev.telmuad.hollowclient.waypoints.Waypoints.tick(mc);
+		dev.telmuad.hollowclient.camera.CameraPaths.tick(mc);
+		dev.telmuad.hollowclient.music.MusicPlayer.tick(mc);
+		dev.telmuad.hollowclient.discord.DiscordPresence.tick(mc);
 		for (Module m : modules.all()) {
 			try {
 				m.onTick();

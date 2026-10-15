@@ -1,5 +1,12 @@
 package dev.telmuad.hollowclient.modules;
 
+import dev.telmuad.hollowclient.modules.hud.MusicHud;
+import dev.telmuad.hollowclient.modules.qol.MusicPlayerModule;
+import dev.telmuad.hollowclient.modules.qol.WaypointsModule;
+import dev.telmuad.hollowclient.modules.visual.CameraPathModule;
+import dev.telmuad.hollowclient.modules.ui.ScoreboardTitlesModule;
+import dev.telmuad.hollowclient.modules.client.DiscordModule;
+import dev.telmuad.hollowclient.modules.client.ProfilesModule;
 import dev.telmuad.hollowclient.gui.HollowMenuScreen;
 import dev.telmuad.hollowclient.hud.HudRenderer;
 import dev.telmuad.hollowclient.module.ModuleRegistry;
@@ -110,6 +117,12 @@ public final class Modules {
 	public static AutoGgModule AUTO_GG;
 	public static ChatMacrosModule CHAT_MACROS;
 	public static ScreenshotsModule SCREENSHOTS;
+	public static MusicPlayerModule MUSIC;
+	public static WaypointsModule WAYPOINTS;
+	public static CameraPathModule CAMERA_PATH;
+	public static ScoreboardTitlesModule SCOREBOARD_TITLES;
+	public static DiscordModule DISCORD;
+	public static ProfilesModule PROFILES;
 
 	private Modules() {
 	}
@@ -126,6 +139,7 @@ public final class Modules {
 		registry.register(new ClockHud());
 		registry.register(new ToggleStatusHud());
 		registry.register(new SessionStatsHud());
+		registry.register(new MusicHud());
 		HUD_STYLE = registry.register(new HudStyleModule());
 		// Interface: Hollow's look for vanilla screens
 		TITLE_SCREEN = registry.register(new TitleScreenModule());
@@ -133,6 +147,7 @@ public final class Modules {
 		PAUSE_MENU = registry.register(new PauseMenuModule());
 		INVENTORY_BLUR = registry.register(new InventoryBlurModule());
 		CHAT_STYLE = registry.register(new ChatStyleModule());
+		SCOREBOARD_TITLES = registry.register(new ScoreboardTitlesModule());
 		// Visual
 		FULLBRIGHT = registry.register(new FullbrightModule());
 		CROSSHAIR = registry.register(new CrosshairModule());
@@ -143,6 +158,7 @@ public final class Modules {
 		SKY = registry.register(new SkyModule());
 		TIME_WEATHER = registry.register(new TimeWeatherModule());
 		BLOCK_OUTLINE = registry.register(new BlockOutlineModule());
+		CAMERA_PATH = registry.register(new CameraPathModule());
 		// Effects: particles and animations
 		HIT_EFFECTS = registry.register(new HitEffectsModule());
 		PARTICLES = registry.register(new ParticlesModule());
@@ -156,6 +172,8 @@ public final class Modules {
 		AUTO_GG = registry.register(new AutoGgModule());
 		CHAT_MACROS = registry.register(new ChatMacrosModule());
 		SCREENSHOTS = registry.register(new ScreenshotsModule());
+		WAYPOINTS = registry.register(new WaypointsModule());
+		MUSIC = registry.register(new MusicPlayerModule());
 		// Styles (shown as tiles in the menu; picked in the Styles screen)
 		CAPE = registry.register(new CapeModule());
 		HAT = registry.register(new HatModule());
@@ -167,11 +185,13 @@ public final class Modules {
 		EMOTES = registry.register(new EmotesModule());
 		// Client: theme, font, sounds and the global Performance Mode
 		THEME = registry.register(new ThemeModule());
+		PROFILES = registry.register(new ProfilesModule());
 		PERFORMANCE = registry.register(new PerformanceModule());
 		UI_FONT = registry.register(new UiFontModule());
 		UI_SOUNDS = registry.register(new UiSoundsModule());
 		MENU_FX = registry.register(new MenuFxModule());
 		TOASTS = registry.register(new ToastsModule());
+		DISCORD = registry.register(new DiscordModule());
 	}
 
 	/** Fabric event hooks that aren't tied to one module (HUD layer, crosshair, cosmetics layer, reloads). */

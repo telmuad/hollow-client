@@ -46,6 +46,10 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
+	// MP3 decoding for the music player (JavaMP3, MIT license; bundled inside the mod jar)
+	implementation "fr.delthas:javamp3:1.0.1"
+	include "fr.delthas:javamp3:1.0.1"
+
 	// `gradlew runClient -PwithSodium` runs the dev client with Sodium to check compatibility.
 	// Sodium is never bundled in the jar; the launcher downloads it from Modrinth.
 	if (project.hasProperty('withSodium')) {

@@ -50,6 +50,8 @@ public final class HudRenderer {
 			return;
 		}
 		dev.telmuad.hollowclient.render.EffectsFx.renderFlash(g);
+		dev.telmuad.hollowclient.render.WaypointFx.renderLabels(g);
+		dev.telmuad.hollowclient.camera.CameraPaths.renderPreview(g);
 		if (mc.screen instanceof HudEditorScreen) return;
 		long now = System.nanoTime();
 		float frame = lastNanos == 0 ? 0f : Math.min(0.1f, (now - lastNanos) / 1_000_000_000f);
