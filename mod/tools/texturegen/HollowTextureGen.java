@@ -30,6 +30,7 @@ public final class HollowTextureGen {
 		wings();
 		icon();
 		wordmark();
+		particles();
 		System.out.println("Textures written to " + root.getAbsolutePath());
 	}
 
@@ -388,5 +389,47 @@ public final class HollowTextureGen {
 		g.fill(gv.getOutline(pad - bounds.x, pad - bounds.y));
 		g.dispose();
 		return img;
+	}
+
+	// ------------------------------------------------------------------------------------------------ particles
+
+	/** White particle sprites (tinted at runtime): a soft dot, a four-point sparkle and a footprint. 16x16 each. */
+	private static void particles() throws IOException {
+		int n = 16;
+		BufferedImage dot = new BufferedImage(n, n, BufferedImage.TYPE_INT_ARGB);
+		BufferedImage sparkle = new BufferedImage(n, n, BufferedImage.TYPE_INT_ARGB);
+		double c = (n - 1) / 2.0;
+		for (int y = 0; y < n; y++) {
+			for (int x = 0; x < n; x++) {
+				double dx = x - c;
+				double dy = y - c;
+				double d = Math.sqrt(dx * dx + dy * dy) / (n / 2.0);
+				double a = Math.max(0, 1 - d);
+				dot.setRGB(x, y, argb((int) Math.round(Math.pow(a, 1.6) * 255), 255, 255, 255));
+				// four thin rays plus a bright core
+				double ray = Math.max(Math.exp(-Math.abs(dx) * 1.6) * Math.max(0, 1 - Math.abs(dy) / 7.5),
+						Math.exp(-Math.abs(dy) * 1.6) * Math.max(0, 1 - Math.abs(dx) / 7.5));
+				double core = Math.max(0, 1 - d * 2.2);
+				double s = Math.min(1, ray + core);
+				sparkle.setRGB(x, y, argb((int) Math.round(s * 255), 255, 255, 255));
+			}
+		}
+		save(dot, "textures/particle/dot.png");
+		save(sparkle, "textures/particle/sparkle.png");
+
+		// a left shoe print, toes up: an oval sole and a smaller heel, soft edges
+		BufferedImage print = new BufferedImage(n, n, BufferedImage.TYPE_INT_ARGB);
+		for (int y = 0; y < n; y++) {
+			for (int x = 0; x < n; x++) {
+				double px = x + 0.5;
+				double py = y + 0.5;
+				double sole = 1 - Math.hypot((px - 8.3) / 3.4, (py - 5.2) / 4.4);
+				double heel = 1 - Math.hypot((px - 7.7) / 2.6, (py - 12.2) / 2.6);
+				double v = Math.max(sole, heel);
+				double a = Math.max(0, Math.min(1, v * 4));
+				print.setRGB(x, y, argb((int) Math.round(a * 200), 255, 255, 255));
+			}
+		}
+		save(print, "textures/particle/footprint.png");
 	}
 }

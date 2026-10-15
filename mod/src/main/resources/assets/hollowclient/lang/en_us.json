@@ -35,5 +35,10 @@
 	"key.hollowclient.post_processing": "Toggle Post Processing",
 	"key.hollowclient.sky": "Toggle Sky effects",
 	"key.hollowclient.time_weather": "Toggle Time & Weather",
-	"key.hollowclient.block_outline": "Toggle Block Outline"
+	"key.hollowclient.block_outline": "Toggle Block Outline",
+	"key.hollowclient.hit_effects": "Toggle Hit Effects",
+	"key.hollowclient.particles": "Toggle Hollow particles",
+	"key.hollowclient.item_physics": "Toggle Item Physics",
+	"key.hollowclient.hand_animations": "Toggle Hand Animations",
+	"key.hollowclient.own_nametag": "Toggle Own Nametag"
 }

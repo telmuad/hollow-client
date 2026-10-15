@@ -4,6 +4,7 @@ public enum Category {
 	HUD("HUD"),
 	INTERFACE("Interface"),
 	VISUAL("Visual"),
+	EFFECTS("Effects"),
 	QOL("Quality of Life"),
 	STYLES("Styles"),
 	CLIENT("Client");

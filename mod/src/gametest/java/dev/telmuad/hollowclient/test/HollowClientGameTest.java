@@ -101,6 +101,7 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 			qolAndVisual(ctx, sp);
 			postProcessing(ctx, sp);
 			skyAndWorld(ctx, sp);
+			effects(ctx, sp);
 			styles(ctx, sp);
 		}
 		if (!failures.isEmpty()) throw new AssertionError("Hollow Client checks failed: " + failures);
@@ -518,6 +519,125 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		sp.getServer().runCommand("setblock " + at(0, 1, 2) + " air");
 		home(sp);
 		ctx.waitTicks(5);
+	}
+
+	private static int particleCount(Minecraft mc) {
+		String s = mc.particleEngine.countParticles();
+		try {
+			return Integer.parseInt(s.trim());
+		} catch (NumberFormatException e) {
+			return -1;
+		}
+	}
+
+	private void effects(ClientGameTestContext ctx, TestSingleplayerContext sp) {
+		home(sp);
+		sp.getServer().runCommand("time set noon");
+		sp.getServer().runCommand("weather clear");
+		sp.getServer().runCommand("kill @e[type=!player]");
+		// a pig right in front; hit it: colored hit burst
+		sp.getServer().runCommand("summon pig " + (x + 0.5) + " " + y + " " + (z + 2.5) + " {NoAI:1b,Rotation:[180f,0f]}");
+		sp.getServer().runCommand("tp @a " + (x + 0.5) + " " + y + " " + (z + 0.5) + " 0 20");
+		ctx.waitTicks(10);
+		int before = ctx.computeOnClient(EffectsTestHelper::particles);
+		ctx.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+		ctx.waitTick();
+		int after = ctx.computeOnClient(EffectsTestHelper::particles);
+		check("Hitting a mob spawns a hit burst (" + before + " -> " + after + " particles)", after > before);
+		screenshot(ctx, "hit_burst");
+		// a critical hit the server confirmed: sparks and an edge flash
+		int beforeCrit = ctx.computeOnClient(EffectsTestHelper::particles);
+		ctx.runOnClient(mc -> {
+			var pig = mc.level.getEntitiesOfClass(net.minecraft.world.entity.animal.pig.Pig.class, mc.player.getBoundingBox().inflate(6)).stream().findFirst().orElse(null);
+			if (pig != null) {
+				dev.telmuad.hollowclient.render.EffectsFx.onLocalAttack(pig);
+				dev.telmuad.hollowclient.render.EffectsFx.onCritPacket(pig, 4);
+			}
+		});
+		ctx.waitTick();
+		int afterCrit = ctx.computeOnClient(EffectsTestHelper::particles);
+		check("A confirmed crit adds sparks (" + beforeCrit + " -> " + afterCrit + " particles)", afterCrit - beforeCrit >= 10);
+		screenshot(ctx, "crit_sparks_flash");
+		ctx.waitTicks(10);
+		// kill it: kill burst
+		ctx.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+		sp.getServer().runCommand("kill @e[type=pig]");
+		ctx.waitTicks(3);
+		screenshot(ctx, "kill_burst");
+		ctx.waitTicks(30);
+		// block break: pieces and sparkles
+		sp.getServer().runCommand("setblock " + at(0, 0, 2) + " amethyst_block");
+		ctx.waitTicks(3);
+		sp.getServer().runCommand("setblock " + at(0, 0, 2) + " air destroy");
+		ctx.waitTicks(2);
+		screenshot(ctx, "block_break_sparkles");
+		sp.getServer().runCommand("kill @e[type=item]");
+		ctx.waitTicks(20);
+		// trail and footprints, seen from behind in third person
+		ctx.runOnClient(mc -> {
+			setBool("particles", "trail", true);
+			setBool("particles", "footprints", true);
+			mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
+		});
+		sp.getServer().runCommand("tp @a " + (x + 0.5) + " " + y + " " + (z - 4.5) + " 0 30");
+		ctx.waitTicks(5);
+		int prints = ctx.computeOnClient(mc -> dev.telmuad.hollowclient.render.EffectsFx.footprintsPlaced);
+		ctx.getInput().holdKey(GLFW.GLFW_KEY_W);
+		ctx.waitTicks(25);
+		ctx.getInput().releaseKey(GLFW.GLFW_KEY_W);
+		ctx.waitTicks(2);
+		int printsAfter = ctx.computeOnClient(mc -> dev.telmuad.hollowclient.render.EffectsFx.footprintsPlaced);
+		check("Walking leaves footprints (" + (printsAfter - prints) + " placed)", printsAfter - prints >= 3);
+		screenshot(ctx, "trail_and_footprints");
+		// look down at the footprints from above
+		ctx.runOnClient(mc -> mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON));
+		double[] pos = ctx.computeOnClient(mc -> new double[]{mc.player.getX(), mc.player.getY(), mc.player.getZ()});
+		sp.getServer().runCommand("tp @a " + pos[0] + " " + pos[1] + " " + pos[2] + " 180 65");
+		ctx.waitTicks(3);
+		screenshot(ctx, "footprints_from_above");
+		ctx.runOnClient(mc -> {
+			setBool("particles", "trail", false);
+			setBool("particles", "footprints", false);
+		});
+		// own nametag in third person (front view)
+		ctx.runOnClient(mc -> {
+			module("own_nametag").setEnabled(true);
+			mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
+		});
+		ctx.waitTicks(5);
+		screenshot(ctx, "own_nametag");
+		ctx.runOnClient(mc -> {
+			module("own_nametag").setEnabled(false);
+			mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);
+		});
+		// item physics: items on the ground and one falling
+		home(sp);
+		ctx.runOnClient(mc -> module("item_physics").setEnabled(true));
+		sp.getServer().runCommand("summon item " + (x + 0.2) + " " + y + " " + (z + 2.0) + " {Item:{id:\"minecraft:diamond_sword\",count:1},PickupDelay:32767}");
+		sp.getServer().runCommand("summon item " + (x + 1.0) + " " + y + " " + (z + 2.3) + " {Item:{id:\"minecraft:apple\",count:3},PickupDelay:32767}");
+		sp.getServer().runCommand("summon item " + (x - 0.6) + " " + y + " " + (z + 2.2) + " {Item:{id:\"minecraft:grass_block\",count:1},PickupDelay:32767}");
+		sp.getServer().runCommand("summon item " + (x + 0.5) + " " + (y + 3) + " " + (z + 2.5) + " {Item:{id:\"minecraft:golden_apple\",count:1},PickupDelay:32767}");
+		sp.getServer().runCommand("tp @a " + (x + 0.5) + " " + y + " " + (z + 0.5) + " 0 40");
+		ctx.waitTicks(6);
+		screenshot(ctx, "item_physics");
+		ctx.runOnClient(mc -> module("item_physics").setEnabled(false));
+		sp.getServer().runCommand("kill @e[type=item]");
+		// classic (1.7) held-item position, holding a sword
+		sp.getServer().runCommand("item replace entity @a weapon.mainhand with diamond_sword");
+		ctx.runOnClient(mc -> setBool("hand_animations", "classicPosition", true));
+		ctx.waitTicks(10);
+		screenshot(ctx, "hand_classic_position");
+		ctx.runOnClient(mc -> setBool("hand_animations", "classicPosition", false));
+		sp.getServer().runCommand("item replace entity @a weapon.mainhand with air");
+		home(sp);
+		ctx.waitTicks(5);
+	}
+
+	/** Small helpers the effects test calls on the client thread. */
+	private static final class EffectsTestHelper {
+		static int particles(Minecraft mc) {
+			return particleCount(mc);
+		}
 	}
 
 	private static void setBool(String module, String setting, boolean value) {

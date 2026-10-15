@@ -43,7 +43,6 @@ public final class HollowMenuScreen extends HollowScreen {
 
 	private static final int CARD_H = 46;
 	private static final int TILE_H = 58;
-	private static final int RAIL_ROW = 26;
 	private static final long STAGGER_MS = 28;
 	private static final float APPEAR_MS = 300f;
 
@@ -58,6 +57,8 @@ public final class HollowMenuScreen extends HollowScreen {
 	private Rect searchBox = Rect.EMPTY;
 	private Rect clearSearch = Rect.EMPTY;
 	private boolean railLabels = true;
+	/** Height of one category row: 26 when there is room, smaller on short windows so every category fits. */
+	private int railRow = 26;
 	private int cols = 2;
 	private int cardW = 150;
 	private int gap = 6;
@@ -112,6 +113,7 @@ public final class HollowMenuScreen extends HollowScreen {
 		footer = new Rect(panel.x(), panel.bottom() - 18, pw, 18);
 		int railW = railLabels ? 108 : 28;
 		rail = new Rect(panel.x() + 8, header.bottom() + 2, railW, footer.y() - header.bottom() - 6);
+		railRow = Math.max(18, Math.min(26, (rail.h() - 2) / Category.values().length));
 		section = new Rect(rail.right() + 8, header.bottom() + 2, panel.right() - 8 - rail.right() - 8, 14);
 		grid = new Rect(section.x(), section.bottom() + 2, section.w(), footer.y() - section.bottom() - 6);
 		gap = 6;
@@ -242,39 +244,41 @@ public final class HollowMenuScreen extends HollowScreen {
 
 	private void renderRail(GuiGraphics g, int mx, int my, float a) {
 		Category[] cats = Category.values();
-		float targetY = rail.y() + 2 + category.ordinal() * RAIL_ROW;
+		float targetY = rail.y() + 2 + category.ordinal() * railRow;
 		if (railMarker.value() < 0) railMarker.snap(targetY);
 		railMarker.target(targetY);
 		float markerY = fxAmount(m -> m.entrance) > 0 ? railMarker.update(dt * Theme.speed()) : railMarker.snap(targetY).value();
 		railMarkerAlpha = Anim.approach(railMarkerAlpha, searching() ? 0f : 1f, dt, 12f);
 		if (railMarkerAlpha > 0.01f) {
-			Rect marker = new Rect(rail.x(), Math.round(markerY), rail.w(), 24);
+			int rh = railRow - 2;
+			Rect marker = new Rect(rail.x(), Math.round(markerY), rail.w(), rh);
 			float ma = a * railMarkerAlpha;
+			int barH = Math.max(8, rh - 10);
 			Draw.roundRect(g, marker, Theme.radius(5), Theme.fade(Theme.cardOn(), ma));
-			Fx.glow(g, marker.x(), marker.y() + 5, 2, 14, 4, Theme.fade(Theme.accent(), ma * Theme.glow() * 0.8f));
-			Draw.roundRect(g, marker.x(), marker.y() + 5, 2, 14, 1, Theme.fade(Theme.accent(), ma));
+			Fx.glow(g, marker.x(), marker.y() + (rh - barH) / 2, 2, barH, 4, Theme.fade(Theme.accent(), ma * Theme.glow() * 0.8f));
+			Draw.roundRect(g, marker.x(), marker.y() + (rh - barH) / 2, 2, barH, 1, Theme.fade(Theme.accent(), ma));
 		}
 		int y = rail.y() + 2;
 		for (Category c : cats) {
-			Rect r = new Rect(rail.x(), y, rail.w(), 24);
+			Rect r = new Rect(rail.x(), y, rail.w(), railRow - 2);
 			boolean selected = !searching() && c == category;
 			float h = animate(c, r.contains(mx, my));
 			if (!selected) Draw.roundRect(g, r, Theme.radius(5), Theme.fade(Theme.mix(0x00000000, Theme.CARD, h), a));
 			if (a > 0.6f) {
 				g.pose().pushMatrix();
 				float bump = 1f + 0.08f * h;
-				g.pose().translate(r.x() + 14, r.y() + 12);
+				g.pose().translate(r.x() + 14, r.y() + r.h() / 2f);
 				g.pose().scale(bump, bump);
 				g.renderItem(iconFor(c), -8, -8);
 				g.pose().popMatrix();
 			}
 			if (railLabels) {
 				int color = selected ? Theme.TEXT : Theme.mix(Theme.TEXT_DIM, Theme.TEXT, h);
-				Ui.draw(g, font, c.label(), r.x() + 27 + Math.round(h * 2), r.y() + 8, Theme.fade(color, a));
+				Ui.draw(g, font, c.label(), r.x() + 27 + Math.round(h * 2), r.y() + (r.h() - 8) / 2, Theme.fade(color, a));
 			} else if (r.contains(mx, my)) {
 				g.setTooltipForNextFrame(font, Component.literal(c.label()), mx, my);
 			}
-			y += RAIL_ROW;
+			y += railRow;
 		}
 	}
 
@@ -300,6 +304,7 @@ public final class HollowMenuScreen extends HollowScreen {
 			case HUD -> new ItemStack(Items.COMPASS);
 			case INTERFACE -> new ItemStack(Items.ITEM_FRAME);
 			case VISUAL -> new ItemStack(Items.ENDER_EYE);
+			case EFFECTS -> new ItemStack(Items.FIREWORK_ROCKET);
 			case QOL -> new ItemStack(Items.FEATHER);
 			case STYLES -> new ItemStack(Items.LEATHER_CHESTPLATE);
 			case CLIENT -> new ItemStack(Items.AMETHYST_SHARD);
@@ -596,14 +601,14 @@ public final class HollowMenuScreen extends HollowScreen {
 
 		int y = rail.y() + 2;
 		for (Category c : Category.values()) {
-			Rect r = new Rect(rail.x(), y, rail.w(), 24);
+			Rect r = new Rect(rail.x(), y, rail.w(), railRow - 2);
 			if (r.contains(mx, my)) {
 				UiSounds.click();
 				ripple(mx, my, r);
 				if (c != category || searching()) switchCategory(c);
 				return true;
 			}
-			y += RAIL_ROW;
+			y += railRow;
 		}
 
 		if (grid.contains(mx, my)) {

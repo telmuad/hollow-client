@@ -116,12 +116,13 @@ public final class HudStyle {
 			HudStyleModule m = module();
 			float speed = m == null ? 0f : m.rolling();
 			if (speed <= 0f || Quality.reducedMotion()) {
-				last = s;
+				// forget the history so the arrays are rebuilt when rolling is switched back on
+				last = "";
 				text(g, font, s, x, y, color, shadow, alpha);
 				return;
 			}
 			long now = Util.getMillis();
-			if (s.length() != last.length() || !sameShape(s, last)) {
+			if (s.length() != last.length() || from.length != s.length() || !sameShape(s, last)) {
 				from = new char[s.length()];
 				start = new long[s.length()];
 			} else {

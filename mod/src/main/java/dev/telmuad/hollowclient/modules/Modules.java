@@ -18,6 +18,11 @@ import dev.telmuad.hollowclient.modules.hud.ArmorHud;
 import dev.telmuad.hollowclient.modules.hud.ClockHud;
 import dev.telmuad.hollowclient.modules.hud.CoordinatesHud;
 import dev.telmuad.hollowclient.modules.hud.CpsHud;
+import dev.telmuad.hollowclient.modules.effects.HandAnimationsModule;
+import dev.telmuad.hollowclient.modules.effects.HitEffectsModule;
+import dev.telmuad.hollowclient.modules.effects.ItemPhysicsModule;
+import dev.telmuad.hollowclient.modules.effects.OwnNametagModule;
+import dev.telmuad.hollowclient.modules.effects.ParticlesModule;
 import dev.telmuad.hollowclient.modules.hud.FpsHud;
 import dev.telmuad.hollowclient.modules.hud.HudStyleModule;
 import dev.telmuad.hollowclient.modules.hud.KeystrokesHud;
@@ -81,6 +86,11 @@ public final class Modules {
 	public static SkyModule SKY;
 	public static TimeWeatherModule TIME_WEATHER;
 	public static BlockOutlineModule BLOCK_OUTLINE;
+	public static HitEffectsModule HIT_EFFECTS;
+	public static ParticlesModule PARTICLES;
+	public static ItemPhysicsModule ITEM_PHYSICS;
+	public static HandAnimationsModule HAND_ANIMATIONS;
+	public static OwnNametagModule OWN_NAMETAG;
 
 	private Modules() {
 	}
@@ -113,6 +123,12 @@ public final class Modules {
 		SKY = registry.register(new SkyModule());
 		TIME_WEATHER = registry.register(new TimeWeatherModule());
 		BLOCK_OUTLINE = registry.register(new BlockOutlineModule());
+		// Effects: particles and animations
+		HIT_EFFECTS = registry.register(new HitEffectsModule());
+		PARTICLES = registry.register(new ParticlesModule());
+		ITEM_PHYSICS = registry.register(new ItemPhysicsModule());
+		HAND_ANIMATIONS = registry.register(new HandAnimationsModule());
+		OWN_NAMETAG = registry.register(new OwnNametagModule());
 		// Quality of life
 		ZOOM = registry.register(new ZoomModule());
 		TOGGLE_SPRINT = registry.register(new ToggleSprintModule());

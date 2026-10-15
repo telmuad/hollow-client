@@ -49,6 +49,7 @@ public final class HudRenderer {
 			APPEAR.clear(); // elements fade in again when the HUD comes back
 			return;
 		}
+		dev.telmuad.hollowclient.render.EffectsFx.renderFlash(g);
 		if (mc.screen instanceof HudEditorScreen) return;
 		long now = System.nanoTime();
 		float frame = lastNanos == 0 ? 0f : Math.min(0.1f, (now - lastNanos) / 1_000_000_000f);
