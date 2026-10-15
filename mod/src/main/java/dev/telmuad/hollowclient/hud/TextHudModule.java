@@ -31,7 +31,7 @@ public abstract class TextHudModule extends HudModule {
 		lines.clear();
 		lines(mc, preview, lines);
 		width = 0;
-		for (Line l : lines) width = Math.max(width, font.width(l.text()));
+		for (Line l : lines) width = Math.max(width, width(font, l.text()));
 		if (lines.isEmpty()) return new Size(0, 0);
 		return new Size(width + 2 * PAD, lines.size() * 10 - 1 + 2 * PAD - 1);
 	}
@@ -43,9 +43,10 @@ public abstract class TextHudModule extends HudModule {
 		drawBackground(g, w, lines.size() * 10 - 1 + 2 * PAD - 1);
 		boolean right = alignRight();
 		int y = PAD;
-		for (Line l : lines) {
-			int x = right ? w - PAD - font.width(l.text()) : PAD;
-			text(g, font, l.text(), x, y, l.color() != 0 ? l.color() : textColor.argb());
+		for (int i = 0; i < lines.size(); i++) {
+			Line l = lines.get(i);
+			int x = right ? w - PAD - width(font, l.text()) : PAD;
+			rollingText(g, font, l.text(), x, y, l.color() != 0 ? l.color() : textColor.argb(), i);
 			y += 10;
 		}
 	}

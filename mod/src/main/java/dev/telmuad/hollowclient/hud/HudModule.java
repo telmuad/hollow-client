@@ -22,6 +22,8 @@ public abstract class HudModule extends Module {
 	protected final BooleanSetting shadow;
 	private final HudPosition defaults;
 	private final HudPosition position;
+	/** Fade of the element while it appears (set by {@link HudRenderer} before each draw). */
+	protected float alpha = 1f;
 
 	public record Size(int w, int h) {
 	}
@@ -82,11 +84,27 @@ public abstract class HudModule extends Module {
 		return position.anchorX == HudPosition.Anchor.END;
 	}
 
-	protected final void drawBackground(GuiGraphics g, int w, int h) {
-		if (background.on()) g.fill(0, 0, w, h, backgroundColor.argb());
+	final void setAlpha(float alpha) {
+		this.alpha = alpha;
 	}
 
+	/** The element's background in the HUD Style look (or a flat box when HUD Style is off). */
+	protected final void drawBackground(GuiGraphics g, int w, int h) {
+		HudStyle.background(g, w, h, backgroundColor.argb(), background.on(), alpha);
+	}
+
+	/** Text in the HUD font (Inter or vanilla, see UI Font), optionally in the theme gradient. */
 	protected final void text(GuiGraphics g, Font font, String s, int x, int y, int color) {
-		g.drawString(font, s, x, y, color, shadow.on());
+		HudStyle.text(g, font, s, x, y, color, shadow.on(), alpha);
+	}
+
+	/** Like {@link #text}, but digits that change roll like a counter. {@code slot} tells lines apart. */
+	protected final void rollingText(GuiGraphics g, Font font, String s, int x, int y, int color, int slot) {
+		HudStyle.roller(this, slot).draw(g, font, s, x, y, color, shadow.on(), alpha);
+	}
+
+	/** Width of HUD text in the HUD font. */
+	protected static int width(Font font, String s) {
+		return HudStyle.width(font, s);
 	}
 }

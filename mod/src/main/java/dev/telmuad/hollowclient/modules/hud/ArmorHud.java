@@ -79,11 +79,11 @@ public final class ArmorHud extends HudModule {
 				color = ColorUtil.withAlpha(ColorUtil.fromHsv(left / 3f, 0.7f, 1f), ColorUtil.alpha(textColor.argb()));
 			}
 			entries.add(new Entry(s, text, color));
-			textWidth = Math.max(textWidth, font.width(text));
+			textWidth = Math.max(textWidth, width(font, text));
 		}
 		if (entries.isEmpty() && preview) {
 			entries.add(new Entry(sample(Items.DIAMOND_CHESTPLATE, 0.3f), "No armor", textColor.argb()));
-			textWidth = font.width("No armor");
+			textWidth = width(font, "No armor");
 		}
 		if (entries.isEmpty()) return new Size(0, 0);
 		int w = 2 * PAD + 16 + (textWidth > 0 ? 3 + textWidth : 0);
@@ -121,7 +121,7 @@ public final class ArmorHud extends HudModule {
 			int iconX = right ? w - PAD - 16 : PAD;
 			g.renderItem(e.stack, iconX, y);
 			if (!e.text.isEmpty()) {
-				int tx = right ? iconX - 3 - font.width(e.text) : PAD + 16 + 3;
+				int tx = right ? iconX - 3 - width(font, e.text) : PAD + 16 + 3;
 				text(g, font, e.text, tx, y + 4, e.color);
 			}
 			y += ROW;

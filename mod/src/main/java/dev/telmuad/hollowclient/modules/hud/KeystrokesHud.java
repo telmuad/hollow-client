@@ -6,6 +6,12 @@ import dev.telmuad.hollowclient.hud.HudPosition.Anchor;
 import dev.telmuad.hollowclient.input.Clicks;
 import dev.telmuad.hollowclient.setting.BooleanSetting;
 import dev.telmuad.hollowclient.setting.ColorSetting;
+import dev.telmuad.hollowclient.setting.Effect;
+import dev.telmuad.hollowclient.gui.Draw;
+import dev.telmuad.hollowclient.gui.Fx;
+import dev.telmuad.hollowclient.gui.Theme;
+import dev.telmuad.hollowclient.hud.HudStyle;
+import net.minecraft.util.Util;
 import dev.telmuad.hollowclient.util.ColorUtil;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -24,7 +30,11 @@ public final class KeystrokesHud extends HudModule {
 	private final BooleanSetting showSpace = add(new BooleanSetting("showSpace", "Show space bar", true));
 	private final ColorSetting pressedColor = add(new ColorSetting("pressedColor", "Pressed key color", 0xD0F0F0F5));
 	private final ColorSetting pressedText = add(new ColorSetting("pressedTextColor", "Pressed text color", 0xFF101015));
+	private final Effect keyGlow = effect("keyGlow", "Key glow", true, 70, "Pressed keys glow in the theme color.");
+	private final Effect ripple = effect("ripple", "Press ripple", true, 60, "A ripple spreads across a key when you press it.");
 	private final float[] glow = new float[7];
+	private final boolean[] wasDown = new boolean[7];
+	private final long[] pressedAt = new long[7];
 	private long lastNanos;
 
 	public KeystrokesHud() {
@@ -65,42 +75,70 @@ public final class KeystrokesHud extends HudModule {
 		}
 		if (showSpace.on()) {
 			boolean down = o.keyJump.isDown();
+			press(6, down);
 			glow[6] = Anim.approach(glow[6], down ? 1f : 0f, dt, 25f);
-			box(g, 0, y, WIDTH, 10, glow[6]);
+			box(g, 6, 0, y, WIDTH, 10, glow[6]);
 			int c = ColorUtil.mix(textColor.argb(), pressedText.argb(), glow[6]);
 			int bar = WIDTH / 3;
-			g.fill(bar, y + 4, WIDTH - bar, y + 5, c);
+			g.fill(bar, y + 4, WIDTH - bar, y + 5, ColorUtil.fade(c, alpha));
 		}
 	}
 
+	/** Remember when a key went down, for its ripple. */
+	private void press(int i, boolean down) {
+		if (down && !wasDown[i]) pressedAt[i] = Util.getMillis();
+		wasDown[i] = down;
+	}
+
 	private void key(GuiGraphics g, Font font, int i, KeyMapping mapping, int x, int y, int w, int h, float dt) {
+		press(i, mapping.isDown());
 		glow[i] = Anim.approach(glow[i], mapping.isDown() ? 1f : 0f, dt, 25f);
-		box(g, x, y, w, h, glow[i]);
+		box(g, i, x, y, w, h, glow[i]);
 		String label = label(mapping);
 		int c = ColorUtil.mix(textColor.argb(), pressedText.argb(), glow[i]);
-		text(g, font, label, x + (w - font.width(label)) / 2 + 1, y + (h - 8) / 2 + 1, c);
+		text(g, font, label, x + (w - width(font, label)) / 2 + 1, y + (h - 8) / 2 + 1, c);
 	}
 
 	private void mouseKey(GuiGraphics g, Font font, int i, KeyMapping mapping, String name, String cps, int x, int y, int w, float dt) {
+		press(i, mapping.isDown());
 		glow[i] = Anim.approach(glow[i], mapping.isDown() ? 1f : 0f, dt, 25f);
-		box(g, x, y, w, KEY, glow[i]);
+		box(g, i, x, y, w, KEY, glow[i]);
 		int c = ColorUtil.mix(textColor.argb(), pressedText.argb(), glow[i]);
 		if (cps == null) {
-			text(g, font, name, x + (w - font.width(name)) / 2 + 1, y + 6, c);
+			text(g, font, name, x + (w - width(font, name)) / 2 + 1, y + 6, c);
 		} else {
 			g.pose().pushMatrix();
 			g.pose().translate(x + w / 2f, y + 2);
 			g.pose().scale(0.75f, 0.75f);
-			text(g, font, name, -font.width(name) / 2, 0, c);
-			text(g, font, cps, -font.width(cps) / 2, 11, c);
+			text(g, font, name, -width(font, name) / 2, 0, c);
+			text(g, font, cps, -width(font, cps) / 2, 11, c);
 			g.pose().popMatrix();
 		}
 	}
 
-	private void box(GuiGraphics g, int x, int y, int w, int h, float t) {
+	/** One key: glow, background in the HUD style, pressed color, and the press ripple. */
+	private void box(GuiGraphics g, int i, int x, int y, int w, int h, float t) {
+		float glowAmount = keyGlow.amount();
+		if (glowAmount > 0f && t > 0.01f) {
+			Fx.glow(g, x, y, w, h, 5, ColorUtil.fade(Theme.accent(), alpha * t * glowAmount * 0.8f));
+		}
 		int base = background.on() ? backgroundColor.argb() : 0;
 		int color = ColorUtil.mix(base, pressedColor.argb(), t);
-		if ((color >>> 24) != 0) g.fill(x, y, x + w, y + h, color);
+		boolean styled = HudStyle.module() != null;
+		int rad = styled ? Math.min(Theme.radius(3), h / 2) : 0;
+		if ((color >>> 24) != 0) Draw.roundRect(g, x, y, w, h, rad, ColorUtil.fade(color, alpha));
+		if (styled && background.on() && t < 0.99f) {
+			Draw.roundOutline(g, x, y, w, h, rad, ColorUtil.fade(ColorUtil.mix(Theme.STROKE, Theme.accent(), t), alpha * (1f - t * 0.5f)));
+		}
+		float rippleAmount = ripple.amount();
+		long age = Util.getMillis() - pressedAt[i];
+		if (rippleAmount > 0f && pressedAt[i] != 0 && age < 420) {
+			float p = age / 420f;
+			float radius = 2f + Math.max(w, h) * Anim.easeOutCubic(p);
+			g.enableScissor(x, y, x + w, y + h);
+			Fx.disc(g, x + w / 2f, y + h / 2f, radius, ColorUtil.fade(ColorUtil.mix(Theme.accent(), 0xFFFFFFFF, 0.5f), alpha * rippleAmount * 0.5f * (1f - p)));
+			g.disableScissor();
+		}
 	}
 
 	private static String label(KeyMapping mapping) {

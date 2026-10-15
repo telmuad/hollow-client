@@ -30,5 +30,6 @@
 	"key.hollowclient.loading_screen": "Toggle Hollow loading screen",
 	"key.hollowclient.pause_menu": "Toggle Hollow pause menu",
 	"key.hollowclient.inventory_blur": "Toggle Inventory Blur",
-	"key.hollowclient.chat_style": "Toggle Chat Style"
+	"key.hollowclient.chat_style": "Toggle Chat Style",
+	"key.hollowclient.hud_style": "Toggle HUD Style"
 }

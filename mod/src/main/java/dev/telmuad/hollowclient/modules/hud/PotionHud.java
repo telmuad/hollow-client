@@ -66,7 +66,7 @@ public final class PotionHud extends HudModule {
 			entries.add(new Entry(MobEffects.SPEED, "Speed II", "1:30", textColor.argb(), false));
 			entries.add(new Entry(MobEffects.FIRE_RESISTANCE, "Fire Resistance", "7:45", textColor.argb(), false));
 		}
-		for (Entry e : entries) width = Math.max(width, Math.max(font.width(e.name), font.width(e.time)));
+		for (Entry e : entries) width = Math.max(width, Math.max(width(font, e.name), width(font, e.time)));
 		if (entries.isEmpty()) return new Size(0, 0);
 		return new Size(2 * PAD + (icons.on() ? 18 + 4 : 0) + width, 2 * PAD + entries.size() * ROW - 2);
 	}
@@ -87,16 +87,17 @@ public final class PotionHud extends HudModule {
 		boolean right = alignRight();
 		boolean blinkOff = (System.currentTimeMillis() / 400) % 2 == 0;
 		int y = PAD;
+		int slot = 0;
 		for (Entry e : entries) {
 			int iconX = right ? w - PAD - 18 : PAD;
 			if (icons.on()) g.blitSprite(RenderPipelines.GUI_TEXTURED, Gui.getMobEffectSprite(e.effect), iconX, y, 18, 18);
 			int textLeft = icons.on() ? (right ? PAD : PAD + 22) : PAD;
 			int textRight = icons.on() ? (right ? iconX - 4 : w - PAD) : w - PAD;
-			int nx = right ? textRight - font.width(e.name) : textLeft;
-			int tx = right ? textRight - font.width(e.time) : textLeft;
+			int nx = right ? textRight - width(font, e.name) : textLeft;
+			int tx = right ? textRight - width(font, e.time) : textLeft;
 			text(g, font, e.name, nx, y, e.color);
 			int timeColor = e.blink && blinkOff ? ColorUtil.fade(0xFFB0B3BD, 0.4f) : 0xFFB0B3BD;
-			text(g, font, e.time, tx, y + 10, timeColor);
+			rollingText(g, font, e.time, tx, y + 10, timeColor, slot++);
 			y += ROW;
 		}
 	}

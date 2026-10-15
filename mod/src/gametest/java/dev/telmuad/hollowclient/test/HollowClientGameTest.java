@@ -298,6 +298,24 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		screenshot(ctx, "all_hud_elements");
 		ctx.getInput().releaseKey(GLFW.GLFW_KEY_W);
 		ctx.waitTicks(5);
+		// hotbar: the selection glides to slot 6 (caught mid-way), then back to slot 1
+		ctx.getInput().pressKey(GLFW.GLFW_KEY_6);
+		ctx.waitTick();
+		screenshot(ctx, "hotbar_glide");
+		ctx.getInput().pressKey(GLFW.GLFW_KEY_1);
+		ctx.waitTicks(10);
+		// other HUD looks
+		ctx.runOnClient(mc -> ((dev.telmuad.hollowclient.setting.BooleanSetting) module("hud_style").setting("gradientText")).set(true));
+		setEnum(ctx, "hud_style", "look", "outline");
+		ctx.waitTicks(3);
+		screenshot(ctx, "hud_outline_gradient_text");
+		ctx.runOnClient(mc -> ((dev.telmuad.hollowclient.setting.BooleanSetting) module("hud_style").setting("gradientText")).set(false));
+		setEnum(ctx, "hud_style", "look", "glass");
+		setEnabled(ctx, "hud_style", false);
+		ctx.waitTicks(3);
+		screenshot(ctx, "hud_classic");
+		setEnabled(ctx, "hud_style", true);
+		ctx.waitTicks(3);
 		ctx.setScreen(() -> new HudEditorScreen(null));
 		ctx.waitTicks(8);
 		screenshot(ctx, "hud_editor");

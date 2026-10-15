@@ -19,6 +19,7 @@ import dev.telmuad.hollowclient.modules.hud.ClockHud;
 import dev.telmuad.hollowclient.modules.hud.CoordinatesHud;
 import dev.telmuad.hollowclient.modules.hud.CpsHud;
 import dev.telmuad.hollowclient.modules.hud.FpsHud;
+import dev.telmuad.hollowclient.modules.hud.HudStyleModule;
 import dev.telmuad.hollowclient.modules.hud.KeystrokesHud;
 import dev.telmuad.hollowclient.modules.hud.PingHud;
 import dev.telmuad.hollowclient.modules.hud.PotionHud;
@@ -71,6 +72,7 @@ public final class Modules {
 	public static PauseMenuModule PAUSE_MENU;
 	public static InventoryBlurModule INVENTORY_BLUR;
 	public static ChatStyleModule CHAT_STYLE;
+	public static HudStyleModule HUD_STYLE;
 
 	private Modules() {
 	}
@@ -86,6 +88,7 @@ public final class Modules {
 		registry.register(new PingHud());
 		registry.register(new ClockHud());
 		registry.register(new ToggleStatusHud());
+		HUD_STYLE = registry.register(new HudStyleModule());
 		// Interface: Hollow's look for vanilla screens
 		TITLE_SCREEN = registry.register(new TitleScreenModule());
 		LOADING_SCREEN = registry.register(new LoadingScreenModule());
