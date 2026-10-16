@@ -40,8 +40,10 @@ public record HollowTheme(String name, int accent, int gradientStart, int gradie
 	public static final HollowTheme FROST = new HollowTheme("Frost", 0xFF7DD3FC, 0xFFE0F2FE, 0xFF38BDF8, 0.55f, 0.75f, 8, 0.85f, false);
 	public static final HollowTheme BLOODMOON = new HollowTheme("Bloodmoon", 0xFFFF2D55, 0xFFFF4D6D, 0xFF7F1D1D, 0.7f, 0.6f, 5, 0.9f, false);
 	public static final HollowTheme RAINBOW = new HollowTheme("Rainbow", 0xFFFF5CAA, 0xFFFF5CAA, 0xFF5CC8FF, 0.7f, 0.6f, 6, 1f, true);
+	/** Sky blue and gold on the void base, for SkyBlock Mode. */
+	public static final HollowTheme SKYBLOCK = new HollowTheme("SkyBlock", 0xFF38BDF8, 0xFF38BDF8, 0xFFF5C542, 0.65f, 0.6f, 6, 1f, false);
 
-	public static final List<HollowTheme> PRESETS = List.of(VOID, INFERNO, TOXIC, FROST, BLOODMOON, RAINBOW);
+	public static final List<HollowTheme> PRESETS = List.of(VOID, INFERNO, TOXIC, FROST, BLOODMOON, RAINBOW, SKYBLOCK);
 
 	public static HollowTheme preset(String name) {
 		for (HollowTheme t : PRESETS) if (t.name.equalsIgnoreCase(name)) return t;

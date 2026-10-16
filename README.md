@@ -1,3 +1,5 @@
+<p align="center"><img src="branding/banner.png" alt="Hollow Client" width="100%"></p>
+
 # Hollow Client
 
 A personal, non-commercial launcher and client for Minecraft: Java Edition.
@@ -35,6 +37,8 @@ hollow-client/
 ├── mod/        the Hollow Client Fabric mod (Gradle project, Java 25, Minecraft 26.2; 1.21.11 lives on the legacy/1.21.11 branch)
 ├── launcher/   the Hollow Client launcher (Python 3.12+, PySide6 / Qt Quick), packaged as HollowClient.exe
 ├── scripts/    build_all.bat (builds everything), run_launcher_dev.bat
+├── branding/   the Hollow emblem, wordmark, SkyBlock badge, banner and social preview (+ the script that draws them)
+├── plans/      the full feature requests the project is built from
 ├── USER_GUIDE.md   how to build, set up login, play, and use every feature (start here)
 ├── TESTING.md      automated checks, measured FPS cost of each effect, and an in-game checklist
 ├── CREDITS.md      licensed fonts and libraries, and how the original art and sounds were made

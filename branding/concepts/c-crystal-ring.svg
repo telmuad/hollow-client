@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="512" height="512">
+<title>Hollow Client — C — Crystal Ring</title>
+<defs><linearGradient id="brand" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9b6cff"/><stop offset="1" stop-color="#22d3ee"/></linearGradient><filter id="glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="22" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><clipPath id="body"><path clip-rule="evenodd" fill-rule="evenodd" d="M500.0 60.0 L720.0 118.9 L881.1 280.0 L940.0 500.0 L881.1 720.0 L720.0 881.1 L500.0 940.0 L280.0 881.1 L118.9 720.0 L60.0 500.0 L118.9 280.0 L280.0 118.9 L500.0 60.0 M500.0 170.0 L665.0 214.2 L785.8 335.0 L830.0 500.0 L785.8 665.0 L665.0 785.8 L500.0 830.0 L335.0 785.8 L214.2 665.0 L170.0 500.0 L214.2 335.0 L335.0 214.2 L500.0 170.0 Z"/></clipPath></defs>
+<path d="M500.0 60.0 L720.0 118.9 L881.1 280.0 L940.0 500.0 L881.1 720.0 L720.0 881.1 L500.0 940.0 L280.0 881.1 L118.9 720.0 L60.0 500.0 L118.9 280.0 L280.0 118.9 L500.0 60.0 M500.0 170.0 L665.0 214.2 L785.8 335.0 L830.0 500.0 L785.8 665.0 L665.0 785.8 L500.0 830.0 L335.0 785.8 L214.2 665.0 L170.0 500.0 L214.2 335.0 L335.0 214.2 L500.0 170.0 Z" fill="none" stroke="url(#brand)" stroke-width="26" filter="url(#glow)" opacity="0.85"/>
+<g clip-path="url(#body)">
+<path fill="#536abb" d="M500.0 60.0 L720.0 118.9 L665.0 214.2 L500.0 170.0 L500.0 60.0 Z"/>
+<path fill="#4071af" d="M720.0 118.9 L881.1 280.0 L785.8 335.0 L665.0 214.2 L720.0 118.9 Z"/>
+<path fill="#3585b7" d="M881.1 280.0 L940.0 500.0 L830.0 500.0 L785.8 335.0 L881.1 280.0 Z"/>
+<path fill="#30a3cf" d="M940.0 500.0 L881.1 720.0 L785.8 665.0 L830.0 500.0 L940.0 500.0 Z"/>
+<path fill="#33c4f0" d="M881.1 720.0 L720.0 881.1 L665.0 785.8 L785.8 665.0 L881.1 720.0 Z"/>
+<path fill="#60c8f4" d="M720.0 881.1 L500.0 940.0 L500.0 830.0 L665.0 785.8 L720.0 881.1 Z"/>
+<path fill="#86c4f8" d="M500.0 940.0 L280.0 881.1 L335.0 785.8 L500.0 830.0 L500.0 940.0 Z"/>
+<path fill="#9ebbfa" d="M280.0 881.1 L118.9 720.0 L214.2 665.0 L335.0 785.8 L280.0 881.1 Z"/>
+<path fill="#a5aafc" d="M118.9 720.0 L60.0 500.0 L170.0 500.0 L214.2 665.0 L118.9 720.0 Z"/>
+<path fill="#9f91fd" d="M60.0 500.0 L118.9 280.0 L214.2 335.0 L170.0 500.0 L60.0 500.0 Z"/>
+<path fill="#8c79fd" d="M118.9 280.0 L280.0 118.9 L335.0 214.2 L214.2 335.0 L118.9 280.0 Z"/>
+<path fill="#6f6dd7" d="M280.0 118.9 L500.0 60.0 L500.0 170.0 L335.0 214.2 L280.0 118.9 Z"/>
+<path fill="none" stroke="#ffffff" stroke-opacity="0.18" stroke-width="3" d="M500.0 60.0 L720.0 118.9 L665.0 214.2 L500.0 170.0 L500.0 60.0 Z"/>
+<path fill="none" stroke="#ffffff" stroke-opacity="0.18" stroke-width="3" d="M720.0 118.9 L881.1 280.0 L785.8 335.0 L665.0 214.2 L720.0 118.9 Z"/>
+<path fill="none" stroke="#ffffff" stroke-opacity="0.18" stroke-width="3" d="M881.1 280.0 L940.0 500.0 L830.0 500.0 L785.8 335.0 L881.1 280.0 Z"/>
+<path fill="none" stroke="#ffffff" stroke-opacity="0.18" stroke-width="3" d="M940.0 500.0 L881.1 720.0 L785.8 665.0 L830.0 500.0 L940.0 500.0 Z"/>
+<path fill="none" stroke="#ffffff" stroke-opacity="0.18" stroke-width="3" d="M881.1 720.0 L720.0 881.1 L665.0 785.8 L785.8 665.0 L881.1 720.0 Z"/>
+<path fill="none" stroke="#ffffff" stroke-opacity="0.18" stroke-width="3" d="M720.0 881.1 L500.0 940.0 L500.0 830.0 L665.0 785.8 L720.0 881.1 Z"/>
+<path fill="none" stroke="#ffffff" stroke-opacity="0.18" stroke-width="3" d="M500.0 940.0 L280.0 881.1 L335.0 785.8 L500.0 830.0 L500.0 940.0 Z"/>
+<path fill="none" stroke="#ffffff" stroke-opacity="0.18" stroke-width="3" d="M280.0 881.1 L118.9 720.0 L214.2 665.0 L335.0 785.8 L280.0 881.1 Z"/>
+<path fill="none" stroke="#ffffff" stroke-opacity="0.18" stroke-width="3" d="M118.9 720.0 L60.0 500.0 L170.0 500.0 L214.2 665.0 L118.9 720.0 Z"/>
+<path fill="none" stroke="#ffffff" stroke-opacity="0.18" stroke-width="3" d="M60.0 500.0 L118.9 280.0 L214.2 335.0 L170.0 500.0 L60.0 500.0 Z"/>
+<path fill="none" stroke="#ffffff" stroke-opacity="0.18" stroke-width="3" d="M118.9 280.0 L280.0 118.9 L335.0 214.2 L214.2 335.0 L118.9 280.0 Z"/>
+<path fill="none" stroke="#ffffff" stroke-opacity="0.18" stroke-width="3" d="M280.0 118.9 L500.0 60.0 L500.0 170.0 L335.0 214.2 L280.0 118.9 Z"/>
+</g>
+<path d="M500.0 60.0 L720.0 118.9 L881.1 280.0 L940.0 500.0 L881.1 720.0 L720.0 881.1 L500.0 940.0 L280.0 881.1 L118.9 720.0 L60.0 500.0 L118.9 280.0 L280.0 118.9 L500.0 60.0 M500.0 170.0 L665.0 214.2 L785.8 335.0 L830.0 500.0 L785.8 665.0 L665.0 785.8 L500.0 830.0 L335.0 785.8 L214.2 665.0 L170.0 500.0 L214.2 335.0 L335.0 214.2 L500.0 170.0 Z" fill="none" stroke="url(#brand)" stroke-width="10"/>
+<path fill="#5ea0f6" fill-opacity="1.00" d="M373.0 320.0 L437.0 320.0 L445.0 328.0 L445.0 467.0 L555.0 467.0 L555.0 328.0 L563.0 320.0 L627.0 320.0 L635.0 328.0 L635.0 672.0 L627.0 680.0 L563.0 680.0 L555.0 672.0 L555.0 533.0 L445.0 533.0 L445.0 672.0 L437.0 680.0 L373.0 680.0 L365.0 672.0 L365.0 328.0 L373.0 320.0 Z" filter="url(#glow)"/>
+</svg>

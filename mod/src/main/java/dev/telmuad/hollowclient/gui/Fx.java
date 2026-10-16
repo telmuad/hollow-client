@@ -42,13 +42,12 @@ public final class Fx {
 	 * bright it is.
 	 */
 	public static void sigil(GuiGraphicsExtractor g, float x, float y, float size, float alpha, float pulse, float glow) {
-		float p = 0.8f + pulse * 0.35f * ((float) Math.sin(Util.getMillis() * Theme.speed() / 520.0) - 0.43f);
-		float pad = size / 3f;
-		if (glow > 0f) {
-			SIGIL_GLOW.draw(g, x - pad, y - pad, size + 2 * pad, size + 2 * pad, ColorUtil.fade(Theme.accent2(), alpha * glow * p));
-			SIGIL_GLOW.draw(g, x, y, size, size, ColorUtil.fade(Theme.accent(), alpha * glow * p));
-		}
-		SIGIL.draw(g, x, y, size, size, ColorUtil.fade(ColorUtil.mix(Theme.accent(), 0xFFFFFFFF, 0.25f), alpha));
+		Emblem.draw(g, x, y, size, alpha, 1f, glow, pulse);
+	}
+
+	/** The emblem playing its intro: {@code intro} 0 → 1 (facets fly in, the H hollows out, the glow comes up). */
+	public static void sigilIntro(GuiGraphicsExtractor g, float x, float y, float size, float alpha, float intro, float glow) {
+		Emblem.draw(g, x, y, size, alpha, intro, glow, 1f);
 	}
 
 	/**
@@ -67,10 +66,21 @@ public final class Fx {
 			WORDMARK_HOLLOW.drawSlice(g, x + hw * u0, y, hw * (u1 - u0), height, u0, u1, ColorUtil.fade(c, alpha));
 		}
 		if (!withClient) return hw;
-		float gap = height * 0.35f;
-		float cw = height * WORDMARK_CLIENT.aspect();
-		WORDMARK_CLIENT.draw(g, x + hw + gap, y, cw, height, ColorUtil.fade(Theme.TEXT_DIM, alpha));
+		// "CLIENT" small and wide, sitting on HOLLOW's baseline
+		float ch = height * CLIENT_SCALE;
+		float gap = height * 0.28f;
+		float cw = ch * WORDMARK_CLIENT.aspect();
+		WORDMARK_CLIENT.draw(g, x + hw + gap, y + height - ch, cw, ch, ColorUtil.fade(Theme.TEXT_DIM, alpha));
 		return hw + gap + cw;
+	}
+
+	private static final float CLIENT_SCALE = 0.42f;
+
+	/** Width of {@link #wordmark} at this height. */
+	public static float wordmarkWidth(float height, boolean withClient) {
+		float hw = height * WORDMARK_HOLLOW.aspect();
+		if (!withClient) return hw;
+		return hw + height * 0.28f + height * CLIENT_SCALE * WORDMARK_CLIENT.aspect();
 	}
 
 	// ------------------------------------------------------------------------------------------------ soft glow

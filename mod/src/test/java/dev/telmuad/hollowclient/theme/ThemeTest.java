@@ -34,9 +34,9 @@ class ThemeTest {
 	}
 
 	@Test
-	void sixPresetsWithUniqueNames() {
-		assertEquals(6, HollowTheme.PRESETS.size());
-		assertEquals(6, HollowTheme.PRESETS.stream().map(t -> t.name().toLowerCase()).distinct().count());
+	void sevenPresetsWithUniqueNames() {
+		assertEquals(7, HollowTheme.PRESETS.size());
+		assertEquals(7, HollowTheme.PRESETS.stream().map(t -> t.name().toLowerCase()).distinct().count());
 		assertSame(HollowTheme.FROST, HollowTheme.preset("frost"));
 		assertNull(HollowTheme.preset("nope"));
 		assertTrue(HollowTheme.VOID.isPreset());
@@ -81,7 +81,7 @@ class ThemeTest {
 		HollowTheme saved = store.saveCustom(HollowTheme.TOXIC.withName("Slime").withBlur(0.1f));
 		assertEquals("Slime", saved.name());
 		assertEquals(saved, store.current());
-		assertEquals(7, store.all().size());
+		assertEquals(8, store.all().size());
 
 		ThemeStore other = new ThemeStore(file);
 		other.load();

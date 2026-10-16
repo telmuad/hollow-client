@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="64" height="64">
+<title>Hollow Client — A — Facet Hex</title>
+<defs><linearGradient id="brand" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9b6cff"/><stop offset="1" stop-color="#22d3ee"/></linearGradient><filter id="glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="22" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><clipPath id="body"><path clip-rule="evenodd" fill-rule="evenodd" d="M500.0 60.0 L881.1 280.0 L881.1 720.0 L500.0 940.0 L118.9 720.0 L118.9 280.0 L500.0 60.0 M320.0 285.0 L440.0 285.0 L440.0 450.0 L560.0 450.0 L560.0 285.0 L680.0 285.0 L680.0 715.0 L560.0 715.0 L560.0 550.0 L440.0 550.0 L440.0 715.0 L320.0 715.0 L320.0 285.0 Z"/></clipPath></defs>
+<path fill="url(#brand)" fill-rule="evenodd" d="M500.0 60.0 L881.1 280.0 L881.1 720.0 L500.0 940.0 L118.9 720.0 L118.9 280.0 L500.0 60.0 M320.0 285.0 L440.0 285.0 L440.0 450.0 L560.0 450.0 L560.0 285.0 L680.0 285.0 L680.0 715.0 L560.0 715.0 L560.0 550.0 L440.0 550.0 L440.0 715.0 L320.0 715.0 L320.0 285.0 Z"/>
+<path fill="#e9fbff" fill-opacity="1.00" d="M838.0 116.0 L847.6 168.4 L900.0 178.0 L847.6 187.6 L838.0 240.0 L828.4 187.6 L776.0 178.0 L828.4 168.4 L838.0 116.0 Z"/>
+</svg>

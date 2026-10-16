@@ -20,7 +20,13 @@ first unticked item below. Plans 1 and 2 (Minecraft 1.21.11) are finished and fr
   - [x] Gametest 61/61 with Sodium 0.9.2 and on Vulkan (`-Pvulkan` → `--graphicsBackend vulkan`)
   - [x] Mixin config `required: true`; 99 JUnit tests incl. `NoRawOpenGlTest`; `tools/mixincheck.py` reports 0 problems
   - [x] `VERSION_BUMP.md`; TESTING.md FPS tables for 26.2 (OpenGL, Sodium, Vulkan); README/USER_GUIDE mod versions (launcher text follows in L1)
-- [ ] **R1. Rebrand**: 3 SVG concepts, chosen emblem, PNG/ICO/icon/wordmark/badge, banner + social preview, animations, SkyBlock theme preset
+- [x] **R1. Rebrand**
+  - [x] `branding/tools/emblem.py` draws everything from one geometry; 3 concepts in `branding/concepts/` (A Facet Hex chosen, reasons in DECISIONS)
+  - [x] Master SVG + small/flat white/flat black SVGs, PNGs 16–1024, multi-size ICO, mod `icon.png`, wordmark (Inter), SkyBlock badge, `banner.png`, 1280×640 `social-preview.png` (+ upload steps in `branding/README.md`)
+  - [x] In game: theme-tinted emblem layers (`gui/Emblem.java`) with the intro (facets fly in, H hollows out, glow breathes) on the title and loading screens; menu header, toasts and all other sigils use it; new wordmark; brand cape carries a pixel emblem
+  - [x] Launcher: icon, title bar, home page, new intro (particles → facets → hollow H → glow → wordmark); old code-drawn logo removed
+  - [x] SkyBlock theme preset (sky blue → gold) in mod and launcher
+  - [x] Launcher tests no longer read the real `config.json` or open a browser (autouse fixture)
 - [ ] **L1–L2. Launcher**: profiles + instances (26.2 default, 1.21.11 legacy), migration, Java per profile, Join Hypixel, SkyBlock dashboard, duplicate-mod warning, `build_all` builds both jars
 - [ ] **F1–F6. SkyBlock foundation**: detection (Mod API + fallback), SkyBlock Mode, data layer (sources → parsers → state + events, patterns in JSON), items + prices (NEU repo, Hypixel API, Elite API), menu category + HUD + Hub (H), alerts + editor, setup checker, compatibility, debug recorder, simulator, feature health
 - [ ] **A1–A14. SkyBlock features** (see the plan, section 6): general/HUD, items/GUI, economy, garden, dungeons, slayers, mining, fishing, foraging/hunting, Crimson Isle/Kuudra, Rift, events, progression, chat/party

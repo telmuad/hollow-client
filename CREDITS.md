@@ -16,7 +16,7 @@ The font files are unmodified copies from the Inter v4.1 release. They are bundl
 
 | What | How it was made |
 |---|---|
-| The H sigil logo, mod icon, launcher icon | Drawn in code: `mod/tools/texturegen/HollowTextureGen.java` (game textures) and `launcher/hollow_launcher/ui/logo.py` (launcher). Same shape in both. |
+| The Hollow emblem, wordmark, SkyBlock badge, banner, social preview, mod icon and launcher icon | Original, drawn from geometry by `branding/tools/emblem.py` (Qt). The wordmark uses Inter (see Fonts). The brand cape's pixel emblem is drawn by `mod/tools/texturegen/HollowTextureGen.java`. |
 | Capes, hat and wing textures, category art | `mod/tools/texturegen/HollowTextureGen.java` (fixed random seed, so the output is reproducible) |
 | UI sounds (click, hover, toggles, whooshes, toast, notify, shutter, charge, pop) | Synthesized from sine waves and filtered noise by `mod/tools/soundgen/make_sounds.py`, encoded to Ogg Vorbis with ffmpeg |
 | Theme presets (Void, Inferno, Toxic, Frost, Bloodmoon, Rainbow) | Hollow's own color choices |

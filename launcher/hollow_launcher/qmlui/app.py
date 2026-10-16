@@ -6,44 +6,12 @@ import os
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QPointF, QUrl
+from PySide6.QtCore import QUrl
 
-from .. import APP_NAME, paths
+from .. import APP_NAME, emblem, paths
 
 QML_DIR = Path(__file__).resolve().parent.parent / "qml"
 PAGES = ["home", "wardrobe", "stats", "settings", "logs"]
-
-
-def intro_points(count: int = 300) -> list[list[float]]:
-    """Points spread over the H sigil (x, y in -0.5..0.5) for the intro's particles to fly to."""
-    from ..ui.logo import sigil_path
-
-    path = sigil_path(1.0)
-    pts = []
-    step = 0.012
-    y = 0.0
-    while y <= 1.0:
-        x = 0.0
-        while x <= 1.0:
-            if path.contains(QPointF(x, y)):
-                pts.append([round(x - 0.5, 4), round(y - 0.5, 4)])
-            x += step
-        y += step
-    if len(pts) > count:
-        stride = len(pts) / count
-        pts = [pts[int(i * stride)] for i in range(count)]
-    return pts
-
-
-def sigil_file(game_dir: Path) -> Path:
-    """The sigil without a background, rendered once into the launcher cache for QML to show."""
-    from ..ui.logo import render
-
-    target = game_dir / "cache" / "sigil_512.png"
-    if not target.is_file():
-        target.parent.mkdir(parents=True, exist_ok=True)
-        render(512, background=False).save(str(target))
-    return target
 
 
 def create_engine(backend, theme, sounds, skip_intro: bool):
@@ -58,8 +26,11 @@ def create_engine(backend, theme, sounds, skip_intro: bool):
     ctx.setContextProperty("backend", backend)
     ctx.setContextProperty("theme", theme)
     ctx.setContextProperty("sounds", sounds)
-    ctx.setContextProperty("introPoints", intro_points())
-    ctx.setContextProperty("sigilImage", QUrl.fromLocalFile(str(sigil_file(backend.game_dir))).toString())
+    ctx.setContextProperty("introPoints", emblem.intro_points())
+    ctx.setContextProperty("sigilImage", QUrl.fromLocalFile(str(emblem.flat_file())).toString())
+    ctx.setContextProperty("emblemDir", QUrl.fromLocalFile(str(emblem.emblem_dir())).toString() + "/")
+    ctx.setContextProperty("emblemFacets", emblem.facets())
+    ctx.setContextProperty("wordmarkImage", QUrl.fromLocalFile(str(paths.assets_dir() / "wordmark.png")).toString())
     ctx.setContextProperty("fontMedium", QUrl.fromLocalFile(str(fonts / "Inter-Medium.ttf")).toString())
     ctx.setContextProperty("fontSemiBold", QUrl.fromLocalFile(str(fonts / "Inter-SemiBold.ttf")).toString())
     ctx.setContextProperty("fontBold", QUrl.fromLocalFile(str(fonts / "Inter-Bold.ttf")).toString())
@@ -190,7 +161,9 @@ def _screenshots(app, window, backend, folder: Path) -> int:
     window.grabWindow().save(str(folder / "9_intro_gathering.png"))
     _pump(app, 950)
     window.grabWindow().save(str(folder / "10_intro_logo.png"))
-    _pump(app, 1600)
+    _pump(app, 800)
+    window.grabWindow().save(str(folder / "11_intro_hollow.png"))
+    _pump(app, 1000)
     from ..auth import NOT_APPROVED_MESSAGE, LoginError
 
     backend.login_failed(LoginError("not_approved", NOT_APPROVED_MESSAGE), silent=True)

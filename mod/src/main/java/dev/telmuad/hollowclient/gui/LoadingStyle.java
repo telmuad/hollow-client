@@ -23,6 +23,8 @@ public final class LoadingStyle {
 		return m != null && m.isEnabled();
 	}
 
+	private static long introStart = -1;
+
 	/** Draw the logo block. {@code alpha} follows vanilla's fade in/out. */
 	public static void drawLogo(GuiGraphicsExtractor g, float alpha) {
 		long now = System.nanoTime();
@@ -35,10 +37,13 @@ public final class LoadingStyle {
 		float size = (float) (Math.min(w * 0.75, h) * 0.25 * 1.25);
 		float cx = w / 2f;
 		float cy = h / 2f - size * 0.22f;
-		Fx.sigil(g, cx - size / 2f, cy - size / 2f, size, alpha, 1f, m.glow());
+		// the emblem assembles itself while the game loads
+		if (introStart < 0) introStart = net.minecraft.util.Util.getMillis();
+		float intro = Anim.clamp01((net.minecraft.util.Util.getMillis() - introStart) / 1800f);
+		Fx.sigilIntro(g, cx - size / 2f, cy - size / 2f, size, alpha, intro, m.glow());
 		float wordH = Math.max(8f, size * 0.2f);
-		float ww = wordH * (Fx.WORDMARK_HOLLOW.aspect() + 0.35f + Fx.WORDMARK_CLIENT.aspect());
-		Fx.wordmark(g, cx - ww / 2f, cy + size * 0.62f, wordH, alpha, true);
+		float ww = Fx.wordmarkWidth(wordH, true);
+		Fx.wordmark(g, cx - ww / 2f, cy + size * 0.62f, wordH, alpha * Anim.clamp01((intro - 0.4f) / 0.4f), true);
 	}
 
 	/** The progress bar, inside the box vanilla would use. */

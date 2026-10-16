@@ -40,6 +40,7 @@ PRESETS = [
     Theme("Frost", 0xFF7DD3FC, 0xFFE0F2FE, 0xFF38BDF8, 0.55, 0.75, 8, 0.85, False),
     Theme("Bloodmoon", 0xFFFF2D55, 0xFFFF4D6D, 0xFF7F1D1D, 0.7, 0.6, 5, 0.9, False),
     Theme("Rainbow", 0xFFFF5CAA, 0xFFFF5CAA, 0xFF5CC8FF, 0.7, 0.6, 6, 1.0, True),
+    Theme("SkyBlock", 0xFF38BDF8, 0xFF38BDF8, 0xFFF5C542, 0.65, 0.6, 6, 1.0, False),
 ]
 DEFAULT = PRESETS[0]
 

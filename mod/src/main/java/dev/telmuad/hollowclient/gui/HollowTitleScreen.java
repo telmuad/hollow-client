@@ -162,7 +162,9 @@ public final class HollowTitleScreen extends TitleScreen {
 		float la = Anim.easeOutCubic(entrance(0));
 		float lx = x0 + ox - (1f - la) * 16f;
 		float glow = Theme.glow() * (0.7f + 0.3f * la);
-		Fx.sigil(g, lx, y0 + oy, sig, la, 1f, glow);
+		// the emblem assembles itself when the title screen opens
+		float intro = Anim.clamp01((Util.getMillis() - openedAt) * Theme.speed() / 1700f);
+		Fx.sigilIntro(g, lx, y0 + oy, sig, la, intro, glow);
 		Fx.wordmark(g, lx + sig + 8, y0 + oy + (sig - wordH) / 2f, wordH, la, true);
 
 		// buttons in a glass column

@@ -61,6 +61,11 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		ctx.waitTicks(40);
 		check("Hollow's title screen replaces vanilla's", ctx.computeOnClient(mc -> mc.gui.screen() instanceof HollowTitleScreen));
 		screenshot(ctx, "title_screen");
+		// reopen the title screen and catch the emblem while it assembles (facets flying in, H not yet hollow)
+		ctx.runOnClient(mc -> mc.gui.setScreen(new dev.telmuad.hollowclient.gui.HollowTitleScreen(false)));
+		ctx.waitTicks(12);
+		screenshot(ctx, "title_emblem_intro");
+		ctx.waitTicks(40);
 		// every Hollow pipeline must compile on the backend in use (OpenGL, or Vulkan with -Pvulkan)
 		check("Hollow's own shaders compile (nebula, sky, waypoint beams)", ctx.computeOnClient(mc -> {
 			var device = com.mojang.blaze3d.systems.RenderSystem.getDevice();
