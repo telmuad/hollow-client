@@ -5,7 +5,7 @@ import dev.telmuad.hollowclient.modules.client.ToastsModule;
 import dev.telmuad.hollowclient.util.ColorUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
@@ -90,7 +90,7 @@ public final class Toasts {
 		}
 		ToastsModule module = Modules.TOASTS;
 		if (module == null || !module.isEnabled()) {
-			SystemToast.addOrUpdate(mc.getToastManager(), SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
+			SystemToast.addOrUpdate(mc.gui.toastManager(), SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
 					Component.literal(title), message == null || message.isEmpty() ? null : Component.literal(message));
 			return;
 		}
@@ -119,7 +119,7 @@ public final class Toasts {
 		CARDS.clear();
 	}
 
-	public static void render(GuiGraphics g) {
+	public static void render(GuiGraphicsExtractor g) {
 		if (CARDS.isEmpty()) return;
 		ToastsModule module = Modules.TOASTS;
 		if (module == null) return;

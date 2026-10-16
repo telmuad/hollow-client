@@ -6,7 +6,7 @@ import dev.telmuad.hollowclient.gui.widget.UiButton;
 import dev.telmuad.hollowclient.modules.Modules;
 import dev.telmuad.hollowclient.waypoints.Waypoints;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
@@ -66,7 +66,7 @@ public final class CameraPathScreen extends HollowScreen {
 	}
 
 	@Override
-	protected void renderContent(GuiGraphics g, int mx, int my, float a) {
+	protected void renderContent(GuiGraphicsExtractor g, int mx, int my, float a) {
 		Minecraft mc = Minecraft.getInstance();
 		drawPanel(g, panel, 8, a);
 		back.render(g, font, mx, my, dt, a);

@@ -7,7 +7,8 @@ import dev.telmuad.hollowclient.util.ColorUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.Hud;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
@@ -80,7 +81,7 @@ public final class PotionHud extends HudModule {
 	}
 
 	@Override
-	public void draw(GuiGraphics g, Minecraft mc, Font font, boolean preview) {
+	public void draw(GuiGraphicsExtractor g, Minecraft mc, Font font, boolean preview) {
 		if (entries.isEmpty()) return;
 		int w = 2 * PAD + (icons.on() ? 18 + 4 : 0) + width;
 		drawBackground(g, w, 2 * PAD + entries.size() * ROW - 2);
@@ -90,7 +91,7 @@ public final class PotionHud extends HudModule {
 		int slot = 0;
 		for (Entry e : entries) {
 			int iconX = right ? w - PAD - 18 : PAD;
-			if (icons.on()) g.blitSprite(RenderPipelines.GUI_TEXTURED, Gui.getMobEffectSprite(e.effect), iconX, y, 18, 18);
+			if (icons.on()) g.blitSprite(RenderPipelines.GUI_TEXTURED, Hud.getMobEffectSprite(e.effect), iconX, y, 18, 18);
 			int textLeft = icons.on() ? (right ? PAD : PAD + 22) : PAD;
 			int textRight = icons.on() ? (right ? iconX - 4 : w - PAD) : w - PAD;
 			int nx = right ? textRight - width(font, e.name) : textLeft;

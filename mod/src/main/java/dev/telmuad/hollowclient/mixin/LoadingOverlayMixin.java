@@ -5,7 +5,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import dev.telmuad.hollowclient.gui.LoadingStyle;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.LoadingOverlay;
 import net.minecraft.resources.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,14 +23,14 @@ abstract class LoadingOverlayMixin {
 	@Shadow
 	private float currentProgress;
 
-	@ModifyExpressionValue(method = "render", at = @At(value = "INVOKE", target = "Ljava/util/function/IntSupplier;getAsInt()I"))
+	@ModifyExpressionValue(method = "extractRenderState", at = @At(value = "INVOKE", target = "Ljava/util/function/IntSupplier;getAsInt()I"))
 	private int hollowclient$background(int original) {
 		return LoadingStyle.enabled() ? LoadingStyle.BACKGROUND : original;
 	}
 
-	@WrapOperation(method = "render", at = @At(value = "INVOKE",
-			target = "Lnet/minecraft/client/gui/GuiGraphics;blit(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIFFIIIIIII)V"))
-	private void hollowclient$logo(GuiGraphics g, RenderPipeline pipeline, Identifier texture, int x, int y, float u, float v,
+	@WrapOperation(method = "extractRenderState", at = @At(value = "INVOKE",
+			target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blit(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIFFIIIIIII)V"))
+	private void hollowclient$logo(GuiGraphicsExtractor g, RenderPipeline pipeline, Identifier texture, int x, int y, float u, float v,
 								   int w, int h, int uw, int vh, int tw, int th, int color, Operation<Void> original) {
 		if (!LoadingStyle.enabled()) {
 			original.call(g, pipeline, texture, x, y, u, v, w, h, uw, vh, tw, th, color);
@@ -40,8 +40,8 @@ abstract class LoadingOverlayMixin {
 		if (u < 0f) LoadingStyle.drawLogo(g, ((color >>> 24) & 255) / 255f);
 	}
 
-	@Inject(method = "drawProgressBar", at = @At("HEAD"), cancellable = true)
-	private void hollowclient$progressBar(GuiGraphics g, int x0, int y0, int x1, int y1, float alpha, CallbackInfo ci) {
+	@Inject(method = "extractProgressBar", at = @At("HEAD"), cancellable = true)
+	private void hollowclient$progressBar(GuiGraphicsExtractor g, int x0, int y0, int x1, int y1, float alpha, CallbackInfo ci) {
 		if (!LoadingStyle.enabled()) return;
 		LoadingStyle.drawBar(g, x0, y0, x1, y1, alpha, currentProgress);
 		ci.cancel();

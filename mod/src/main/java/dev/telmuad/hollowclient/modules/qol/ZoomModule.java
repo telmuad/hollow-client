@@ -33,7 +33,7 @@ public final class ZoomModule extends Module {
 
 	private boolean keyHeld(Minecraft mc) {
 		KeyMapping key = Keybinds.of(this);
-		return isEnabled() && key != null && key.isDown() && mc.screen == null && mc.player != null;
+		return isEnabled() && key != null && key.isDown() && mc.gui.screen() == null && mc.player != null;
 	}
 
 	/** Called by the FOV mixin once per frame (or more); returns the factor the FOV is multiplied by. */

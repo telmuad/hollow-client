@@ -11,7 +11,7 @@ import dev.telmuad.hollowclient.util.ColorUtil;
 import dev.telmuad.hollowclient.waypoints.Waypoints;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
@@ -64,7 +64,7 @@ public final class CameraPaths {
 	/** Add a point at the camera's current position and direction. */
 	public static void addPoint(Minecraft mc) {
 		if (playing || !check(mc)) return;
-		var cam = mc.gameRenderer.getMainCamera();
+		var cam = mc.gameRenderer.mainCamera();
 		Vec3 p = cam.position();
 		keys().add(new CameraPath.Key(p.x, p.y, p.z, cam.yRot(), cam.xRot()));
 		changed();
@@ -96,11 +96,11 @@ public final class CameraPaths {
 		}
 		path = new CameraPath(keys());
 		savedCamera = mc.options.getCameraType();
-		savedHideGui = mc.options.hideGui;
+		savedHideGui = mc.gui.hud.isHidden();
 		// third person so your own player is drawn while the camera flies away from it
 		mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
-		if (module().hideHud()) mc.options.hideGui = true;
-		if (mc.screen != null) mc.setScreen(null);
+		if (module().hideHud() && !mc.gui.hud.isHidden()) mc.gui.hud.toggle();
+		if (mc.gui.screen() != null) mc.gui.setScreen(null);
 		startNanos = System.nanoTime();
 		playing = true;
 	}
@@ -109,7 +109,7 @@ public final class CameraPaths {
 		if (!playing) return;
 		playing = false;
 		if (savedCamera != null) mc.options.setCameraType(savedCamera);
-		mc.options.hideGui = savedHideGui;
+		if (mc.gui.hud.isHidden() != savedHideGui) mc.gui.hud.toggle();
 	}
 
 	/** Progress 0..1 of the current flight (looping paths wrap around). */
@@ -128,7 +128,7 @@ public final class CameraPaths {
 		CameraPathModule m = module();
 		boolean moved = mc.options.keyUp.isDown() || mc.options.keyDown.isDown() || mc.options.keyLeft.isDown()
 				|| mc.options.keyRight.isDown() || mc.options.keyJump.isDown() || mc.options.keyShift.isDown();
-		if (m == null || !Waypoints.allowed(mc) || mc.screen != null || moved || (!m.loop() && progress() >= 1)) stop(mc);
+		if (m == null || !Waypoints.allowed(mc) || mc.gui.screen() != null || moved || (!m.loop() && progress() >= 1)) stop(mc);
 	}
 
 	/** The camera pose to use this frame, or null when not playing. */
@@ -140,7 +140,7 @@ public final class CameraPaths {
 	}
 
 	/** While editing: the path and its numbered points, drawn over the world. */
-	public static void renderPreview(GuiGraphics g) {
+	public static void renderPreview(GuiGraphicsExtractor g) {
 		Minecraft mc = Minecraft.getInstance();
 		CameraPathModule m = module();
 		if (m == null || playing || !m.preview() || keys().isEmpty() || !Waypoints.allowed(mc)) return;

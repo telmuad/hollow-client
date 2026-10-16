@@ -15,7 +15,7 @@ import dev.telmuad.hollowclient.setting.Setting;
 import dev.telmuad.hollowclient.setting.StringSetting;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
@@ -138,7 +138,7 @@ public class ModuleSettingsScreen extends HollowScreen {
 	}
 
 	@Override
-	protected void renderContent(GuiGraphics g, int mouseX, int mouseY, float a) {
+	protected void renderContent(GuiGraphicsExtractor g, int mouseX, int mouseY, float a) {
 		boolean modal = picker != null;
 		int mx = modal ? -10000 : mouseX;
 		int my = modal ? -10000 : mouseY;
@@ -182,7 +182,7 @@ public class ModuleSettingsScreen extends HollowScreen {
 		reset.render(g, font, mx, my, dt, a);
 	}
 
-	private void renderRow(GuiGraphics g, Row row, int y, int mx, int my, float a) {
+	private void renderRow(GuiGraphicsExtractor g, Row row, int y, int mx, int my, float a) {
 		Rect r = new Rect(list.x(), y, list.w() - 6, ROW_H - 2);
 		boolean hover = r.contains(mx, my) && list.contains(mx, my);
 		if (hover) Draw.roundRect(g, r, 3, Theme.fade(Theme.CARD, a));
@@ -228,12 +228,12 @@ public class ModuleSettingsScreen extends HollowScreen {
 			box.setX(b.x() + 4);
 			box.setY(b.y() + 3);
 			box.setWidth(b.w() - 8);
-			if (a > 0.5f) box.render(g, mx, my, 0);
+			if (a > 0.5f) box.extractRenderState(g, mx, my, 0);
 		} else if (t instanceof ColorSetting cs) {
 			Rect sw = new Rect(right - 26, cy - 6, 26, 12);
 			Draw.checker(g, sw.x(), sw.y(), sw.w(), sw.h(), 3);
 			g.fill(sw.x(), sw.y(), sw.right(), sw.bottom(), cs.get());
-			g.renderOutline(sw.x(), sw.y(), sw.w(), sw.h(), Theme.fade(sw.contains(mx, my) ? 0xFFFFFFFF : Theme.STROKE_STRONG, a));
+			g.outline(sw.x(), sw.y(), sw.w(), sw.h(), Theme.fade(sw.contains(mx, my) ? 0xFFFFFFFF : Theme.STROKE_STRONG, a));
 			String hex = cs.display();
 			Ui.draw(g, font, hex, sw.x() - 6 - Ui.width(font, hex), textY, Theme.fade(Theme.TEXT_DIM, a));
 		}
@@ -250,7 +250,7 @@ public class ModuleSettingsScreen extends HollowScreen {
 	}
 
 	@Override
-	protected void renderOverlay(GuiGraphics g, int mouseX, int mouseY) {
+	protected void renderOverlay(GuiGraphicsExtractor g, int mouseX, int mouseY) {
 		if (picker != null) {
 			g.nextStratum();
 			picker.render(g, font, mouseX, mouseY);

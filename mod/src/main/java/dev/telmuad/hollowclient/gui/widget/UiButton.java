@@ -8,7 +8,7 @@ import dev.telmuad.hollowclient.gui.Rect;
 import dev.telmuad.hollowclient.gui.Theme;
 import dev.telmuad.hollowclient.gui.UiSounds;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 /** A flat rounded button. */
 public final class UiButton {
@@ -53,7 +53,7 @@ public final class UiButton {
 		return Ui.width(font, label) + 16;
 	}
 
-	public void render(GuiGraphics g, Font font, int mx, int my, float dt, float alpha) {
+	public void render(GuiGraphicsExtractor g, Font font, int mx, int my, float dt, float alpha) {
 		if (bounds.w() <= 0) return;
 		boolean hover = enabled && bounds.contains(mx, my);
 		if (hover && !wasHover) UiSounds.hover();

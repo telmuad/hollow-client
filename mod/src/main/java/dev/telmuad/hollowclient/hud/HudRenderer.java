@@ -8,7 +8,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 import dev.telmuad.hollowclient.gui.Anim;
 import dev.telmuad.hollowclient.gui.Theme;
@@ -27,9 +27,9 @@ public final class HudRenderer {
 
 	public static void register() {
 		HudElementRegistry.addLast(HollowClient.id("hud"), HudRenderer::render);
-		HudElementRegistry.replaceElement(VanillaHudElements.STATUS_EFFECTS, vanilla -> (g, dt) -> {
+		HudElementRegistry.replaceElement(VanillaHudElements.MOB_EFFECTS, vanilla -> (g, dt) -> {
 			boolean hide = HollowClient.modules().get(PotionHud.class).map(PotionHud::hidesVanilla).orElse(false);
-			if (!hide) vanilla.render(g, dt);
+			if (!hide) vanilla.extractRenderState(g, dt);
 		});
 	}
 
@@ -43,16 +43,16 @@ public final class HudRenderer {
 	private static final Map<HudModule, Float> APPEAR = new HashMap<>();
 	private static long lastNanos;
 
-	private static void render(GuiGraphics g, DeltaTracker dt) {
+	private static void render(GuiGraphicsExtractor g, DeltaTracker dt) {
 		Minecraft mc = Minecraft.getInstance();
-		if (mc.options.hideGui || mc.player == null || mc.getDebugOverlay().showDebugScreen()) {
+		if (mc.gui.hud.isHidden() || mc.player == null || mc.gui.hud.getDebugOverlay().showDebugScreen()) {
 			APPEAR.clear(); // elements fade in again when the HUD comes back
 			return;
 		}
 		dev.telmuad.hollowclient.render.EffectsFx.renderFlash(g);
 		dev.telmuad.hollowclient.render.WaypointFx.renderLabels(g);
 		dev.telmuad.hollowclient.camera.CameraPaths.renderPreview(g);
-		if (mc.screen instanceof HudEditorScreen) return;
+		if (mc.gui.screen() instanceof HudEditorScreen) return;
 		long now = System.nanoTime();
 		float frame = lastNanos == 0 ? 0f : Math.min(0.1f, (now - lastNanos) / 1_000_000_000f);
 		lastNanos = now;
@@ -77,15 +77,15 @@ public final class HudRenderer {
 	}
 
 	/** Measure, place and draw one element. Returns where it was drawn (scaled box), or null if it is empty. */
-	public static HudLayout.Box drawModule(GuiGraphics g, Minecraft mc, HudModule m, boolean preview) {
+	public static HudLayout.Box drawModule(GuiGraphicsExtractor g, Minecraft mc, HudModule m, boolean preview) {
 		return drawModule(g, mc, m, preview, 1f, 0f);
 	}
 
 	/**
-	 * Like {@link #drawModule(GuiGraphics, Minecraft, HudModule, boolean)}, while appearing: {@code appear} 0..1 fades
+	 * Like {@link #drawModule(GuiGraphicsExtractor, Minecraft, HudModule, boolean)}, while appearing: {@code appear} 0..1 fades
 	 * the element in and slides it in from its screen edge by up to {@code slide} x 12 pixels.
 	 */
-	public static HudLayout.Box drawModule(GuiGraphics g, Minecraft mc, HudModule m, boolean preview, float appear, float slide) {
+	public static HudLayout.Box drawModule(GuiGraphicsExtractor g, Minecraft mc, HudModule m, boolean preview, float appear, float slide) {
 		HudModule.Size size = m.measure(mc, mc.font, preview);
 		if (size.w() <= 0 || size.h() <= 0) return null;
 		float scale = m.hudPosition().scale;

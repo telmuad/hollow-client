@@ -16,7 +16,7 @@ public final class Clicks {
 	public static void onMouseButton(int button, int action) {
 		if (action != GLFW.GLFW_PRESS) return;
 		Minecraft mc = Minecraft.getInstance();
-		if (mc.screen != null || mc.player == null) return;
+		if (mc.gui.screen() != null || mc.player == null) return;
 		long now = Util.getMillis();
 		if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) LEFT.press(now);
 		else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) RIGHT.press(now);

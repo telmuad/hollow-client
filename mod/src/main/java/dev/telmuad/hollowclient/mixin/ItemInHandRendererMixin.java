@@ -27,12 +27,12 @@ abstract class ItemInHandRendererMixin {
 	}
 
 	/** Smoother switching: ease the interpolated hand height (the 3rd and 4th lerps are the two hands). */
-	@ModifyExpressionValue(method = "renderHandsWithItems", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;lerp(FFF)F", ordinal = 2))
+	@ModifyExpressionValue(method = "submitHandsWithItems", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;lerp(FFF)F", ordinal = 2))
 	private float hollowclient$easeMain(float height) {
 		return hollowclient$ease(height);
 	}
 
-	@ModifyExpressionValue(method = "renderHandsWithItems", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;lerp(FFF)F", ordinal = 3))
+	@ModifyExpressionValue(method = "submitHandsWithItems", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;lerp(FFF)F", ordinal = 3))
 	private float hollowclient$easeOff(float height) {
 		return hollowclient$ease(height);
 	}

@@ -17,7 +17,7 @@ import java.util.List;
  */
 @Mixin(ChatComponent.class)
 abstract class ChatComponentMixin {
-	@WrapOperation(method = "render(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IIZ)V",
+	@WrapOperation(method = "extractRenderState(Lnet/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess;IILnet/minecraft/client/gui/components/ChatComponent$DisplayMode;)V",
 			at = @At(value = "INVOKE", ordinal = 0,
 					target = "Lnet/minecraft/client/gui/components/ChatComponent;forEachLine(Lnet/minecraft/client/gui/components/ChatComponent$AlphaCalculator;Lnet/minecraft/client/gui/components/ChatComponent$LineConsumer;)I"))
 	private int hollowclient$background(ChatComponent self, ChatComponent.AlphaCalculator alpha, ChatComponent.LineConsumer painter,

@@ -9,7 +9,7 @@ import dev.telmuad.hollowclient.render.Quality;
 import dev.telmuad.hollowclient.util.ColorUtil;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.SharedConstants;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.options.AccessibilityOptionsScreen;
 import net.minecraft.client.gui.screens.options.LanguageSelectScreen;
@@ -90,16 +90,16 @@ public final class HollowTitleScreen extends TitleScreen {
 		small.clear();
 		boolean mp = minecraft.allowsMultiplayer();
 		Component why = mp ? null : Component.translatable("title.multiplayer.disabled");
-		entries.add(new Entry(Component.translatable("menu.singleplayer"), () -> minecraft.setScreen(new SelectWorldScreen(this)), true, null, false));
-		entries.add(new Entry(Component.translatable("menu.multiplayer"), () -> minecraft.setScreen(
+		entries.add(new Entry(Component.translatable("menu.singleplayer"), () -> minecraft.gui.setScreen(new SelectWorldScreen(this)), true, null, false));
+		entries.add(new Entry(Component.translatable("menu.multiplayer"), () -> minecraft.gui.setScreen(
 				minecraft.options.skipMultiplayerWarning ? new JoinMultiplayerScreen(this) : new SafetyScreen(this)), mp, why, false));
-		entries.add(new Entry(Component.translatable("menu.online"), () -> minecraft.setScreen(new RealmsMainScreen(this)), mp, why, false));
-		entries.add(new Entry(Component.literal("Hollow Client"), () -> minecraft.setScreen(new HollowMenuScreen(this)), true, null, true));
-		entries.add(new Entry(Component.translatable("menu.options"), () -> minecraft.setScreen(new OptionsScreen(this, minecraft.options)), true, null, false));
+		entries.add(new Entry(Component.translatable("menu.online"), () -> minecraft.gui.setScreen(new RealmsMainScreen(this)), mp, why, false));
+		entries.add(new Entry(Component.literal("Hollow Client"), () -> minecraft.gui.setScreen(new HollowMenuScreen(this)), true, null, true));
+		entries.add(new Entry(Component.translatable("menu.options"), () -> minecraft.gui.setScreen(new OptionsScreen(this, minecraft.options, false)), true, null, false));
 		entries.add(new Entry(Component.translatable("menu.quit"), () -> minecraft.stop(), true, null, false));
-		small.add(new Entry(Component.translatable("options.language"), () -> minecraft.setScreen(
+		small.add(new Entry(Component.translatable("options.language"), () -> minecraft.gui.setScreen(
 				new LanguageSelectScreen(this, minecraft.options, minecraft.getLanguageManager())), true, null, false));
-		small.add(new Entry(Component.translatable("options.accessibility"), () -> minecraft.setScreen(
+		small.add(new Entry(Component.translatable("options.accessibility"), () -> minecraft.gui.setScreen(
 				new AccessibilityOptionsScreen(this, minecraft.options)), true, null, false));
 		if (openedAt < 0) openedAt = Util.getMillis();
 		Component credits = Component.translatable("title.credits");
@@ -117,12 +117,12 @@ public final class HollowTitleScreen extends TitleScreen {
 	}
 
 	@Override
-	public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+	public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
 		TitleScreenModule m = module();
 		float parallax = m == null ? 0f : m.parallax();
 		boolean nebula = m != null && m.background() == TitleScreenModule.Background.NEBULA && Quality.heavyAllowed()
 				&& Nebula.draw(g, width, height, mouseX, mouseY, parallax, m.brightness());
-		if (!nebula) renderPanorama(g, partialTick);
+		if (!nebula) extractPanorama(g, partialTick);
 		// soft darkening on the left, behind the menu column
 		g.fillGradient(0, 0, width, height, 0x10000000, 0x50000000);
 		float particles = HollowScreen.fxAmount(f -> f.particles) * Math.max(0.35f, Quality.scale());
@@ -130,7 +130,7 @@ public final class HollowTitleScreen extends TitleScreen {
 	}
 
 	@Override
-	public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+	public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
 		long now = System.nanoTime();
 		dt = lastNanos == 0 ? 0f : Math.min(0.1f, (now - lastNanos) / 1_000_000_000f);
 		lastNanos = now;
@@ -188,7 +188,7 @@ public final class HollowTitleScreen extends TitleScreen {
 	}
 
 	/** A large, faint sigil turning slowly on the right; it moves the most with the mouse. */
-	private void renderWatermark(GuiGraphics g) {
+	private void renderWatermark(GuiGraphicsExtractor g) {
 		float a = 0.07f * Anim.easeOutCubic(entrance(0));
 		if (a <= 0.005f) return;
 		float size = Math.min(height * 0.85f, width * 0.45f);
@@ -203,7 +203,7 @@ public final class HollowTitleScreen extends TitleScreen {
 		g.pose().popMatrix();
 	}
 
-	private void renderButton(GuiGraphics g, Entry e, boolean focused, int mx, int my, float appear) {
+	private void renderButton(GuiGraphicsExtractor g, Entry e, boolean focused, int mx, int my, float appear) {
 		float a = Anim.easeOutCubic(appear);
 		if (a <= 0.01f) return;
 		boolean hover = e.active && (e.bounds.contains(mx, my) || focused);
@@ -232,7 +232,7 @@ public final class HollowTitleScreen extends TitleScreen {
 	}
 
 	/** The small icon buttons (language, accessibility) under the column; their names show as tooltips. */
-	private void renderSmall(GuiGraphics g, Entry e, int index, int mx, int my, float appear) {
+	private void renderSmall(GuiGraphicsExtractor g, Entry e, int index, int mx, int my, float appear) {
 		float a = Anim.easeOutCubic(appear);
 		if (a <= 0.01f) return;
 		boolean hover = e.bounds.contains(mx, my);
@@ -248,7 +248,7 @@ public final class HollowTitleScreen extends TitleScreen {
 		if (hover) g.setTooltipForNextFrame(font, e.label, mx, my);
 	}
 
-	private void renderInfoChip(GuiGraphics g) {
+	private void renderInfoChip(GuiGraphicsExtractor g) {
 		TitleScreenModule m = module();
 		if (m == null || (!m.clock() && !m.fps())) return;
 		List<String> parts = new ArrayList<>();
@@ -263,7 +263,7 @@ public final class HollowTitleScreen extends TitleScreen {
 		Ui.draw(g, font, text, r.x() + 12, r.y() + 5, Theme.fade(Theme.TEXT, a));
 	}
 
-	private void renderFooter(GuiGraphics g, int mx, int my) {
+	private void renderFooter(GuiGraphicsExtractor g, int mx, int my) {
 		String version = "Minecraft " + SharedConstants.getCurrentVersion().name() + " " + I18n.get("menu.modded").trim()
 				+ "  ·  Hollow Client " + FabricLoader.getInstance().getModContainer(HollowClient.MOD_ID)
 				.map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("?");
@@ -300,7 +300,7 @@ public final class HollowTitleScreen extends TitleScreen {
 			}
 			if (copyright.contains(event.x(), event.y())) {
 				UiSounds.click();
-				minecraft.setScreen(new CreditsAndAttributionScreen(this));
+				minecraft.gui.setScreen(new CreditsAndAttributionScreen(this));
 				return true;
 			}
 		}
@@ -311,7 +311,7 @@ public final class HollowTitleScreen extends TitleScreen {
 	public boolean keyPressed(KeyEvent event) {
 		if (Keybinds.menuKey() != null && Keybinds.menuKey().matches(event)) {
 			UiSounds.click();
-			minecraft.setScreen(new HollowMenuScreen(this));
+			minecraft.gui.setScreen(new HollowMenuScreen(this));
 			return true;
 		}
 		int key = event.key();

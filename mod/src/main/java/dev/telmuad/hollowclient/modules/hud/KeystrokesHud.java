@@ -17,7 +17,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 /** W A S D, both mouse buttons (with CPS) and the space bar; held keys light up. */
 public final class KeystrokesHud extends HudModule {
@@ -52,7 +52,7 @@ public final class KeystrokesHud extends HudModule {
 	}
 
 	@Override
-	public void draw(GuiGraphics g, Minecraft mc, Font font, boolean preview) {
+	public void draw(GuiGraphicsExtractor g, Minecraft mc, Font font, boolean preview) {
 		long now = System.nanoTime();
 		float dt = lastNanos == 0 ? 0 : Math.min(0.1f, (now - lastNanos) / 1e9f);
 		lastNanos = now;
@@ -90,7 +90,7 @@ public final class KeystrokesHud extends HudModule {
 		wasDown[i] = down;
 	}
 
-	private void key(GuiGraphics g, Font font, int i, KeyMapping mapping, int x, int y, int w, int h, float dt) {
+	private void key(GuiGraphicsExtractor g, Font font, int i, KeyMapping mapping, int x, int y, int w, int h, float dt) {
 		press(i, mapping.isDown());
 		glow[i] = Anim.approach(glow[i], mapping.isDown() ? 1f : 0f, dt, 25f);
 		box(g, i, x, y, w, h, glow[i]);
@@ -99,7 +99,7 @@ public final class KeystrokesHud extends HudModule {
 		text(g, font, label, x + (w - width(font, label)) / 2 + 1, y + (h - 8) / 2 + 1, c);
 	}
 
-	private void mouseKey(GuiGraphics g, Font font, int i, KeyMapping mapping, String name, String cps, int x, int y, int w, float dt) {
+	private void mouseKey(GuiGraphicsExtractor g, Font font, int i, KeyMapping mapping, String name, String cps, int x, int y, int w, float dt) {
 		press(i, mapping.isDown());
 		glow[i] = Anim.approach(glow[i], mapping.isDown() ? 1f : 0f, dt, 25f);
 		box(g, i, x, y, w, KEY, glow[i]);
@@ -117,7 +117,7 @@ public final class KeystrokesHud extends HudModule {
 	}
 
 	/** One key: glow, background in the HUD style, pressed color, and the press ripple. */
-	private void box(GuiGraphics g, int i, int x, int y, int w, int h, float t) {
+	private void box(GuiGraphicsExtractor g, int i, int x, int y, int w, int h, float t) {
 		float glowAmount = keyGlow.amount();
 		if (glowAmount > 0f && t > 0.01f) {
 			Fx.glow(g, x, y, w, h, 5, ColorUtil.fade(Theme.accent(), alpha * t * glowAmount * 0.8f));

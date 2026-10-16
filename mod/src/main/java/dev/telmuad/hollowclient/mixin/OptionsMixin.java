@@ -17,8 +17,8 @@ abstract class OptionsMixin {
 	@ModifyReturnValue(method = "getMenuBackgroundBlurriness", at = @At("RETURN"))
 	private int hollowclient$themeBlur(int original) {
 		Minecraft mc = Minecraft.getInstance();
-		if (mc == null || mc.screen == null) return original;
-		int r = ScreenStyles.blurRadius(mc.screen, original);
+		if (mc == null || mc.gui.screen() == null) return original;
+		int r = ScreenStyles.blurRadius(mc.gui.screen(), original);
 		return r >= 0 ? r : original;
 	}
 }

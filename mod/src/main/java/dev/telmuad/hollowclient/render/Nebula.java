@@ -8,7 +8,7 @@ import dev.telmuad.hollowclient.gui.JarTexture;
 import dev.telmuad.hollowclient.gui.Theme;
 import dev.telmuad.hollowclient.util.ColorUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
@@ -20,11 +20,11 @@ import net.minecraft.util.Util;
  * 4-pixel palette with the theme colors. Screen size comes from vanilla's Globals uniform block.
  */
 public final class Nebula {
-	public static final RenderPipeline PIPELINE = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET, RenderPipelines.GLOBALS_SNIPPET)
+	public static final RenderPipeline PIPELINE = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
 			.withLocation(HollowClient.id("pipeline/nebula"))
 			.withVertexShader(HollowClient.id("core/nebula"))
 			.withFragmentShader(HollowClient.id("core/nebula"))
-			.withoutBlend()
+			.withColorTargetState(com.mojang.blaze3d.pipeline.ColorTargetState.DEFAULT)
 			.build();
 
 	private static final Identifier PALETTE = HollowClient.id("generated/nebula_palette");
@@ -59,7 +59,7 @@ public final class Nebula {
 	 * Draw the nebula over (0, 0, width, height). Mouse in GUI pixels; {@code parallax}, {@code brightness} 0..1.
 	 * Returns false if the shader couldn't be used (the caller then draws the panorama instead).
 	 */
-	public static boolean draw(GuiGraphics g, int width, int height, double mouseX, double mouseY, float parallax, float brightness) {
+	public static boolean draw(GuiGraphicsExtractor g, int width, int height, double mouseX, double mouseY, float parallax, float brightness) {
 		if (failed) return false;
 		try {
 			// compiled once and cached by the device; false if the shader failed to compile (logged by the game)

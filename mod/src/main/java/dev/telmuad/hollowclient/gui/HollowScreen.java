@@ -4,7 +4,7 @@ import dev.telmuad.hollowclient.modules.Modules;
 import dev.telmuad.hollowclient.modules.client.MenuFxModule;
 import dev.telmuad.hollowclient.render.Quality;
 import dev.telmuad.hollowclient.util.ColorUtil;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
@@ -78,8 +78,8 @@ public abstract class HollowScreen extends Screen {
 	}
 
 	@Override
-	public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-		if (minecraft != null && minecraft.level == null && !titleBackground(g, mouseX, mouseY)) renderPanorama(g, partialTick);
+	public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
+		if (minecraft != null && minecraft.level == null && !titleBackground(g, mouseX, mouseY)) extractPanorama(g, partialTick);
 		if (blurRadius(0) >= 1) ScreenStyles.tryBlur(g);
 		float p = openProgress();
 		g.fillGradient(0, 0, width, height, Theme.fade(Theme.DIM_TOP, p), Theme.fade(Theme.DIM_BOTTOM, p));
@@ -87,14 +87,14 @@ public abstract class HollowScreen extends Screen {
 	}
 
 	/** On the title screen (no world), Hollow menus use the title screen's nebula when it is on. */
-	private boolean titleBackground(GuiGraphics g, int mouseX, int mouseY) {
+	private boolean titleBackground(GuiGraphicsExtractor g, int mouseX, int mouseY) {
 		var m = Modules.TITLE_SCREEN;
 		if (m == null || !m.isEnabled() || m.background() != dev.telmuad.hollowclient.modules.ui.TitleScreenModule.Background.NEBULA) return false;
 		if (!Quality.heavyAllowed()) return false;
 		return dev.telmuad.hollowclient.render.Nebula.draw(g, width, height, mouseX, mouseY, m.parallax(), m.brightness());
 	}
 
-	protected void renderParticles(GuiGraphics g, int mouseX, int mouseY, float alpha) {
+	protected void renderParticles(GuiGraphicsExtractor g, int mouseX, int mouseY, float alpha) {
 		float amount = fxAmount(m -> m.particles) * Math.max(0.35f, Quality.scale());
 		ParticleField.shared().render(g, width, height, mouseX, mouseY, dt, alpha, amount);
 	}
@@ -106,11 +106,11 @@ public abstract class HollowScreen extends Screen {
 	}
 
 	@Override
-	public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+	public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
 		long now = System.nanoTime();
 		dt = lastFrameNanos == 0 ? 0f : Math.min(0.1f, (now - lastFrameNanos) / 1_000_000_000f);
 		lastFrameNanos = now;
-		super.render(g, mouseX, mouseY, partialTick);
+		super.extractRenderState(g, mouseX, mouseY, partialTick);
 		float p = openProgress();
 		float scale;
 		if (animated()) {
@@ -131,21 +131,21 @@ public abstract class HollowScreen extends Screen {
 	}
 
 	/** Draw the screen. {@code alpha} is the open-animation progress; multiply colors with it. */
-	protected abstract void renderContent(GuiGraphics g, int mouseX, int mouseY, float alpha);
+	protected abstract void renderContent(GuiGraphicsExtractor g, int mouseX, int mouseY, float alpha);
 
 	/** Draw things above everything (popups). Not affected by the open animation. */
-	protected void renderOverlay(GuiGraphics g, int mouseX, int mouseY) {
+	protected void renderOverlay(GuiGraphicsExtractor g, int mouseX, int mouseY) {
 	}
 
 	// ------------------------------------------------------------------------------------------------ effects
 
 	/** A glass panel with the theme glow and (if enabled) the flowing gradient border. */
-	protected void drawPanel(GuiGraphics g, Rect r, int designRadius, float alpha) {
+	protected void drawPanel(GuiGraphicsExtractor g, Rect r, int designRadius, float alpha) {
 		Fx.glass(g, r, Theme.radius(designRadius), alpha, Theme.glow(), fxAmount(m -> m.borders), 0f);
 	}
 
 	/** Glow around something under the mouse; {@code hover} is its 0..1 hover animation. */
-	public static void hoverGlow(GuiGraphics g, Rect r, float hover, float alpha) {
+	public static void hoverGlow(GuiGraphicsExtractor g, Rect r, float hover, float alpha) {
 		float amount = fxAmount(m -> m.hoverGlow);
 		if (amount <= 0f || hover <= 0.01f) return;
 		Fx.glow(g, r.x(), r.y(), r.w(), r.h(), 8, ColorUtil.fade(Theme.accent(), alpha * hover * amount * (0.25f + 0.45f * Theme.glow())));
@@ -165,7 +165,7 @@ public abstract class HollowScreen extends Screen {
 		// moving back to another Hollow screen is instant; leaving Hollow's menus plays the close animation
 		if (parent instanceof HollowScreen || !animated()) {
 			if (!(parent instanceof HollowScreen)) UiSounds.play(UiSounds.CLOSE, 1f, 0.6f);
-			minecraft.setScreen(parent);
+			minecraft.gui.setScreen(parent);
 			return;
 		}
 		if (closing()) return;
@@ -185,7 +185,7 @@ public abstract class HollowScreen extends Screen {
 		if (closeScheduled || minecraft == null) return;
 		closeScheduled = true;
 		minecraft.execute(() -> {
-			if (minecraft.screen == this) minecraft.setScreen(parent);
+			if (minecraft.gui.screen() == this) minecraft.gui.setScreen(parent);
 		});
 	}
 
@@ -197,6 +197,6 @@ public abstract class HollowScreen extends Screen {
 	/** Switch to another Hollow screen without replaying the open animation. */
 	protected void open(HollowScreen next) {
 		next.skipOpenAnimation();
-		if (minecraft != null) minecraft.setScreen(next);
+		if (minecraft != null) minecraft.gui.setScreen(next);
 	}
 }

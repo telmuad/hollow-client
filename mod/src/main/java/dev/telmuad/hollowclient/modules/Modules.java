@@ -61,7 +61,7 @@ import dev.telmuad.hollowclient.modules.styles.PetModule;
 import dev.telmuad.hollowclient.modules.styles.HatModule;
 import dev.telmuad.hollowclient.modules.styles.WingsModule;
 import dev.telmuad.hollowclient.render.CosmeticsLayer;
-import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityRenderLayerRegistrationCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import dev.telmuad.hollowclient.input.Keybinds;
@@ -198,15 +198,15 @@ public final class Modules {
 	public static void registerHooks() {
 		HudRenderer.register();
 		HudElementRegistry.replaceElement(VanillaHudElements.CROSSHAIR, vanilla -> CROSSHAIR.wrap(vanilla));
-		LivingEntityFeatureRendererRegistrationCallback.EVENT.register((type, renderer, helper, context) -> {
+		LivingEntityRenderLayerRegistrationCallback.EVENT.register((type, renderer, helper, context) -> {
 			if (renderer instanceof AvatarRenderer<?> avatar) helper.register(new CosmeticsLayer(avatar));
 		});
 		// Keybinds don't fire while a screen is open, so also let the menu key work on the title and pause screens.
 		ScreenEvents.AFTER_INIT.register((client, screen, w, h) -> {
 			if (screen instanceof TitleScreen || screen instanceof PauseScreen) {
 				ScreenKeyboardEvents.afterKeyPress(screen).register((s, event) -> {
-					if (Keybinds.menuKey() != null && Keybinds.menuKey().matches(event) && client.screen == s) {
-						client.setScreen(new HollowMenuScreen(s));
+					if (Keybinds.menuKey() != null && Keybinds.menuKey().matches(event) && client.gui.screen() == s) {
+						client.gui.setScreen(new HollowMenuScreen(s));
 					}
 				});
 			}

@@ -6,7 +6,7 @@ import dev.telmuad.hollowclient.gui.Theme;
 import dev.telmuad.hollowclient.modules.hud.HudStyleModule;
 import dev.telmuad.hollowclient.render.Quality;
 import dev.telmuad.hollowclient.util.ColorUtil;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.Util;
 
 /**
@@ -43,7 +43,7 @@ public final class HotbarFx {
 		return x;
 	}
 
-	public static void glow(GuiGraphics g, float fx, int y, int w, int h) {
+	public static void glow(GuiGraphicsExtractor g, float fx, int y, int w, int h) {
 		float a = amount();
 		if (a <= 0f) return;
 		Fx.glow(g, Math.round(fx) + 2, y + 2, w - 4, h - 4, 7, ColorUtil.fade(Theme.accent(), a * (0.35f + 0.45f * Theme.glow())));

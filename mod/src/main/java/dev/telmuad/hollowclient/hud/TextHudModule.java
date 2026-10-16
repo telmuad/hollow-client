@@ -2,7 +2,7 @@ package dev.telmuad.hollowclient.hud;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +37,7 @@ public abstract class TextHudModule extends HudModule {
 	}
 
 	@Override
-	public final void draw(GuiGraphics g, Minecraft mc, Font font, boolean preview) {
+	public final void draw(GuiGraphicsExtractor g, Minecraft mc, Font font, boolean preview) {
 		if (lines.isEmpty()) return;
 		int w = width + 2 * PAD;
 		drawBackground(g, w, lines.size() * 10 - 1 + 2 * PAD - 1);

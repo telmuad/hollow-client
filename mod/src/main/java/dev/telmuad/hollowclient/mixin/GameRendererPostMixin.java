@@ -8,6 +8,7 @@ import dev.telmuad.hollowclient.render.Quality;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -28,7 +29,8 @@ abstract class GameRendererPostMixin {
 	}
 
 	@Inject(method = "bobHurt", at = @At("TAIL"))
-	private void hollowclient$damageShake(PoseStack pose, float partialTick, CallbackInfo ci) {
+	private void hollowclient$damageShake(CameraRenderState camera, PoseStack pose, CallbackInfo ci) {
+		float partialTick = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
 		var m = Modules.POST_PROCESSING;
 		if (m == null || !m.isEnabled() || m.shake() <= 0f || Quality.reducedMotion()) return;
 		if (!(Minecraft.getInstance().getCameraEntity() instanceof LivingEntity living) || living.hurtDuration <= 0) return;

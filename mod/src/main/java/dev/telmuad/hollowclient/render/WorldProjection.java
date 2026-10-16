@@ -1,8 +1,8 @@
 package dev.telmuad.hollowclient.render;
 
-import net.minecraft.client.Camera;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Vector4f;
 
 /**
@@ -22,9 +22,9 @@ public final class WorldProjection {
 	private WorldProjection() {
 	}
 
-	public static void capture(Camera cam, Matrix4f view, Matrix4f projection) {
+	public static void capture(Vec3 cameraPos, Matrix4fc view, Matrix4fc projection) {
 		VIEW_PROJECTION.set(projection).mul(view);
-		camera = cam.position();
+		camera = cameraPos;
 		valid = true;
 	}
 

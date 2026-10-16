@@ -6,7 +6,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.telmuad.hollowclient.render.CosmeticsLayer;
 import dev.telmuad.hollowclient.styles.AnimatedCapes;
 import net.minecraft.client.model.Model;
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.layers.CapeLayer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
@@ -39,13 +39,13 @@ abstract class CapeLayerMixin {
 			@SuppressWarnings({"unchecked", "rawtypes"})
 			Model<Object> m = (Model) model;
 			collector.submitModel(m, state, pose, RenderTypes.entityTranslucentEmissive(AnimatedCapes.shimmerTexture(fx.shimmer())),
-					LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, -1, null, outline, null);
+					LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, -1, null, outline, null);
 		}
 	}
 
 	/** Raise the light to at least block 7..15 (by glow strength) and full sky light. */
 	private static int glowLight(int light, float glow) {
-		int block = Math.max(LightTexture.block(light), 7 + Math.round(8 * glow));
-		return LightTexture.pack(Math.min(15, block), 15);
+		int block = Math.max(LightCoordsUtil.block(light), 7 + Math.round(8 * glow));
+		return LightCoordsUtil.pack(Math.min(15, block), 15);
 	}
 }

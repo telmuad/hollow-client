@@ -4,7 +4,7 @@ import dev.telmuad.hollowclient.HollowClient;
 import dev.telmuad.hollowclient.config.Profiles;
 import dev.telmuad.hollowclient.gui.widget.UiButton;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
@@ -113,7 +113,7 @@ public final class ProfilesScreen extends HollowScreen {
 	}
 
 	@Override
-	protected void renderContent(GuiGraphics g, int mx, int my, float a) {
+	protected void renderContent(GuiGraphicsExtractor g, int mx, int my, float a) {
 		drawPanel(g, panel, 8, a);
 		back.render(g, font, mx, my, dt, a);
 		undo.setEnabled(Profiles.canGoBack());
@@ -140,7 +140,7 @@ public final class ProfilesScreen extends HollowScreen {
 			int y = r.y() + 22;
 			for (FormattedCharSequence line : font.split(Ui.text(p.description()), r.w() - 16)) {
 				if (y > r.bottom() - 34) break;
-				g.drawString(font, line, r.x() + 8, y, Theme.fade(Theme.TEXT_DIM, a), false);
+				g.text(font, line, r.x() + 8, y, Theme.fade(Theme.TEXT_DIM, a), false);
 				y += 10;
 			}
 			int shown = Profiles.hudShown(p, HollowClient.modules()).size();
@@ -152,7 +152,7 @@ public final class ProfilesScreen extends HollowScreen {
 		boolean focused = name.isFocused();
 		Draw.roundRect(g, nameBox, Theme.radius(4), Theme.fade(focused ? Theme.CARD_HOVER : Theme.CARD, a));
 		Draw.roundOutline(g, nameBox, Theme.radius(4), Theme.fade(focused ? Theme.accent() : Theme.STROKE, a));
-		if (a > 0.5f) name.render(g, mx, my, 0);
+		if (a > 0.5f) name.extractRenderState(g, mx, my, 0);
 		save.render(g, font, mx, my, dt, a);
 		Ui.draw(g, font, "Your profiles", save.bounds().right() + 10, nameBox.y() + 4, Theme.fade(Theme.TEXT_FAINT, a));
 		if (saved.isEmpty()) {

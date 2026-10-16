@@ -5,7 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import dev.telmuad.hollowclient.HollowClient;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.Identifier;
@@ -130,12 +130,12 @@ public final class JarTexture {
 	}
 
 	/** Draw the whole image stretched to (x, y, w, h) in GUI pixels; float positions move smoothly. */
-	public void draw(GuiGraphics g, float x, float y, float w, float h, int color) {
+	public void draw(GuiGraphicsExtractor g, float x, float y, float w, float h, int color) {
 		drawSlice(g, x, y, w, h, 0f, 1f, color);
 	}
 
 	/** Draw a vertical slice of the image (u0..u1 as fractions of its width) into (x, y, w, h). */
-	public void drawSlice(GuiGraphics g, float x, float y, float w, float h, float u0, float u1, int color) {
+	public void drawSlice(GuiGraphicsExtractor g, float x, float y, float w, float h, float u0, float u1, int color) {
 		if (w <= 0 || h <= 0 || (color >>> 24) == 0 || !ensure()) return;
 		float fullW = w / Math.max(0.0001f, u1 - u0);
 		int lv = levelFor(fullW);

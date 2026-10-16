@@ -7,7 +7,7 @@ import dev.telmuad.hollowclient.gui.Theme;
 import dev.telmuad.hollowclient.setting.ColorSetting;
 import dev.telmuad.hollowclient.util.ColorUtil;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.Locale;
@@ -83,7 +83,7 @@ public final class ColorPicker {
 		return panel.contains(mx, my);
 	}
 
-	public void render(GuiGraphics g, Font font, int mx, int my) {
+	public void render(GuiGraphicsExtractor g, Font font, int mx, int my) {
 		Draw.roundRect(g, panel.x() + 2, panel.y() + 3, panel.w(), panel.h(), 5, 0x66000000);
 		Draw.roundRect(g, panel, 5, Theme.PANEL_RAISED);
 		Draw.roundOutline(g, panel, 5, Theme.STROKE_STRONG);
@@ -95,7 +95,7 @@ public final class ColorPicker {
 		}
 		int px = sv.x() + Math.round(sat * (sv.w() - 1));
 		int py = sv.y() + Math.round((1 - val) * (sv.h() - 1));
-		g.renderOutline(px - 2, py - 2, 5, 5, val > 0.5f ? 0xFF000000 : 0xFFFFFFFF);
+		g.outline(px - 2, py - 2, 5, 5, val > 0.5f ? 0xFF000000 : 0xFFFFFFFF);
 
 		for (int s = 0; s < 6; s++) {
 			int y0 = hueBar.y() + hueBar.h() * s / 6;

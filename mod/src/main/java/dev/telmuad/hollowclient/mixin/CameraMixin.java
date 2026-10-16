@@ -4,8 +4,8 @@ import dev.telmuad.hollowclient.camera.CameraPath;
 import dev.telmuad.hollowclient.camera.CameraPaths;
 import dev.telmuad.hollowclient.modules.Modules;
 import net.minecraft.client.Camera;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -40,8 +40,9 @@ abstract class CameraMixin {
 		eyeHeightOld = eyeHeight;
 	}
 
-	@Inject(method = "setup", at = @At("TAIL"))
-	private void hollowclient$cameraPath(Level level, Entity entity, boolean detached, boolean mirrored, float partialTick, CallbackInfo ci) {
+	/** Right after vanilla places the camera on the player, and before the culling frustum is worked out from it. */
+	@Inject(method = "update", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;alignWithEntity(F)V", shift = At.Shift.AFTER))
+	private void hollowclient$cameraPath(DeltaTracker deltaTracker, CallbackInfo ci) {
 		CameraPath.Pose pose = CameraPaths.pose();
 		if (pose == null) return;
 		setRotation(pose.yaw(), pose.pitch());

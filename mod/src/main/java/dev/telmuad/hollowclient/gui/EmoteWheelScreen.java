@@ -4,7 +4,7 @@ import dev.telmuad.hollowclient.input.Keybinds;
 import dev.telmuad.hollowclient.styles.Emotes;
 import dev.telmuad.hollowclient.styles.Emotes.Emote;
 import dev.telmuad.hollowclient.util.ColorUtil;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
@@ -33,7 +33,7 @@ public final class EmoteWheelScreen extends HollowScreen {
 	}
 
 	@Override
-	public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+	public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
 		float p = openProgress();
 		g.fillGradient(0, 0, width, height, Theme.fade(0x30000000, p), Theme.fade(0x60000000, p));
 	}
@@ -43,7 +43,7 @@ public final class EmoteWheelScreen extends HollowScreen {
 	}
 
 	@Override
-	protected void renderContent(GuiGraphics g, int mouseX, int mouseY, float a) {
+	protected void renderContent(GuiGraphicsExtractor g, int mouseX, int mouseY, float a) {
 		Emote[] emotes = Emote.values();
 		float cx = width / 2f;
 		float cy = height / 2f;
@@ -91,7 +91,7 @@ public final class EmoteWheelScreen extends HollowScreen {
 			UiSounds.click();
 			Emotes.play(Emote.values()[selected]);
 		}
-		if (minecraft != null) minecraft.setScreen(null);
+		if (minecraft != null) minecraft.gui.setScreen(null);
 	}
 
 	@Override
@@ -115,7 +115,7 @@ public final class EmoteWheelScreen extends HollowScreen {
 		}
 		if (event.button() == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
 			Emotes.stop();
-			if (minecraft != null) minecraft.setScreen(null);
+			if (minecraft != null) minecraft.gui.setScreen(null);
 			return true;
 		}
 		return super.mouseClicked(event, doubleClick);

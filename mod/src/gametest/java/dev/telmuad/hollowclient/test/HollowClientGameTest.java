@@ -59,17 +59,24 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 	@Override
 	public void runTest(ClientGameTestContext ctx) {
 		ctx.waitTicks(40);
-		check("Hollow's title screen replaces vanilla's", ctx.computeOnClient(mc -> mc.screen instanceof HollowTitleScreen));
+		check("Hollow's title screen replaces vanilla's", ctx.computeOnClient(mc -> mc.gui.screen() instanceof HollowTitleScreen));
 		screenshot(ctx, "title_screen");
+		// every Hollow pipeline must compile on the backend in use (OpenGL, or Vulkan with -Pvulkan)
+		check("Hollow's own shaders compile (nebula, sky, waypoint beams)", ctx.computeOnClient(mc -> {
+			var device = com.mojang.blaze3d.systems.RenderSystem.getDevice();
+			return device.precompilePipeline(dev.telmuad.hollowclient.render.Nebula.PIPELINE).isValid()
+					&& device.precompilePipeline(dev.telmuad.hollowclient.render.SkyFx.GLOW_PIPELINE).isValid()
+					&& device.precompilePipeline(dev.telmuad.hollowclient.render.WaypointFx.BEAM_PIPELINE).isValid();
+		}));
 		// a resource reload shows the loading screen
 		ctx.runOnClient(mc -> mc.reloadResourcePacks());
 		ctx.waitTicks(4);
 		screenshot(ctx, "loading_screen");
-		ctx.waitFor(mc -> mc.getOverlay() == null, 1200);
+		ctx.waitFor(mc -> mc.gui.overlay() == null, 1200);
 		ctx.waitTicks(10);
 		ctx.getInput().pressKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
 		ctx.waitTicks(5);
-		boolean fromTitle = ctx.computeOnClient(mc -> mc.screen instanceof HollowMenuScreen);
+		boolean fromTitle = ctx.computeOnClient(mc -> mc.gui.screen() instanceof HollowMenuScreen);
 		check("Right Shift opens the menu on the title screen", fromTitle);
 		ctx.setScreen(() -> HollowMenuScreen.at(Category.HUD));
 		ctx.waitTicks(10);
@@ -77,7 +84,7 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		ctx.setScreen(() -> null);
 
 		try (TestSingleplayerContext sp = ctx.worldBuilder().create()) {
-			sp.getClientWorld().waitForChunksRender();
+			sp.getConnection().waitForChunksRender();
 			sp.getServer().runCommand("time set noon");
 			sp.getServer().runCommand("weather clear");
 			sp.getServer().runCommand("gamerule doDaylightCycle false");
@@ -155,7 +162,7 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 	private void menus(ClientGameTestContext ctx) {
 		ctx.getInput().pressKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
 		ctx.waitTicks(5);
-		boolean open = ctx.computeOnClient(mc -> mc.screen instanceof HollowMenuScreen);
+		boolean open = ctx.computeOnClient(mc -> mc.gui.screen() instanceof HollowMenuScreen);
 		check("Right Shift opens the menu", open);
 		ctx.waitTicks(5);
 		screenshot(ctx, "menu_hud");
@@ -190,9 +197,9 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		screenshot(ctx, "toast_over_menu");
 		// closing animates: still open for a moment, then gone
 		ctx.getInput().pressKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
-		boolean stillThere = ctx.computeOnClient(mc -> mc.screen instanceof HollowMenuScreen);
+		boolean stillThere = ctx.computeOnClient(mc -> mc.gui.screen() instanceof HollowMenuScreen);
 		ctx.waitTicks(10);
-		boolean gone = ctx.computeOnClient(mc -> mc.screen == null);
+		boolean gone = ctx.computeOnClient(mc -> mc.gui.screen() == null);
 		check("The menu closes with an animation (" + stillThere + ", " + gone + ")", stillThere && gone);
 		ctx.setScreen(() -> HollowMenuScreen.at(Category.HUD));
 		ctx.waitTicks(8);
@@ -241,10 +248,10 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		ctx.setScreen(() -> null);
 		// chat: a few messages, the newest one mid slide-in, then the chat screen
 		ctx.runOnClient(mc -> {
-			for (int i = 1; i <= 4; i++) mc.gui.getChat().addMessage(net.minecraft.network.chat.Component.literal("Hollow chat line " + i));
+			for (int i = 1; i <= 4; i++) mc.gui.hud.getChat().addClientSystemMessage(net.minecraft.network.chat.Component.literal("Hollow chat line " + i));
 		});
 		ctx.waitTicks(20);
-		ctx.runOnClient(mc -> mc.gui.getChat().addMessage(net.minecraft.network.chat.Component.literal("A new message slides in")));
+		ctx.runOnClient(mc -> mc.gui.hud.getChat().addClientSystemMessage(net.minecraft.network.chat.Component.literal("A new message slides in")));
 		ctx.waitTicks(1);
 		screenshot(ctx, "chat_slide_in");
 		ctx.setScreen(() -> new net.minecraft.client.gui.screens.ChatScreen("hello", false));
@@ -257,7 +264,7 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 	private void theme(ClientGameTestContext ctx) {
 		ctx.setScreen(() -> HollowMenuScreen.settingsFor(module("theme"), null));
 		ctx.waitTicks(8);
-		check("The Theme card opens the theme editor", ctx.computeOnClient(mc -> mc.screen instanceof ThemeScreen));
+		check("The Theme card opens the theme editor", ctx.computeOnClient(mc -> mc.gui.screen() instanceof ThemeScreen));
 		screenshot(ctx, "theme_editor_void");
 		ctx.runOnClient(mc -> Themes.store().setCurrent(HollowTheme.INFERNO));
 		ctx.waitTicks(5);
@@ -273,9 +280,9 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 			}
 		});
 		check("The theme is saved to the shared theme.json", shared);
-		int blur = ctx.computeOnClient(mc -> ((HollowScreen) mc.screen).blurRadius(5));
+		int blur = ctx.computeOnClient(mc -> ((HollowScreen) mc.gui.screen()).blurRadius(5));
 		ctx.runOnClient(mc -> Modules.PERFORMANCE.performanceModeSetting().set(true));
-		int blurPerf = ctx.computeOnClient(mc -> ((HollowScreen) mc.screen).blurRadius(5));
+		int blurPerf = ctx.computeOnClient(mc -> ((HollowScreen) mc.gui.screen()).blurRadius(5));
 		check("Performance Mode turns the menu blur off (" + blur + " -> " + blurPerf + ")", blur > 0 && blurPerf == 0);
 		ctx.runOnClient(mc -> {
 			Modules.PERFORMANCE.performanceModeSetting().set(false);
@@ -499,8 +506,8 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 			mc.player.setXRot(-10f);
 		});
 		ctx.waitTicks(5);
-		long shown = ctx.computeOnClient(mc -> mc.level.getDayTime() % 24000);
-		long server = sp.getServer().computeOnServer(s -> s.overworld().getDayTime() % 24000);
+		long shown = ctx.computeOnClient(mc -> mc.level.getOverworldClockTime() % 24000);
+		long server = sp.getServer().computeOnServer(s -> s.overworld().getOverworldClockTime() % 24000);
 		check("Client time changer shows 18:30 while the server stays at noon (" + shown + " / " + server + ")", shown == 12500 && server == 6000);
 		screenshot(ctx, "client_time_sunset");
 		ctx.runOnClient(mc -> setBool("time_weather", "fixTime", false));
@@ -525,9 +532,10 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 	}
 
 	private static int particleCount(Minecraft mc) {
-		String s = mc.particleEngine.countParticles();
+		// 26.x: "<group> <count> ... T <total>"
+		String[] parts = mc.particleEngine.countParticles().trim().split(" +");
 		try {
-			return Integer.parseInt(s.trim());
+			return Integer.parseInt(parts[parts.length - 1]);
 		} catch (NumberFormatException e) {
 			return -1;
 		}
@@ -722,7 +730,7 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		check("Imported pack is listed", listed);
 		boolean used = ctx.computeOnClient(mc -> PackManager.use("Hollow Test Pack.zip"));
 		ctx.waitTicks(5);
-		ctx.waitFor(mc -> mc.getOverlay() == null, 1200);
+		ctx.waitFor(mc -> mc.gui.overlay() == null, 1200);
 		ctx.waitTicks(20);
 		String active = ctx.computeOnClient(mc -> PackManager.active());
 		check("Switching to the imported pack works (" + active + ")", used && active.equals("Hollow Test Pack.zip"));
@@ -740,10 +748,10 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 			PackManager.use(null);
 		});
 		ctx.waitTicks(5);
-		ctx.waitFor(mc -> mc.getOverlay() == null, 1200);
+		ctx.waitFor(mc -> mc.gui.overlay() == null, 1200);
 		String warning = ctx.computeOnClient(mc -> PresetManager.apply(HollowClient.styles().findPreset("Test look")));
 		ctx.waitTicks(5);
-		ctx.waitFor(mc -> mc.getOverlay() == null, 1200);
+		ctx.waitFor(mc -> mc.gui.overlay() == null, 1200);
 		ctx.waitTicks(10);
 		boolean restored = ctx.computeOnClient(mc -> Modules.HAT.isEnabled() && Modules.CAPE.capeId().startsWith("custom:")
 				&& PackManager.active().equals("Hollow Test Pack.zip"));
@@ -756,7 +764,7 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		// Remove the pack again so the run ends on vanilla textures
 		ctx.runOnClient(mc -> PackManager.remove("Hollow Test Pack.zip"));
 		ctx.waitTicks(5);
-		ctx.waitFor(mc -> mc.getOverlay() == null, 1200);
+		ctx.waitFor(mc -> mc.gui.overlay() == null, 1200);
 		boolean gone = ctx.computeOnClient(mc -> !HollowClient.styles().packs.contains("Hollow Test Pack.zip")
 				&& !java.nio.file.Files.exists(PackManager.folder().resolve("Hollow Test Pack.zip")));
 		check("Removing a pack forgets it and deletes Hollow's copy", gone);
@@ -913,8 +921,8 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 
 	// ------------------------------------------------------------------------------------------------ features A
 
-	private static List<net.minecraft.client.GuiMessage> chatMessages(Minecraft mc) {
-		return ((dev.telmuad.hollowclient.mixin.ChatComponentAccessor) mc.gui.getChat()).hollowclient$allMessages();
+	private static List<net.minecraft.client.multiplayer.chat.GuiMessage> chatMessages(Minecraft mc) {
+		return ((dev.telmuad.hollowclient.mixin.ChatComponentAccessor) mc.gui.hud.getChat()).hollowclient$allMessages();
 	}
 
 	private static long historyCount(String suffix) {
@@ -929,11 +937,11 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 			for (Module m : HollowClient.modules().all()) if (m instanceof HudModule) m.setEnabled(false);
 			Modules.CHAT_PLUS.setEnabled(true);
 			((dev.telmuad.hollowclient.setting.StringSetting) Modules.CHAT_PLUS.setting("words")).set("diamond, hollow");
-			mc.gui.getChat().clearMessages(false);
+			mc.gui.hud.getChat().clearMessages(false);
 		});
 		// chat+: three identical lines stack into one "(x3)" line, every line gets a timestamp
 		ctx.runOnClient(mc -> {
-			for (int i = 0; i < 3; i++) mc.gui.getChat().addMessage(net.minecraft.network.chat.Component.literal("Server restarting soon"));
+			for (int i = 0; i < 3; i++) mc.gui.hud.getChat().addClientSystemMessage(net.minecraft.network.chat.Component.literal("Server restarting soon"));
 		});
 		String top = ctx.computeOnClient(mc -> chatMessages(mc).get(0).content().getString());
 		long copies = ctx.computeOnClient(mc -> chatMessages(mc).stream().filter(m -> m.content().getString().contains("Server restarting soon")).count());
@@ -941,8 +949,8 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		check("Chat+ adds timestamps", top.matches("^\\[\\d{1,2}:\\d{2}\\] .*"));
 		// keyword highlight: accent tag on the line
 		ctx.runOnClient(mc -> {
-			mc.gui.getChat().addMessage(net.minecraft.network.chat.Component.literal("<Steve> I found a diamond over here"));
-			mc.gui.getChat().addMessage(net.minecraft.network.chat.Component.literal("<Alex> nice, see you at spawn"));
+			mc.gui.hud.getChat().addClientSystemMessage(net.minecraft.network.chat.Component.literal("<Steve> I found a diamond over here"));
+			mc.gui.hud.getChat().addClientSystemMessage(net.minecraft.network.chat.Component.literal("<Alex> nice, see you at spawn"));
 		});
 		boolean highlighted = ctx.computeOnClient(mc -> chatMessages(mc).stream()
 				.anyMatch(m -> m.content().getString().contains("diamond") && m.tag() != null && "Hollow highlight".equals(m.tag().logTag())));
@@ -970,7 +978,7 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		ctx.getInput().pressKey(GLFW.GLFW_KEY_F);
 		ctx.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_CONTROL);
 		ctx.waitTicks(4);
-		check("Ctrl+F in chat opens the chat search", ctx.computeOnClient(mc -> mc.screen instanceof dev.telmuad.hollowclient.gui.ChatSearchScreen));
+		check("Ctrl+F in chat opens the chat search", ctx.computeOnClient(mc -> mc.gui.screen() instanceof dev.telmuad.hollowclient.gui.ChatSearchScreen));
 		ctx.getInput().typeChars("diamond");
 		ctx.waitTicks(8);
 		screenshot(ctx, "chat_search");
@@ -980,11 +988,11 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		ctx.runOnClient(mc -> {
 			Modules.AUTO_GG.setEnabled(true);
 			((dev.telmuad.hollowclient.setting.NumberSetting) Modules.AUTO_GG.setting("delay")).set(0.5);
-			mc.gui.getChat().addMessage(net.minecraft.network.chat.Component.literal("Steve has won the game!"));
+			mc.gui.hud.getChat().addClientSystemMessage(net.minecraft.network.chat.Component.literal("Steve has won the game!"));
 		});
 		ctx.waitTicks(30);
 		long ggs = historyCount("> gg");
-		ctx.runOnClient(mc -> mc.gui.getChat().addMessage(net.minecraft.network.chat.Component.literal("GAME OVER")));
+		ctx.runOnClient(mc -> mc.gui.hud.getChat().addClientSystemMessage(net.minecraft.network.chat.Component.literal("GAME OVER")));
 		ctx.waitTicks(30);
 		long ggs2 = historyCount("> gg");
 		check("Auto GG says gg once when a game ends (" + ggs + ", then " + ggs2 + " during the cooldown)", ggs == 1 && ggs2 == 1);
@@ -1041,7 +1049,7 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		ctx.waitTicks(60);
 		screenshot(ctx, "screenshot_manager");
 		ctx.runOnClient(mc -> {
-			if (mc.screen instanceof dev.telmuad.hollowclient.gui.ScreenshotsScreen s) s.viewFirst();
+			if (mc.gui.screen() instanceof dev.telmuad.hollowclient.gui.ScreenshotsScreen s) s.viewFirst();
 		});
 		ctx.waitTicks(40);
 		screenshot(ctx, "screenshot_viewer");
@@ -1091,7 +1099,7 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		ctx.setScreen(() -> new dev.telmuad.hollowclient.gui.WaypointsScreen(null));
 		ctx.waitTicks(8);
 		ctx.runOnClient(mc -> {
-			if (mc.screen instanceof dev.telmuad.hollowclient.gui.WaypointsScreen s) s.renameLast("Far village (renamed)");
+			if (mc.gui.screen() instanceof dev.telmuad.hollowclient.gui.WaypointsScreen s) s.renameLast("Far village (renamed)");
 		});
 		ctx.waitTicks(4);
 		screenshot(ctx, "waypoints_screen");
@@ -1148,12 +1156,12 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		ctx.runOnClient(mc -> dev.telmuad.hollowclient.camera.CameraPaths.start(mc));
 		ctx.waitTicks(30);
 		boolean flying = ctx.computeOnClient(mc -> dev.telmuad.hollowclient.camera.CameraPaths.playing());
-		double away = ctx.computeOnClient(mc -> mc.gameRenderer.getMainCamera().position().distanceTo(mc.player.getEyePosition()));
+		double away = ctx.computeOnClient(mc -> mc.gameRenderer.mainCamera().position().distanceTo(mc.player.getEyePosition()));
 		check("The camera flies the path away from the player (" + String.format("%.1f", away) + " blocks)", flying && away > 3);
 		screenshot(ctx, "camera_path_flying");
 		ctx.waitTicks(50);
 		boolean stopped = ctx.computeOnClient(mc -> !dev.telmuad.hollowclient.camera.CameraPaths.playing()
-				&& mc.options.getCameraType() == cameraBefore && !mc.options.hideGui);
+				&& mc.options.getCameraType() == cameraBefore && !mc.gui.hud.isHidden());
 		check("The flight ends by itself and the camera comes back", stopped);
 		ctx.runOnClient(mc -> Modules.CAMERA_PATH.setEnabled(false));
 		sp.getServer().runCommand("gamemode survival @a");
@@ -1356,11 +1364,11 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 			// otherwise Minecraft drops to 30 FPS after a while without input (its AFK limit)
 			mc.options.inactivityFpsLimit().set(net.minecraft.client.InactivityFpsLimit.MINIMIZED);
 			setBool("performance", "autoQuality", false);
-			mc.gui.getChat().clearMessages(false);
+			mc.gui.hud.getChat().clearMessages(false);
 			Toasts.clear();
 			dev.telmuad.hollowclient.music.MusicPlayer.stop();
 		});
-		String gpu = ctx.computeOnClient(mc -> com.mojang.blaze3d.systems.RenderSystem.getDevice().getRenderer());
+		String gpu = ctx.computeOnClient(mc -> { var info = com.mojang.blaze3d.systems.RenderSystem.getDevice().getDeviceInfo(); return info.name() + " (" + info.backendName() + ")"; });
 		ctx.runOnClient(HollowClientGameTest::allEffectsOff);
 		fpsBase = measureFps(ctx);
 		fpsRows.add(String.format(java.util.Locale.ROOT, "| Baseline: every Hollow effect off | %d | |", fpsBase));

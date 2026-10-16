@@ -9,14 +9,13 @@ import dev.telmuad.hollowclient.module.Module;
 import dev.telmuad.hollowclient.util.ColorUtil;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.joml.Matrix3x2f;
 import org.lwjgl.glfw.GLFW;
@@ -191,7 +190,7 @@ public final class HollowMenuScreen extends HollowScreen {
 	// ---------------------------------------------------------------------------------------------------- render
 
 	@Override
-	protected void renderContent(GuiGraphics g, int mx, int my, float a) {
+	protected void renderContent(GuiGraphicsExtractor g, int mx, int my, float a) {
 		drawPanel(g, panel, 8, a);
 		renderHeader(g, mx, my, a);
 		renderRail(g, mx, my, a);
@@ -211,7 +210,7 @@ public final class HollowMenuScreen extends HollowScreen {
 		renderFooter(g, a);
 	}
 
-	private void renderHeader(GuiGraphics g, int mx, int my, float a) {
+	private void renderHeader(GuiGraphicsExtractor g, int mx, int my, float a) {
 		int lx = header.x() + 10;
 		int ly = header.y() + 9;
 		Fx.sigil(g, lx - 2, ly - 4, 18, a, true);
@@ -229,7 +228,7 @@ public final class HollowMenuScreen extends HollowScreen {
 		Draw.roundRect(g, searchBox, rad, Theme.fade(Theme.mix(Theme.CARD, Theme.CARD_HOVER, searchFocus), a));
 		Draw.roundOutline(g, searchBox, rad, Theme.fade(Theme.mix(Theme.STROKE, Theme.accent(), searchFocus), a));
 		drawMagnifier(g, searchBox.x() + 4, searchBox.y() + 4, Theme.fade(Theme.mix(Theme.TEXT_DIM, Theme.accent(), searchFocus), a));
-		if (a > 0.5f) search.render(g, mx, my, 0);
+		if (a > 0.5f) search.extractRenderState(g, mx, my, 0);
 		if (searching()) {
 			boolean ch = clearSearch.contains(mx, my);
 			Draw.roundRect(g, clearSearch, 2, Theme.fade(ch ? Theme.CARD_HOVER : 0x00000000, a));
@@ -240,13 +239,13 @@ public final class HollowMenuScreen extends HollowScreen {
 	}
 
 	/** A small magnifying glass (search fields). */
-	public static void drawMagnifier(GuiGraphics g, int x, int y, int color) {
+	public static void drawMagnifier(GuiGraphicsExtractor g, int x, int y, int color) {
 		Draw.roundOutline(g, x, y, 6, 6, 3, color);
 		g.fill(x + 5, y + 5, x + 6, y + 6, color);
 		g.fill(x + 6, y + 6, x + 8, y + 8, color);
 	}
 
-	private void renderRail(GuiGraphics g, int mx, int my, float a) {
+	private void renderRail(GuiGraphicsExtractor g, int mx, int my, float a) {
 		Category[] cats = Category.values();
 		float targetY = rail.y() + 2 + category.ordinal() * railRow;
 		if (railMarker.value() < 0) railMarker.snap(targetY);
@@ -273,7 +272,7 @@ public final class HollowMenuScreen extends HollowScreen {
 				float bump = 1f + 0.08f * h;
 				g.pose().translate(r.x() + 14, r.y() + r.h() / 2f);
 				g.pose().scale(bump, bump);
-				g.renderItem(iconFor(c), -8, -8);
+				ItemIcons.draw(g, iconFor(c), -8, -8);
 				g.pose().popMatrix();
 			}
 			if (railLabels) {
@@ -286,7 +285,7 @@ public final class HollowMenuScreen extends HollowScreen {
 		}
 	}
 
-	private void renderSection(GuiGraphics g, float a) {
+	private void renderSection(GuiGraphicsExtractor g, float a) {
 		String title = searching() ? "Search results" : category.label();
 		float t = Anim.easeOutCubic((Util.getMillis() - listShownAt) * Theme.speed() / APPEAR_MS);
 		int slide = fxAmount(m -> m.entrance) > 0 ? Math.round((1f - t) * 8) : 0;
@@ -303,15 +302,15 @@ public final class HollowMenuScreen extends HollowScreen {
 		Ui.draw(g, font, count, section.right() - 4 - Ui.width(font, count), section.y() + 3, Theme.fade(Theme.TEXT_FAINT, a));
 	}
 
-	private static ItemStack iconFor(Category c) {
+	private static ItemIcons.Icon iconFor(Category c) {
 		return switch (c) {
-			case HUD -> new ItemStack(Items.COMPASS);
-			case INTERFACE -> new ItemStack(Items.ITEM_FRAME);
-			case VISUAL -> new ItemStack(Items.ENDER_EYE);
-			case EFFECTS -> new ItemStack(Items.FIREWORK_ROCKET);
-			case QOL -> new ItemStack(Items.FEATHER);
-			case STYLES -> new ItemStack(Items.LEATHER_CHESTPLATE);
-			case CLIENT -> new ItemStack(Items.AMETHYST_SHARD);
+			case HUD -> new ItemIcons.Icon(Items.COMPASS, "compass_00");
+			case INTERFACE -> new ItemIcons.Icon(Items.ITEM_FRAME, "item_frame");
+			case VISUAL -> new ItemIcons.Icon(Items.ENDER_EYE, "ender_eye");
+			case EFFECTS -> new ItemIcons.Icon(Items.FIREWORK_ROCKET, "firework_rocket");
+			case QOL -> new ItemIcons.Icon(Items.FEATHER, "feather");
+			case STYLES -> new ItemIcons.Icon(Items.GOLDEN_CHESTPLATE, "golden_chestplate");
+			case CLIENT -> new ItemIcons.Icon(Items.AMETHYST_SHARD, "amethyst_shard");
 		};
 	}
 
@@ -346,7 +345,7 @@ public final class HollowMenuScreen extends HollowScreen {
 	 * Push the transform for a card: slide up while appearing, scale a touch on hover and press, and lean toward
 	 * the mouse (a shear that reads as a 3D tilt). Pop it with {@code g.pose().popMatrix()}.
 	 */
-	private void pushCardTransform(GuiGraphics g, CardAnim c, Rect r, boolean hovered, int mx, int my, float appear) {
+	private void pushCardTransform(GuiGraphicsExtractor g, CardAnim c, Rect r, boolean hovered, int mx, int my, float appear) {
 		float tilt = fxAmount(m -> m.tilt);
 		float rx = 0f;
 		float ry = 0f;
@@ -375,7 +374,7 @@ public final class HollowMenuScreen extends HollowScreen {
 	}
 
 	/** The moving shine on a tilted card: a soft light that follows the mouse. Drawn in card-local coordinates. */
-	private void shine(GuiGraphics g, CardAnim c, int w, int h, float a) {
+	private void shine(GuiGraphicsExtractor g, CardAnim c, int w, int h, float a) {
 		float tilt = fxAmount(m -> m.tilt);
 		if (tilt <= 0f || c.hover <= 0.01f) return;
 		float sx = w / 2f + c.tiltX * w / 2f;
@@ -385,7 +384,7 @@ public final class HollowMenuScreen extends HollowScreen {
 		g.disableScissor();
 	}
 
-	private void renderCards(GuiGraphics g, int mx, int my, float a, Set<Object> shown) {
+	private void renderCards(GuiGraphicsExtractor g, int mx, int my, float a, Set<Object> shown) {
 		List<Module> mods = visibleModules();
 		boolean inGrid = grid.contains(mx, my);
 		float borders = fxAmount(m -> m.borders);
@@ -456,7 +455,7 @@ public final class HollowMenuScreen extends HollowScreen {
 	}
 
 	/** The module name, with the part that matches the search lit up in the accent color. */
-	private void drawName(GuiGraphics g, String name, int x, int y, int maxW, float a) {
+	private void drawName(GuiGraphicsExtractor g, String name, int x, int y, int maxW, float a) {
 		String shownName = Text.fit(font, name, maxW);
 		int at = searching() ? shownName.toLowerCase(Locale.ROOT).indexOf(query) : -1;
 		if (at < 0) {
@@ -506,16 +505,16 @@ public final class HollowMenuScreen extends HollowScreen {
 
 	// ---------------------------------------------------------------------------------------------------- styles tiles
 
-	private record Tile(StylesScreen.Tab tab, String title, String subtitle, ItemStack icon) {
+	private record Tile(StylesScreen.Tab tab, String title, String subtitle, ItemIcons.Icon icon) {
 	}
 
 	private List<Tile> tiles() {
 		return List.of(
-				new Tile(StylesScreen.Tab.CAPES, "Capes", StylesScreen.capeSummary(), new ItemStack(Items.WHITE_BANNER)),
-				new Tile(StylesScreen.Tab.COSMETICS, "Wardrobe", StylesScreen.cosmeticsSummary(), new ItemStack(Items.LEATHER_HELMET)),
-				new Tile(StylesScreen.Tab.EMOTES, "Emotes", "Wave, dance, cheer ... Hold B in game for the wheel.", new ItemStack(Items.NOTE_BLOCK)),
-				new Tile(StylesScreen.Tab.PACKS, "Texture Packs", StylesScreen.packSummary(), new ItemStack(Items.PAINTING)),
-				new Tile(StylesScreen.Tab.PRESETS, "Presets", StylesScreen.presetSummary(), new ItemStack(Items.WRITABLE_BOOK)));
+				new Tile(StylesScreen.Tab.CAPES, "Capes", StylesScreen.capeSummary(), new ItemIcons.Icon(Items.ELYTRA, "elytra")),
+				new Tile(StylesScreen.Tab.COSMETICS, "Wardrobe", StylesScreen.cosmeticsSummary(), new ItemIcons.Icon(Items.GOLDEN_HELMET, "golden_helmet")),
+				new Tile(StylesScreen.Tab.EMOTES, "Emotes", "Wave, dance, cheer ... Hold B in game for the wheel.", new ItemIcons.Icon(Items.GOAT_HORN, "goat_horn")),
+				new Tile(StylesScreen.Tab.PACKS, "Texture Packs", StylesScreen.packSummary(), new ItemIcons.Icon(Items.PAINTING, "painting")),
+				new Tile(StylesScreen.Tab.PRESETS, "Presets", StylesScreen.presetSummary(), new ItemIcons.Icon(Items.WRITABLE_BOOK, "writable_book")));
 	}
 
 	private Rect tileRect(int i) {
@@ -526,7 +525,7 @@ public final class HollowMenuScreen extends HollowScreen {
 		return new Rect(grid.x() + col * (tw + gap), grid.y() + row * (TILE_H + gap) - Math.round(scroll), tw, TILE_H);
 	}
 
-	private void renderTiles(GuiGraphics g, int mx, int my, float a, Set<Object> shown) {
+	private void renderTiles(GuiGraphicsExtractor g, int mx, int my, float a, Set<Object> shown) {
 		List<Tile> list = tiles();
 		boolean inGrid = grid.contains(mx, my);
 		float borders = fxAmount(m -> m.borders);
@@ -560,7 +559,7 @@ public final class HollowMenuScreen extends HollowScreen {
 				float bump = 1f + 0.1f * c.hover;
 				g.pose().translate(22, 22);
 				g.pose().scale(bump, bump);
-				g.renderItem(t.icon, -8, -8);
+				ItemIcons.draw(g, t.icon, -8, -8);
 				g.pose().popMatrix();
 			}
 			Ui.draw(g, font, Ui.bold(t.title), 44, 12, Theme.fade(Theme.TEXT, ca));
@@ -571,7 +570,7 @@ public final class HollowMenuScreen extends HollowScreen {
 		}
 	}
 
-	private void renderFooter(GuiGraphics g, float a) {
+	private void renderFooter(GuiGraphicsExtractor g, float a) {
 		String hint = showingTiles() ? "Click a tile to open it · Right Shift closes"
 				: "Click a card to toggle · Right-click or the slider icon for settings · / to search · Right Shift closes";
 		Ui.draw(g, font, Text.fit(font, hint, footer.w() - 80), footer.x() + 10, footer.y() + 4, Theme.fade(Theme.TEXT_FAINT, a));
@@ -655,7 +654,7 @@ public final class HollowMenuScreen extends HollowScreen {
 
 	private void show(Screen s) {
 		if (s instanceof HollowScreen hs) open(hs);
-		else if (minecraft != null) minecraft.setScreen(s);
+		else if (minecraft != null) minecraft.gui.setScreen(s);
 	}
 
 	/**

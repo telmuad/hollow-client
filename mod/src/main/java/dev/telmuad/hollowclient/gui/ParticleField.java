@@ -1,7 +1,7 @@
 package dev.telmuad.hollowclient.gui;
 
 import dev.telmuad.hollowclient.util.ColorUtil;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.Util;
 
 import java.util.Random;
@@ -48,7 +48,7 @@ public final class ParticleField {
 	 * Move and draw the particles. {@code amount} (0..1) controls how many are shown; at 0 they fade out.
 	 * Mouse coordinates are in GUI pixels.
 	 */
-	public void render(GuiGraphics g, int w, int h, double mouseX, double mouseY, float dt, float alpha, float amount) {
+	public void render(GuiGraphicsExtractor g, int w, int h, double mouseX, double mouseY, float dt, float alpha, float amount) {
 		if (w != width || h != height) {
 			width = w;
 			height = h;

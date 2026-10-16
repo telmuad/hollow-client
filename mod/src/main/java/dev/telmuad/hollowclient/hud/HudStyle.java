@@ -11,7 +11,7 @@ import dev.telmuad.hollowclient.modules.hud.HudStyleModule;
 import dev.telmuad.hollowclient.render.Quality;
 import dev.telmuad.hollowclient.util.ColorUtil;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.Util;
 
 import java.util.HashMap;
@@ -34,7 +34,7 @@ public final class HudStyle {
 	}
 
 	/** Background of an element in the current look. {@code alpha} is the element's fade (0..1). */
-	public static void background(GuiGraphics g, int w, int h, int color, boolean enabled, float alpha) {
+	public static void background(GuiGraphicsExtractor g, int w, int h, int color, boolean enabled, float alpha) {
 		HudStyleModule m = module();
 		if (m == null) {
 			if (enabled) g.fill(0, 0, w, h, ColorUtil.fade(color, alpha));
@@ -64,7 +64,7 @@ public final class HudStyle {
 		}
 	}
 
-	private static void border(GuiGraphics g, int w, int h, int rad, HudStyleModule m, float alpha) {
+	private static void border(GuiGraphicsExtractor g, int w, int h, int rad, HudStyleModule m, float alpha) {
 		if (m.border() > 0f) {
 			Fx.gradientOutline(g, new Rect(0, 0, w, h), rad, alpha * m.border() * 0.8f, 0f);
 		} else {
@@ -79,7 +79,7 @@ public final class HudStyle {
 	}
 
 	/** One piece of HUD text in the HUD font, gradient or plain. */
-	public static void text(GuiGraphics g, Font font, String s, int x, int y, int color, boolean shadow, float alpha) {
+	public static void text(GuiGraphicsExtractor g, Font font, String s, int x, int y, int color, boolean shadow, float alpha) {
 		HudStyleModule m = module();
 		if (m != null && m.gradientText() > 0f) {
 			float k = m.gradientText();
@@ -92,8 +92,9 @@ public final class HudStyle {
 				float t = n <= 1 ? 0f : i / (float) (n - 1);
 				int grad = Theme.gradient(Math.abs(((t * 0.8f + phase) % 1f) * 2 - 1));
 				Ui.drawHud(g, font, ch, cx, y, ColorUtil.fade(ColorUtil.mix(color, grad, k), alpha), shadow);
-				cx += Ui.hudWidth(font, ch);
 				i += Character.charCount(cp);
+				// place by the width of everything so far: per-character widths are rounded and would drift
+				cx = x + Ui.hudWidth(font, s.substring(0, i));
 			}
 			return;
 		}
@@ -112,7 +113,7 @@ public final class HudStyle {
 		 * Draw {@code s}; digits that changed since last frame roll up. Falls back to plain text when the text's
 		 * shape changed (different length or different non-digit characters) or rolling is off.
 		 */
-		public void draw(GuiGraphics g, Font font, String s, int x, int y, int color, boolean shadow, float alpha) {
+		public void draw(GuiGraphicsExtractor g, Font font, String s, int x, int y, int color, boolean shadow, float alpha) {
 			HudStyleModule m = module();
 			float speed = m == null ? 0f : m.rolling();
 			if (speed <= 0f || Quality.reducedMotion()) {
@@ -158,7 +159,8 @@ public final class HudStyle {
 					text(g, font, ch, cx, y, color, shadow, alpha * e);
 					g.pose().popMatrix();
 				}
-				cx += width(font, ch);
+				// place by the width of everything so far: per-character widths are rounded and would drift
+				cx = x + width(font, s.substring(0, i + 1));
 			}
 			g.disableScissor();
 		}

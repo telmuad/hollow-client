@@ -6,64 +6,87 @@ From the `mod` folder:
 
 | Command | What it checks |
 |---|---|
-| `gradlew.bat build` | Compiles the mod and runs 98 unit tests: config loading and saving (including the Windows "file in use" retry), HUD layout math, click counting, zoom math, colors, themes, springs, PNG/GIF/strip cape rules, resource-pack import rules, the camera path curve, waypoint files, MP3/Ogg tags and lengths, MP3/Ogg decoding (440 Hz and 880 Hz test tones), the FFT, and the Discord frames and privacy rules. Produces `build\libs\hollowclient-1.1.0.jar`. |
-| `gradlew.bat runClientGameTest` | Starts a real game window by itself, makes a test world and runs 60 in-game checks with a screenshot of every screen and feature (`build\run\clientGameTest\screenshots`): menus, theme editor and shared theme file, Performance Mode, title/loading/pause screens, HUD and HUD editor, zoom, toggle sprint, fullbright, fire, water, post-processing shaders, sky and client time/weather, block outline, hit bursts, crits, footprints, cosmetics, emotes, animated capes, presets, Chat+, Auto GG, macros, session stats, screenshots, waypoints, camera paths, the music player and visualizer, the scoreboard customizer, Discord Presence and profiles. It ends with the FPS benchmark below and writes `hollow_fps_results.md` in the run folder. Don't touch the window while it runs (about four minutes). |
-| `gradlew.bat runClientGameTest -PwithSodium` | The same run with Sodium 0.8.14 loaded. All 60 checks pass with Sodium too. |
+| `gradlew.bat build` | Compiles the mod for Minecraft 26.2 and runs 99 unit tests: config loading and saving (including the Windows "file in use" retry), HUD layout math, click counting, zoom math, colors, themes, springs, PNG/GIF/strip cape rules, resource-pack import rules, the camera path curve, waypoint files, MP3/Ogg tags and lengths, MP3/Ogg decoding (440 Hz and 880 Hz test tones), the FFT, the Discord frames and privacy rules, and that no raw OpenGL is used anywhere (26.2 can run on Vulkan). Produces `build\libs\hollowclient-2.0.0.jar`. |
+| `gradlew.bat runClientGameTest` | Starts a real game window by itself, makes a test world and runs 61 in-game checks with a screenshot of every screen and feature (`build\run\clientGameTest\screenshots`): Hollow's shaders compiling, menus, theme editor and shared theme file, Performance Mode, title/loading/pause screens, HUD and HUD editor, zoom, toggle sprint, fullbright, fire, water, post-processing shaders, sky and client time/weather, block outline, hit bursts, crits, footprints, cosmetics, emotes, animated capes, presets, Chat+, Auto GG, macros, session stats, screenshots, waypoints, camera paths, the music player and visualizer, the scoreboard customizer, Discord Presence and profiles. It ends with the FPS benchmark below and writes `hollow_fps_results.md` in the run folder. Don't touch the window while it runs (about five minutes). |
+| `gradlew.bat runClientGameTest -PwithSodium` | The same run with Sodium 0.9.2 loaded. All checks pass with Sodium too. |
+| `gradlew.bat runClientGameTest -Pvulkan` | The same run on Minecraft's Vulkan backend (26.2's Video Settings → Graphics API). All checks pass on Vulkan too. |
+| `python tools\mixincheck.py` | After a Minecraft version bump: checks every mixin target against the new game jar (see VERSION_BUMP.md). |
 
 From the `launcher` folder: `.venv\Scripts\python -m pytest` runs 80 tests (installer, Modrinth, sign-in error handling, token storage, launch command, settings, the QML backend, the shared theme file, play-time stats, the skin viewer, and that every QML page loads without errors). `.venv\Scripts\python -m hollow_launcher --screenshots <folder>` saves a picture of every launcher page, the intro and the PLAY burst for a visual check.
 
 ## What each effect costs (measured)
 
-Measured by the gametest's benchmark: each effect switched on alone at its default strength, in the same night scene on the superflat test world, 1280x720, vsync off, no FPS limit, FPS averaged over about 5 seconds. "Frame time vs baseline" is the extra time per frame; differences under about 0.03 ms are measurement noise (that's why a few are slightly negative).
+Measured by the gametest's benchmark on Minecraft 26.2: each effect switched on alone at its default strength, in the same night scene on the superflat test world, 1280x720, vsync off, no FPS limit, FPS averaged over about 5 seconds. "Frame time vs baseline" is the extra time per frame; differences under about 0.03 ms are measurement noise (that's why a few are slightly negative).
 
 Test PC: NVIDIA GeForce RTX 3080, AMD Ryzen 5 5600X.
 
-**Without Sodium**
+**OpenGL (Minecraft's default)**
 
 | Effect (alone, default strength) | FPS | Frame time vs baseline |
 |---|---|---|
-| Baseline: every Hollow effect off | 940 | |
-| Bloom | 893 | +0.06 ms |
-| Motion blur | 920 | +0.02 ms |
-| Chromatic aberration | 962 | -0.02 ms |
-| Vignette | 964 | -0.03 ms |
-| Film grain | 944 | -0.00 ms |
-| Color grade (Cinematic) | 960 | -0.02 ms |
-| Sky: more stars, aurora, shooting stars | 948 | -0.01 ms |
-| Waypoint beams and labels (3 waypoints) | 895 | +0.05 ms |
-| Block outline with fill and pulse | 981 | -0.04 ms |
-| HUD Style + 6 HUD elements | 610 | +0.58 ms |
-| Third person, no cosmetics | 956 | -0.02 ms |
-| Third person with cape, wings, halo, aura, pet | 821 | +0.15 ms |
-| **Everything above at once** | 430 | +1.26 ms |
-| **Everything + Performance Mode** | 452 | +1.15 ms |
+| Baseline: every Hollow effect off | 1262 | |
+| Bloom | 1146 | +0.08 ms |
+| Motion blur | 1231 | +0.02 ms |
+| Chromatic aberration | 1247 | +0.01 ms |
+| Vignette | 1238 | +0.02 ms |
+| Film grain | 1226 | +0.02 ms |
+| Color grade (Cinematic) | 1248 | +0.01 ms |
+| Sky: more stars, aurora, shooting stars | 1223 | +0.03 ms |
+| Waypoint beams and labels (3 waypoints) | 1167 | +0.06 ms |
+| Block outline with fill and pulse | 1242 | +0.01 ms |
+| HUD Style + 6 HUD elements | 733 | +0.57 ms |
+| Third person, no cosmetics | 1257 | +0.00 ms |
+| Third person with cape, wings, halo, aura, pet | 1079 | +0.13 ms |
+| **Everything above at once** | 511 | +1.16 ms |
+| **Everything + Performance Mode** | 552 | +1.02 ms |
 
-**With Sodium 0.8.14**
+**OpenGL with Sodium 0.9.2**
 
 | Effect (alone, default strength) | FPS | Frame time vs baseline |
 |---|---|---|
-| Baseline: every Hollow effect off | 992 | |
-| Bloom | 927 | +0.07 ms |
-| Motion blur | 993 | -0.00 ms |
-| Chromatic aberration | 987 | +0.01 ms |
-| Vignette | 987 | +0.01 ms |
-| Film grain | 995 | -0.00 ms |
-| Color grade (Cinematic) | 1006 | -0.01 ms |
-| Sky: more stars, aurora, shooting stars | 1001 | -0.01 ms |
-| Waypoint beams and labels (3 waypoints) | 953 | +0.04 ms |
-| Block outline with fill and pulse | 1017 | -0.02 ms |
-| HUD Style + 6 HUD elements | 638 | +0.56 ms |
-| Third person, no cosmetics | 977 | +0.02 ms |
-| Third person with cape, wings, halo, aura, pet | 848 | +0.17 ms |
-| **Everything above at once** | 442 | +1.25 ms |
-| **Everything + Performance Mode** | 481 | +1.07 ms |
+| Baseline: every Hollow effect off | 1211 | |
+| Bloom | 1112 | +0.07 ms |
+| Motion blur | 1163 | +0.03 ms |
+| Chromatic aberration | 1187 | +0.02 ms |
+| Vignette | 1185 | +0.02 ms |
+| Film grain | 1195 | +0.01 ms |
+| Color grade (Cinematic) | 1168 | +0.03 ms |
+| Sky: more stars, aurora, shooting stars | 1189 | +0.02 ms |
+| Waypoint beams and labels (3 waypoints) | 1128 | +0.06 ms |
+| Block outline with fill and pulse | 1247 | -0.02 ms |
+| HUD Style + 6 HUD elements | 730 | +0.54 ms |
+| Third person, no cosmetics | 1250 | -0.03 ms |
+| Third person with cape, wings, halo, aura, pet | 1053 | +0.12 ms |
+| **Everything above at once** | 495 | +1.19 ms |
+| **Everything + Performance Mode** | 560 | +0.96 ms |
+
+**Vulkan (Video Settings → Graphics API → Prefer Vulkan)**
+
+| Effect (alone, default strength) | FPS | Frame time vs baseline |
+|---|---|---|
+| Baseline: every Hollow effect off | 2538 | |
+| Bloom | 2152 | +0.07 ms |
+| Motion blur | 2483 | +0.01 ms |
+| Chromatic aberration | 2506 | +0.01 ms |
+| Vignette | 2497 | +0.01 ms |
+| Film grain | 2464 | +0.01 ms |
+| Color grade (Cinematic) | 2470 | +0.01 ms |
+| Sky: more stars, aurora, shooting stars | 2373 | +0.03 ms |
+| Waypoint beams and labels (3 waypoints) | 2227 | +0.06 ms |
+| Block outline with fill and pulse | 2550 | -0.00 ms |
+| HUD Style + 6 HUD elements | 1181 | +0.45 ms |
+| Third person, no cosmetics | 2578 | -0.01 ms |
+| Third person with cape, wings, halo, aura, pet | 2310 | +0.04 ms |
+| **Everything above at once** | 843 | +0.79 ms |
+| **Everything + Performance Mode** | 857 | +0.77 ms |
 
 What this means:
 
-- On this PC every effect costs a fraction of a millisecond. At 144 FPS a frame takes 6.9 ms, so even everything at once (+1.25 ms) leaves plenty of room.
-- The biggest single cost is the HUD (+0.58 ms for six elements with HUD Style), which is CPU-side drawing, not the GPU. HUD elements you don't need are the first thing to switch off on a slow PC.
-- Bloom, motion blur and film grain work on every pixel, so on a weaker graphics card or at 1440p/4K they cost more than here. Those are exactly what **Performance Mode** switches off (it saved about 0.1-0.2 ms here; on a laptop GPU the saving is larger). **Auto Quality** lowers effect quality by itself when FPS drops below your target.
-- Hollow doesn't change chunk rendering, so Sodium's speed-up is kept (about 5% more FPS here even in a tiny superflat world).
+- On this PC every effect costs a fraction of a millisecond. At 144 FPS a frame takes 6.9 ms, so even everything at once (about +1.2 ms on OpenGL, +0.8 ms on Vulkan) leaves plenty of room.
+- The biggest single cost is the HUD (about +0.5 ms for six elements with HUD Style), which is CPU-side drawing, not the GPU. HUD elements you don't need are the first thing to switch off on a slow PC.
+- Bloom, motion blur and film grain work on every pixel, so on a weaker graphics card or at 1440p/4K they cost more than here. Those are exactly what **Performance Mode** switches off. **Auto Quality** lowers effect quality by itself when FPS drops below your target.
+- Minecraft 26.2's Vulkan backend more than doubled the baseline FPS on this PC, and every Hollow effect works on it. Vulkan is still marked experimental by Mojang; OpenGL stays the default.
+- Hollow doesn't change chunk rendering, so Sodium's speed-up is kept.
 
 ## In-game checklist
 

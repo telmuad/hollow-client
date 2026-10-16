@@ -13,7 +13,7 @@ import dev.telmuad.hollowclient.setting.EnumSetting;
 import dev.telmuad.hollowclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.Util;
 
 /** Now playing: song, artist, a progress bar and the visualizer. Shows while the Music Player has a song loaded. */
@@ -53,7 +53,7 @@ public final class MusicHud extends HudModule {
 	}
 
 	@Override
-	public void draw(GuiGraphics g, Minecraft mc, Font font, boolean preview) {
+	public void draw(GuiGraphicsExtractor g, Minecraft mc, Font font, boolean preview) {
 		Size size = measure(mc, font, preview);
 		drawBackground(g, size.w(), size.h());
 		MusicPlayer.Track t = MusicPlayer.current();
@@ -94,7 +94,7 @@ public final class MusicHud extends HudModule {
 	}
 
 	/** Text that slides back and forth when it is too long for the box. */
-	private void marquee(GuiGraphics g, Font font, String s, int x, int y, int w, int color) {
+	private void marquee(GuiGraphicsExtractor g, Font font, String s, int x, int y, int w, int color) {
 		int tw = width(font, s);
 		if (tw <= w) {
 			text(g, font, s, x, y, color);

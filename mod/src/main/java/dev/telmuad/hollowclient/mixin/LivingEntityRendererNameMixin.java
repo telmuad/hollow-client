@@ -17,7 +17,7 @@ abstract class LivingEntityRendererNameMixin {
 		if (show) return true;
 		Minecraft mc = Minecraft.getInstance();
 		var m = Modules.OWN_NAMETAG;
-		return m != null && m.isEnabled() && entity == mc.player && Minecraft.renderNames()
+		return m != null && m.isEnabled() && entity == mc.player && !Minecraft.getInstance().gui.hud.isHidden()
 				&& mc.options.getCameraType() != CameraType.FIRST_PERSON && !entity.isInvisible();
 	}
 }

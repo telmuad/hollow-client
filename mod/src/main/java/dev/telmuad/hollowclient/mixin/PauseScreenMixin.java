@@ -2,7 +2,7 @@ package dev.telmuad.hollowclient.mixin;
 
 import dev.telmuad.hollowclient.gui.ScreenStyles;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
 import org.spongepowered.asm.mixin.Final;
@@ -19,11 +19,11 @@ abstract class PauseScreenMixin {
 	@Final
 	private boolean showPauseMenu;
 
-	@Inject(method = "renderBackground", at = @At("HEAD"), cancellable = true)
-	private void hollowclient$background(GuiGraphics g, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
+	@Inject(method = "extractBackground", at = @At("HEAD"), cancellable = true)
+	private void hollowclient$background(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
 		if (!showPauseMenu || !ScreenStyles.pauseStyled()) return;
 		ScreenStyles.pauseBackground((Screen) (Object) this, g, mouseX, mouseY);
-		Minecraft.getInstance().gui.renderDeferredSubtitles();
+		Minecraft.getInstance().gui.hud.extractDeferredSubtitles();
 		ci.cancel();
 	}
 }

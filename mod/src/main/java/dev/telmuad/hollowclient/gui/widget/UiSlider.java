@@ -4,7 +4,7 @@ import dev.telmuad.hollowclient.gui.Anim;
 import dev.telmuad.hollowclient.gui.Draw;
 import dev.telmuad.hollowclient.gui.Rect;
 import dev.telmuad.hollowclient.gui.Theme;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 import java.util.function.DoubleConsumer;
 import java.util.function.DoubleSupplier;
@@ -31,7 +31,7 @@ public final class UiSlider {
 		return dragging;
 	}
 
-	public void render(GuiGraphics g, int mx, int my, float dt, float alpha) {
+	public void render(GuiGraphicsExtractor g, int mx, int my, float dt, float alpha) {
 		if (bounds.w() <= 0) return;
 		boolean hover = dragging || bounds.inset(-2).contains(mx, my);
 		hoverT = Anim.approach(hoverT, hover ? 1f : 0f, dt, 18f);

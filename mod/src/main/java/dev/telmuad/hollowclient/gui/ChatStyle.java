@@ -3,9 +3,9 @@ package dev.telmuad.hollowclient.gui;
 import dev.telmuad.hollowclient.modules.Modules;
 import dev.telmuad.hollowclient.modules.ui.ChatStyleModule;
 import dev.telmuad.hollowclient.util.ColorUtil;
-import net.minecraft.client.GuiMessage;
+import net.minecraft.client.multiplayer.chat.GuiMessage;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.util.Mth;
 
@@ -98,7 +98,7 @@ public final class ChatStyle {
 		ChatStyleModule m = module();
 		if (m == null || m.slide() <= 0f) return 1f;
 		Minecraft mc = Minecraft.getInstance();
-		float age = mc.gui.getGuiTicks() - line.addedTime() + mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+		float age = mc.gui.hud.getGuiTicks() - line.addedTime() + mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
 		return Anim.clamp01(age * Theme.speed() / SLIDE_TICKS);
 	}
 
@@ -114,7 +114,7 @@ public final class ChatStyle {
 	}
 
 	/** The typing bar at the bottom of the chat screen. */
-	public static void drawInputBar(GuiGraphics g, int x0, int y0, int x1, int y1) {
+	public static void drawInputBar(GuiGraphicsExtractor g, int x0, int y0, int x1, int y1) {
 		Rect r = new Rect(x0, y0 - 1, x1 - x0, y1 - y0 + 2);
 		int rad = Theme.radius(4);
 		Fx.glow(g, r.x(), r.y(), r.w(), r.h(), 6, Theme.fade(Theme.accent(), 0.12f + 0.25f * Theme.glow()));

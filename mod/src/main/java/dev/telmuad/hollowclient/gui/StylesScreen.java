@@ -18,7 +18,7 @@ import dev.telmuad.hollowclient.styles.PackManager;
 import dev.telmuad.hollowclient.styles.PresetManager;
 import dev.telmuad.hollowclient.util.FileDialogs;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.CharacterEvent;
@@ -195,7 +195,7 @@ public final class StylesScreen extends HollowScreen {
 		return r.contains(mx, my) && (!inList || list.contains(mx, my));
 	}
 
-	private void button(GuiGraphics g, Rect r, String label, UiButton.Style style, int mx, int my, float a, boolean inList, Runnable action) {
+	private void button(GuiGraphicsExtractor g, Rect r, String label, UiButton.Style style, int mx, int my, float a, boolean inList, Runnable action) {
 		boolean h = mouseIn(r, mx, my, inList);
 		float t = anim(r.x() * 31 + r.y() * 17 + label.hashCode(), h);
 		int bg;
@@ -232,7 +232,7 @@ public final class StylesScreen extends HollowScreen {
 		return Ui.width(font, label) + 14;
 	}
 
-	private void toggle(GuiGraphics g, Object key, int x, int y, boolean value, int mx, int my, float a, boolean inList, Runnable action) {
+	private void toggle(GuiGraphicsExtractor g, Object key, int x, int y, boolean value, int mx, int my, float a, boolean inList, Runnable action) {
 		UiToggle t = toggles.computeIfAbsent(key, k -> new UiToggle());
 		t.render(g, x, y, value, UiToggle.hit(x, y, mx, my) && (!inList || list.contains(mx, my)), dt, a);
 		hit(new Rect(x - 2, y - 2, UiToggle.W + 4, UiToggle.H + 4), () -> {
@@ -241,7 +241,7 @@ public final class StylesScreen extends HollowScreen {
 		}, inList);
 	}
 
-	private void chip(GuiGraphics g, Rect r, String label, boolean selected, int mx, int my, float a, Runnable action) {
+	private void chip(GuiGraphicsExtractor g, Rect r, String label, boolean selected, int mx, int my, float a, Runnable action) {
 		boolean h = mouseIn(r, mx, my, true);
 		float t = anim("chip" + label + r.y(), h);
 		int bg = selected ? Theme.cardOn() : Theme.mix(Theme.CARD, Theme.CARD_HOVER, t);
@@ -254,10 +254,10 @@ public final class StylesScreen extends HollowScreen {
 		}, true);
 	}
 
-	private void swatch(GuiGraphics g, Rect r, ColorSetting setting, int mx, int my, float a) {
+	private void swatch(GuiGraphicsExtractor g, Rect r, ColorSetting setting, int mx, int my, float a) {
 		Draw.checker(g, r.x(), r.y(), r.w(), r.h(), 3);
 		g.fill(r.x(), r.y(), r.right(), r.bottom(), setting.get());
-		g.renderOutline(r.x(), r.y(), r.w(), r.h(), Theme.fade(mouseIn(r, mx, my, true) ? 0xFFFFFFFF : Theme.STROKE_STRONG, a));
+		g.outline(r.x(), r.y(), r.w(), r.h(), Theme.fade(mouseIn(r, mx, my, true) ? 0xFFFFFFFF : Theme.STROKE_STRONG, a));
 		hit(r, () -> {
 			UiButton.playClick();
 			picker = new ColorPicker(setting);
@@ -265,7 +265,7 @@ public final class StylesScreen extends HollowScreen {
 		}, true);
 	}
 
-	private void slider(GuiGraphics g, Rect r, NumberSetting setting, int mx, int my, float a) {
+	private void slider(GuiGraphicsExtractor g, Rect r, NumberSetting setting, int mx, int my, float a) {
 		UiSlider s = sliders.computeIfAbsent(setting, k -> new UiSlider(setting::fraction, setting::setFraction));
 		s.bounds(r).render(g, mx, my, dt, a);
 		hit(r.inset(-3), () -> {
@@ -280,7 +280,7 @@ public final class StylesScreen extends HollowScreen {
 	// ------------------------------------------------------------------------------------------------ render
 
 	@Override
-	protected void renderContent(GuiGraphics g, int mouseX, int mouseY, float a) {
+	protected void renderContent(GuiGraphicsExtractor g, int mouseX, int mouseY, float a) {
 		frameHits.clear();
 		boolean modal = picker != null;
 		int mx = modal ? -10000 : mouseX;
@@ -337,7 +337,7 @@ public final class StylesScreen extends HollowScreen {
 		hits.addAll(frameHits);
 	}
 
-	private void renderTabs(GuiGraphics g, int mx, int my, float a) {
+	private void renderTabs(GuiGraphicsExtractor g, int mx, int my, float a) {
 		int x = panel.right() - 8;
 		List<Tab> tabs = List.of(Tab.values());
 		int[] widths = new int[tabs.size()];
@@ -365,7 +365,7 @@ public final class StylesScreen extends HollowScreen {
 		}
 	}
 
-	private void renderFooter(GuiGraphics g, float a) {
+	private void renderFooter(GuiGraphicsExtractor g, float a) {
 		long age = Util.getMillis() - statusAt;
 		if (status != null && age < 6000) {
 			float fade = age > 5000 ? 1f - (age - 5000) / 1000f : 1f;
@@ -385,7 +385,7 @@ public final class StylesScreen extends HollowScreen {
 
 	// ------------------------------------------------------------------------------------------------ capes
 
-	private void capesToolbar(GuiGraphics g, int mx, int my, float a) {
+	private void capesToolbar(GuiGraphicsExtractor g, int mx, int my, float a) {
 		int x = toolbar.x();
 		int y = toolbar.y() + 3;
 		boolean on = Modules.CAPE.isEnabled();
@@ -412,7 +412,7 @@ public final class StylesScreen extends HollowScreen {
 				FileDialogs.openFile("Choose a cape image", downloadsDir(), new String[]{"*.png", "*.gif"}, "Cape images (.png, .gif)", this::importCape));
 	}
 
-	private int capesList(GuiGraphics g, int top, int mx, int my, float a) {
+	private int capesList(GuiGraphicsExtractor g, int top, int mx, int my, float a) {
 		List<CapeManager.Cape> capes = CapeManager.all();
 		int tileW = 56;
 		int tileH = 80;
@@ -473,7 +473,7 @@ public final class StylesScreen extends HollowScreen {
 	}
 
 	/** One effect: its name, a strength slider (while on) and a switch. */
-	private int effectRow(GuiGraphics g, int y, String key, dev.telmuad.hollowclient.setting.Effect effect, int mx, int my, float a) {
+	private int effectRow(GuiGraphicsExtractor g, int y, String key, dev.telmuad.hollowclient.setting.Effect effect, int mx, int my, float a) {
 		var on = effect.switchSetting();
 		y = row(g, y, on.name(), a);
 		int tx = list.right() - 8 - UiToggle.W;
@@ -487,7 +487,7 @@ public final class StylesScreen extends HollowScreen {
 		return y;
 	}
 
-	private int colorRow(GuiGraphics g, int y, String label, dev.telmuad.hollowclient.setting.ColorSetting color, int mx, int my, float a) {
+	private int colorRow(GuiGraphicsExtractor g, int y, String label, dev.telmuad.hollowclient.setting.ColorSetting color, int mx, int my, float a) {
 		y = row(g, y, label, a);
 		swatch(g, new Rect(list.right() - 8 - 30, y - ROW + 5, 30, 12), color, mx, my, a);
 		return y;
@@ -508,11 +508,11 @@ public final class StylesScreen extends HollowScreen {
 
 	// ------------------------------------------------------------------------------------------------ cosmetics
 
-	private void cosmeticsToolbar(GuiGraphics g, float a) {
+	private void cosmeticsToolbar(GuiGraphicsExtractor g, float a) {
 		Ui.draw(g, font, "Pick a hat and wings. Changes show right away.", toolbar.x() + 1, toolbar.y() + 5, Theme.fade(Theme.TEXT_DIM, a));
 	}
 
-	private int cosmeticsList(GuiGraphics g, int top, int mx, int my, float a) {
+	private int cosmeticsList(GuiGraphicsExtractor g, int top, int mx, int my, float a) {
 		int y = top;
 		y = section(g, y, "Hat", Modules.HAT.isEnabled(), Modules.HAT::toggle, mx, my, a);
 		y = chips(g, y, Modules.HAT.styleSetting(), Hat.values(), mx, my, a, () -> Modules.HAT.setEnabled(true));
@@ -560,11 +560,11 @@ public final class StylesScreen extends HollowScreen {
 
 	// ------------------------------------------------------------------------------------------------ emotes
 
-	private void emotesToolbar(GuiGraphics g, float a) {
+	private void emotesToolbar(GuiGraphicsExtractor g, float a) {
 		Ui.draw(g, font, "Click one to play it now. In game, hold B for the wheel.", toolbar.x() + 1, toolbar.y() + 5, Theme.fade(Theme.TEXT_DIM, a));
 	}
 
-	private int emotesList(GuiGraphics g, int top, int mx, int my, float a) {
+	private int emotesList(GuiGraphicsExtractor g, int top, int mx, int my, float a) {
 		var emotes = Modules.EMOTES;
 		int y = section(g, top, "Emotes", emotes.isEnabled(), emotes::toggle, mx, my, a);
 		var all = dev.telmuad.hollowclient.styles.Emotes.Emote.values();
@@ -593,7 +593,7 @@ public final class StylesScreen extends HollowScreen {
 		return y - top;
 	}
 
-	private int section(GuiGraphics g, int y, String title, boolean on, Runnable toggleAction, int mx, int my, float a) {
+	private int section(GuiGraphicsExtractor g, int y, String title, boolean on, Runnable toggleAction, int mx, int my, float a) {
 		Rect r = new Rect(list.x(), y, list.w() - 6, ROW);
 		Draw.roundRect(g, r, 4, Theme.fade(Theme.RAIL, a));
 		Ui.draw(g, font, Ui.bold(title), r.x() + 8, y + 7, Theme.fade(Theme.TEXT, a));
@@ -601,7 +601,7 @@ public final class StylesScreen extends HollowScreen {
 		return y + ROW + 4;
 	}
 
-	private <E extends Enum<E>> int chips(GuiGraphics g, int y, EnumSetting<E> setting, E[] values, int mx, int my, float a, Runnable alsoEnable) {
+	private <E extends Enum<E>> int chips(GuiGraphicsExtractor g, int y, EnumSetting<E> setting, E[] values, int mx, int my, float a, Runnable alsoEnable) {
 		int x = list.x() + 8;
 		for (E v : values) {
 			String label = EnumSetting.labelOf(v);
@@ -619,14 +619,14 @@ public final class StylesScreen extends HollowScreen {
 		return y + 22;
 	}
 
-	private int row(GuiGraphics g, int y, String label, float a) {
+	private int row(GuiGraphicsExtractor g, int y, String label, float a) {
 		Ui.draw(g, font, label, list.x() + 8, y + 7, Theme.fade(Theme.TEXT, a));
 		return y + ROW;
 	}
 
 	// ------------------------------------------------------------------------------------------------ packs
 
-	private void packsToolbar(GuiGraphics g, int mx, int my, float a) {
+	private void packsToolbar(GuiGraphicsExtractor g, int mx, int my, float a) {
 		int x = toolbar.x();
 		String[] labels = {"Import .zip...", "Import folder...", "Open folder", "Use none"};
 		Runnable[] actions = {
@@ -651,7 +651,7 @@ public final class StylesScreen extends HollowScreen {
 		}
 	}
 
-	private int packsList(GuiGraphics g, int top, int mx, int my, float a) {
+	private int packsList(GuiGraphicsExtractor g, int top, int mx, int my, float a) {
 		List<PackManager.Entry> packs = PackManager.list();
 		int y = top;
 		if (packs.isEmpty()) {
@@ -736,7 +736,7 @@ public final class StylesScreen extends HollowScreen {
 
 	// ------------------------------------------------------------------------------------------------ presets
 
-	private void presetsToolbar(GuiGraphics g, int mx, int my, float a) {
+	private void presetsToolbar(GuiGraphicsExtractor g, int mx, int my, float a) {
 		int boxW = Math.min(160, toolbar.w() / 2);
 		Rect box = new Rect(toolbar.x(), toolbar.y(), boxW, 16);
 		boolean focused = presetName.isFocused();
@@ -745,7 +745,7 @@ public final class StylesScreen extends HollowScreen {
 		presetName.setX(box.x() + 5);
 		presetName.setY(box.y() + 4);
 		presetName.setWidth(boxW - 10);
-		if (a > 0.5f) presetName.render(g, mx, my, 0);
+		if (a > 0.5f) presetName.extractRenderState(g, mx, my, 0);
 		String save = "Save current";
 		button(g, new Rect(toolbar.x() + boxW + 8, toolbar.y(), buttonW(save), 16), save, UiButton.Style.PRIMARY, mx, my, a, false, this::savePreset);
 	}
@@ -766,7 +766,7 @@ public final class StylesScreen extends HollowScreen {
 		status((existed ? "Updated" : "Saved") + " preset \"" + p.name() + "\".", false);
 	}
 
-	private int presetsList(GuiGraphics g, int top, int mx, int my, float a) {
+	private int presetsList(GuiGraphicsExtractor g, int top, int mx, int my, float a) {
 		List<Preset> presets = new ArrayList<>(HollowClient.styles().presets);
 		int y = top;
 		if (presets.isEmpty()) {
@@ -833,7 +833,7 @@ public final class StylesScreen extends HollowScreen {
 	}
 
 	@Override
-	protected void renderOverlay(GuiGraphics g, int mouseX, int mouseY) {
+	protected void renderOverlay(GuiGraphicsExtractor g, int mouseX, int mouseY) {
 		if (picker != null) {
 			g.nextStratum();
 			picker.render(g, font, mouseX, mouseY);

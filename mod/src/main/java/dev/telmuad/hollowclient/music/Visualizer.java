@@ -3,7 +3,7 @@ package dev.telmuad.hollowclient.music;
 import dev.telmuad.hollowclient.gui.Draw;
 import dev.telmuad.hollowclient.gui.Theme;
 import dev.telmuad.hollowclient.render.Quality;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.Util;
 
 /**
@@ -20,7 +20,7 @@ public final class Visualizer {
 	private final float[] wave = new float[256];
 	private long lastNanos;
 
-	public void draw(GuiGraphics g, int x, int y, int w, int h, int count, Style style, float amount, float alpha, boolean demo) {
+	public void draw(GuiGraphicsExtractor g, int x, int y, int w, int h, int count, Style style, float amount, float alpha, boolean demo) {
 		if (w <= 4 || h <= 2 || amount <= 0f) return;
 		if (!Quality.heavyAllowed()) count = Math.max(8, count / 2);
 		if (bands.length != count) {
@@ -67,7 +67,7 @@ public final class Visualizer {
 		}
 	}
 
-	private void drawWave(GuiGraphics g, int x, int y, int w, int h, float amount, float alpha, boolean demo) {
+	private void drawWave(GuiGraphicsExtractor g, int x, int y, int w, int h, float amount, float alpha, boolean demo) {
 		boolean live = !demo && MusicPlayer.waveform(wave);
 		if (demo) {
 			double t = Util.getMillis() / 1000.0;

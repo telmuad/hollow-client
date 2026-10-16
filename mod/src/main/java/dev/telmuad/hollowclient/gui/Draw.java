@@ -1,6 +1,6 @@
 package dev.telmuad.hollowclient.gui;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 /** Rounded shapes built from non-overlapping fills, so translucent colors blend evenly. */
 public final class Draw {
@@ -25,7 +25,7 @@ public final class Draw {
 		return Math.max(0, Math.min(Math.min(r, MAX_RADIUS), Math.min(w, h) / 2));
 	}
 
-	public static void roundRect(GuiGraphics g, int x, int y, int w, int h, int r, int color) {
+	public static void roundRect(GuiGraphicsExtractor g, int x, int y, int w, int h, int r, int color) {
 		if (w <= 0 || h <= 0 || (color >>> 24) == 0) return;
 		r = radius(w, h, r);
 		int[] inset = INSETS[r];
@@ -38,7 +38,7 @@ public final class Draw {
 	}
 
 	/** A rounded rectangle filled with a vertical gradient (top color to bottom color). */
-	public static void roundGradient(GuiGraphics g, int x, int y, int w, int h, int r, int top, int bottom) {
+	public static void roundGradient(GuiGraphicsExtractor g, int x, int y, int w, int h, int r, int top, int bottom) {
 		if (w <= 0 || h <= 0) return;
 		r = radius(w, h, r);
 		int[] inset = INSETS[r];
@@ -50,11 +50,11 @@ public final class Draw {
 		g.fillGradient(x, y + r, x + w, y + h, c0, bottom);
 	}
 
-	public static void roundRect(GuiGraphics g, Rect r, int radius, int color) {
+	public static void roundRect(GuiGraphicsExtractor g, Rect r, int radius, int color) {
 		roundRect(g, r.x(), r.y(), r.w(), r.h(), radius, color);
 	}
 
-	public static void roundOutline(GuiGraphics g, int x, int y, int w, int h, int r, int color) {
+	public static void roundOutline(GuiGraphicsExtractor g, int x, int y, int w, int h, int r, int color) {
 		if (w <= 0 || h <= 0 || (color >>> 24) == 0) return;
 		r = radius(w, h, r);
 		int[] inset = INSETS[r];
@@ -80,7 +80,7 @@ public final class Draw {
 	public enum Corner {TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT}
 
 	/** Only one corner arc of a rounded outline (the box is the (2r+1)-sized corner square). */
-	public static void roundOutline(GuiGraphics g, int x, int y, int w, int h, int r, int color, Corner corner) {
+	public static void roundOutline(GuiGraphicsExtractor g, int x, int y, int w, int h, int r, int color, Corner corner) {
 		if ((color >>> 24) == 0 || r <= 0) return;
 		r = radius(w, h, r);
 		int[] inset = INSETS[r];
@@ -95,17 +95,17 @@ public final class Draw {
 		}
 	}
 
-	public static void roundOutline(GuiGraphics g, Rect r, int radius, int color) {
+	public static void roundOutline(GuiGraphicsExtractor g, Rect r, int radius, int color) {
 		roundOutline(g, r.x(), r.y(), r.w(), r.h(), radius, color);
 	}
 
 	/** A filled circle of diameter {@code d} with its top-left at x, y. */
-	public static void circle(GuiGraphics g, int x, int y, int d, int color) {
+	public static void circle(GuiGraphicsExtractor g, int x, int y, int d, int color) {
 		roundRect(g, x, y, d, d, d / 2, color);
 	}
 
 	/** Light-and-dark checkerboard, used behind translucent color previews. */
-	public static void checker(GuiGraphics g, int x, int y, int w, int h, int cell) {
+	public static void checker(GuiGraphicsExtractor g, int x, int y, int w, int h, int cell) {
 		g.fill(x, y, x + w, y + h, 0xFFB8B8B8);
 		for (int cy = 0; cy < h; cy += cell) {
 			for (int cx = ((cy / cell) % 2) * cell; cx < w; cx += cell * 2) {
@@ -115,7 +115,7 @@ public final class Draw {
 	}
 
 	/** A 7x7 "settings" icon: two slider lines with knobs. */
-	public static void settingsIcon(GuiGraphics g, int x, int y, int color) {
+	public static void settingsIcon(GuiGraphicsExtractor g, int x, int y, int color) {
 		g.fill(x, y + 1, x + 7, y + 2, color);
 		g.fill(x + 1, y, x + 4, y + 3, color);
 		g.fill(x, y + 5, x + 7, y + 6, color);
@@ -123,7 +123,7 @@ public final class Draw {
 	}
 
 	/** The Hollow mark: a ring with a gap, drawn from fills. */
-	public static void logo(GuiGraphics g, int x, int y, int size, int color) {
+	public static void logo(GuiGraphicsExtractor g, int x, int y, int size, int color) {
 		int t = Math.max(2, size / 5);
 		roundOutline(g, x, y, size, size, size / 2, color);
 		roundOutline(g, x + 1, y + 1, size - 2, size - 2, (size - 2) / 2, color);

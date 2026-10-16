@@ -6,9 +6,9 @@ import dev.telmuad.hollowclient.gui.Theme;
 import dev.telmuad.hollowclient.modules.Modules;
 import dev.telmuad.hollowclient.modules.visual.BlockOutlineModule;
 import dev.telmuad.hollowclient.util.ColorUtil;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.BlockOutlineRenderState;
+import net.minecraft.client.renderer.state.level.BlockOutlineRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Util;
 import net.minecraft.world.phys.Vec3;
@@ -47,7 +47,7 @@ public final class OutlineFx {
 	}
 
 	/** Fill the faces of the outlined shape with the outline color, very see-through. */
-	public static void fill(MultiBufferSource.BufferSource buffers, PoseStack pose, BlockOutlineRenderState state, Vec3 camera) {
+	public static void fill(SubmitNodeCollector collector, PoseStack pose, BlockOutlineRenderState state, Vec3 camera) {
 		BlockOutlineModule m = module();
 		if (m == null || m.fill() <= 0f) return;
 		int color = ColorUtil.fade(color(m), 0.45f * m.fill());
@@ -56,12 +56,12 @@ public final class OutlineFx {
 		double ox = p.getX() - camera.x;
 		double oy = p.getY() - camera.y;
 		double oz = p.getZ() - camera.z;
-		VertexConsumer v = buffers.getBuffer(RenderTypes.debugQuads());
-		Matrix4f mat = pose.last().pose();
-		state.shape().forAllBoxes((x0, y0, z0, x1, y1, z1) -> box(v, mat,
-				(float) (x0 + ox) - GROW, (float) (y0 + oy) - GROW, (float) (z0 + oz) - GROW,
-				(float) (x1 + ox) + GROW, (float) (y1 + oy) + GROW, (float) (z1 + oz) + GROW, color));
-		buffers.endBatch(RenderTypes.debugQuads());
+		collector.submitCustomGeometry(pose, RenderTypes.debugQuads(), (at, v) -> {
+			Matrix4f mat = at.pose();
+			state.shape().forAllBoxes((x0, y0, z0, x1, y1, z1) -> box(v, mat,
+					(float) (x0 + ox) - GROW, (float) (y0 + oy) - GROW, (float) (z0 + oz) - GROW,
+					(float) (x1 + ox) + GROW, (float) (y1 + oy) + GROW, (float) (z1 + oz) + GROW, color));
+		});
 	}
 
 	private static void box(VertexConsumer v, Matrix4f m, float x0, float y0, float z0, float x1, float y1, float z1, int c) {

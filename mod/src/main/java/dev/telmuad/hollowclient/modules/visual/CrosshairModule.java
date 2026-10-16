@@ -11,7 +11,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
 import net.minecraft.client.AttackIndicatorStatus;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
@@ -60,12 +60,12 @@ public final class CrosshairModule extends Module {
 		return (g, dt) -> render(g, dt, vanilla);
 	}
 
-	private void render(GuiGraphics g, DeltaTracker dt, HudElement vanilla) {
+	private void render(GuiGraphicsExtractor g, DeltaTracker dt, HudElement vanilla) {
 		Minecraft mc = Minecraft.getInstance();
 		if (!isEnabled() || mc.player == null || mc.gameMode == null
 				|| mc.gameMode.getPlayerMode() == GameType.SPECTATOR
 				|| mc.debugEntries.isCurrentlyEnabled(DebugScreenEntries.THREE_DIMENSIONAL_CROSSHAIR)) {
-			vanilla.render(g, dt);
+			vanilla.extractRenderState(g, dt);
 			return;
 		}
 		if (!mc.options.getCameraType().isFirstPerson()) return;
@@ -78,7 +78,7 @@ public final class CrosshairModule extends Module {
 	}
 
 	/** Draw the shape; {@code grow} > 0 draws every piece that many pixels bigger (for the outline pass). */
-	private void draw(GuiGraphics g, int cx, int cy, int c, int grow) {
+	private void draw(GuiGraphicsExtractor g, int cx, int cy, int c, int grow) {
 		int s = size.getInt();
 		int t = thickness.getInt();
 		int gp = gap.getInt();
@@ -118,7 +118,7 @@ public final class CrosshairModule extends Module {
 		if (centerDot.on() && shape.get() != Shape.DOT) rect(g, cx - half, cy - half, cx - half + t, cy - half + t, c, grow);
 	}
 
-	private static void rect(GuiGraphics g, int x0, int y0, int x1, int y1, int c, int grow) {
+	private static void rect(GuiGraphicsExtractor g, int x0, int y0, int x1, int y1, int c, int grow) {
 		g.fill(x0 - grow, y0 - grow, x1 + grow, y1 + grow, c);
 	}
 
@@ -126,7 +126,7 @@ public final class CrosshairModule extends Module {
 	 * A ring of radius {@code r} and thickness {@code t} (or a filled disc of radius {@code t} when {@code filled}),
 	 * drawn as horizontal runs, one or two per row.
 	 */
-	private static void ring(GuiGraphics g, int cx, int cy, int r, int t, int c, int grow, boolean filled) {
+	private static void ring(GuiGraphicsExtractor g, int cx, int cy, int r, int t, int c, int grow, boolean filled) {
 		double outer = (filled ? t : r + t / 2.0) + grow + 0.5;
 		double inner = filled ? -1 : Math.max(-1, r - t / 2.0 - grow - 0.5 + (t % 2 == 0 ? 0.5 : 0));
 		int ext = (int) Math.ceil(outer);
@@ -146,7 +146,7 @@ public final class CrosshairModule extends Module {
 	}
 
 	/** Same logic as the vanilla attack indicator under the crosshair. */
-	private static void attackIndicator(GuiGraphics g, Minecraft mc) {
+	private static void attackIndicator(GuiGraphicsExtractor g, Minecraft mc) {
 		if (mc.options.attackIndicator().get() != AttackIndicatorStatus.CROSSHAIR) return;
 		float strength = mc.player.getAttackStrengthScale(0.0F);
 		boolean full = false;

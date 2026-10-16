@@ -1,13 +1,9 @@
 package dev.telmuad.hollowclient.render;
 
 import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.DepthTestFunction;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.telmuad.hollowclient.HollowClient;
 import dev.telmuad.hollowclient.gui.Theme;
 import dev.telmuad.hollowclient.modules.Modules;
@@ -31,15 +27,11 @@ import java.util.Random;
  * quads that don't write depth, so the world draws over them like the rest of the sky.
  */
 public final class SkyFx {
-	private static final RenderPipeline GLOW_PIPELINE = RenderPipeline.builder(RenderPipelines.MATRICES_PROJECTION_SNIPPET)
+	// position + color quads, additive, no depth test or write (drawn in the sky pass like the stars)
+	public static final RenderPipeline GLOW_PIPELINE = RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
 			.withLocation(HollowClient.id("pipeline/sky_glow"))
-			.withVertexShader("core/position_color")
-			.withFragmentShader("core/position_color")
-			.withBlend(BlendFunction.LIGHTNING)
-			.withDepthWrite(false)
-			.withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
-			.withCull(false)
-			.withVertexFormat(DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS)
+			.withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING))
+			.withDepthStencilState(java.util.Optional.empty())
 			.build();
 	private static final RenderType GLOW = RenderType.create("hollowclient_sky_glow", RenderSetup.builder(GLOW_PIPELINE).createRenderSetup());
 	private static final int DAY_SKY = 0xFF78A7FF;
@@ -134,22 +126,17 @@ public final class SkyFx {
 			STREAKS.clear();
 			return;
 		}
-		BufferBuilder b = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-		boolean any = false;
 		float detail = Quality.performanceMode() ? 0.4f : 0.6f + 0.4f * Quality.scale();
-		if (m.aurora() > 0f) any |= aurora(b, night * m.aurora(), detail);
-		if (m.shootingStars() > 0f) any |= streaks(b, night, m.shootingStars());
-		MeshData mesh = b.build();
-		if (mesh == null) return;
-		if (!any) {
-			mesh.close();
-			return;
-		}
-		GLOW.draw(mesh);
+		Immediate.draw(GLOW, b -> {
+			boolean any = false;
+			if (m.aurora() > 0f) any |= aurora(b, night * m.aurora(), detail);
+			if (m.shootingStars() > 0f) any |= streaks(b, night, m.shootingStars());
+			return any;
+		});
 	}
 
 	/** Two wavy curtains toward the north, bright at the bottom edge and fading upward. */
-	private static boolean aurora(BufferBuilder b, float strength, float detail) {
+	private static boolean aurora(VertexConsumer b, float strength, float detail) {
 		double t = Util.getMillis() / 1000.0 * Theme.speed();
 		int segments = Math.max(24, Math.round(64 * detail));
 		int[] colors = {Theme.gradient(0f), Theme.gradient(1f)};
@@ -212,7 +199,7 @@ public final class SkyFx {
 	}
 
 	/** Occasional shooting stars: a bright head with a fading tail. Strength = how often they appear. */
-	private static boolean streaks(BufferBuilder b, float night, float rate) {
+	private static boolean streaks(VertexConsumer b, float night, float rate) {
 		long now = Util.getMillis();
 		float dt = lastSpawnCheck == 0 ? 0f : Math.min(0.5f, (now - lastSpawnCheck) / 1000f);
 		lastSpawnCheck = now;

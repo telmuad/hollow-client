@@ -6,7 +6,7 @@ import dev.telmuad.hollowclient.setting.BooleanSetting;
 import dev.telmuad.hollowclient.setting.ColorSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 /**
  * A module drawn on the HUD. Every HUD module has text color, background on/off (+ color), text shadow and a
@@ -77,7 +77,7 @@ public abstract class HudModule extends Module {
 	public abstract Size measure(Minecraft mc, Font font, boolean preview);
 
 	/** Draw the content measured by the last {@link #measure} call, with its top-left at (0, 0). */
-	public abstract void draw(GuiGraphics g, Minecraft mc, Font font, boolean preview);
+	public abstract void draw(GuiGraphicsExtractor g, Minecraft mc, Font font, boolean preview);
 
 	/** True when the element sits in the right third of the screen, so text can line up on the right. */
 	protected final boolean alignRight() {
@@ -89,17 +89,17 @@ public abstract class HudModule extends Module {
 	}
 
 	/** The element's background in the HUD Style look (or a flat box when HUD Style is off). */
-	protected final void drawBackground(GuiGraphics g, int w, int h) {
+	protected final void drawBackground(GuiGraphicsExtractor g, int w, int h) {
 		HudStyle.background(g, w, h, backgroundColor.argb(), background.on(), alpha);
 	}
 
 	/** Text in the HUD font (Inter or vanilla, see UI Font), optionally in the theme gradient. */
-	protected final void text(GuiGraphics g, Font font, String s, int x, int y, int color) {
+	protected final void text(GuiGraphicsExtractor g, Font font, String s, int x, int y, int color) {
 		HudStyle.text(g, font, s, x, y, color, shadow.on(), alpha);
 	}
 
 	/** Like {@link #text}, but digits that change roll like a counter. {@code slot} tells lines apart. */
-	protected final void rollingText(GuiGraphics g, Font font, String s, int x, int y, int color, int slot) {
+	protected final void rollingText(GuiGraphicsExtractor g, Font font, String s, int x, int y, int color, int slot) {
 		HudStyle.roller(this, slot).draw(g, font, s, x, y, color, shadow.on(), alpha);
 	}
 

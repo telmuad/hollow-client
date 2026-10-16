@@ -1,12 +1,10 @@
 package dev.telmuad.hollowclient.render;
 
 import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.DepthTestFunction;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import dev.telmuad.hollowclient.HollowClient;
 import dev.telmuad.hollowclient.camera.CameraPaths;
 import dev.telmuad.hollowclient.gui.Draw;
@@ -17,11 +15,10 @@ import dev.telmuad.hollowclient.modules.qol.WaypointsModule;
 import dev.telmuad.hollowclient.util.ColorUtil;
 import dev.telmuad.hollowclient.waypoints.Waypoint;
 import dev.telmuad.hollowclient.waypoints.Waypoints;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -40,15 +37,11 @@ import java.util.Locale;
  * distance, in the right direction, so you can still find them.
  */
 public final class WaypointFx {
-	private static final RenderPipeline BEAM_PIPELINE = RenderPipeline.builder(RenderPipelines.MATRICES_PROJECTION_SNIPPET)
+	// position + color quads, depth-tested against terrain but not writing depth (vanilla's debug-filled base),
+	// with additive "lightning" blending so beams glow
+	public static final RenderPipeline BEAM_PIPELINE = RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
 			.withLocation(HollowClient.id("pipeline/waypoint_beam"))
-			.withVertexShader("core/position_color")
-			.withFragmentShader("core/position_color")
-			.withBlend(BlendFunction.LIGHTNING)
-			.withDepthWrite(false)
-			.withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST)
-			.withCull(false)
-			.withVertexFormat(DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS)
+			.withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING))
 			.build();
 	private static final RenderType BEAM = RenderType.create("hollowclient_waypoint_beam", RenderSetup.builder(BEAM_PIPELINE).createRenderSetup());
 	private static final float BEAM_HEIGHT = 320f;
@@ -57,7 +50,7 @@ public final class WaypointFx {
 	}
 
 	public static void register() {
-		WorldRenderEvents.BEFORE_TRANSLUCENT.register(WaypointFx::renderBeams);
+		LevelRenderEvents.COLLECT_SUBMITS.register(WaypointFx::renderBeams);
 	}
 
 	private static WaypointsModule module() {
@@ -69,18 +62,19 @@ public final class WaypointFx {
 		return w.color == 0 ? Theme.accent() : w.color;
 	}
 
-	private static void renderBeams(WorldRenderContext context) {
+	private static void renderBeams(LevelRenderContext context) {
 		Minecraft mc = Minecraft.getInstance();
 		WaypointsModule m = module();
 		if (m == null || m.beams() <= 0f || !Waypoints.allowed(mc) || CameraPaths.playing()) return;
 		List<Waypoint> list = Waypoints.here(mc);
 		if (list.isEmpty()) return;
-		PoseStack pose = context.matrices();
+		PoseStack pose = context.poseStack();
 		if (pose == null) return;
 		Vec3 cam = WorldProjection.camera();
-		MultiBufferSource consumers = context.consumers();
-		VertexConsumer v = consumers.getBuffer(BEAM);
-		Matrix4f mat = pose.last().pose();
+		context.submitNodeCollector().submitCustomGeometry(pose, BEAM, (p, v) -> beams(mc, m, list, cam, v, p.pose()));
+	}
+
+	private static void beams(Minecraft mc, WaypointsModule m, List<Waypoint> list, Vec3 cam, VertexConsumer v, Matrix4f mat) {
 		double maxDist = Math.max(32, mc.options.getEffectiveRenderDistance() * 16 - 12);
 		float strength = m.beams();
 		float pulse = 0.85f + 0.15f * (float) Math.sin(Util.getMillis() / 600.0);
@@ -105,7 +99,6 @@ public final class WaypointFx {
 			beam(v, mat, (float) dx, (float) dz, bottom, 0.14f * scale, ColorUtil.withAlpha(ColorUtil.mix(c, 0xFFFFFFFF, 0.35f), (int) (130 * k * pulse)));
 			beam(v, mat, (float) dx, (float) dz, bottom, 0.55f * scale, ColorUtil.withAlpha(c, (int) (45 * k)));
 		}
-		if (consumers instanceof MultiBufferSource.BufferSource source) source.endBatch(BEAM);
 	}
 
 	/** One camera-facing vertical strip, brightest at the bottom and fading out upward. */
@@ -134,7 +127,7 @@ public final class WaypointFx {
 	}
 
 	/** HUD labels: name and distance over each waypoint. Labels that would overlap are stacked upward. */
-	public static void renderLabels(GuiGraphics g) {
+	public static void renderLabels(GuiGraphicsExtractor g) {
 		Minecraft mc = Minecraft.getInstance();
 		WaypointsModule m = module();
 		if (m == null || !m.labels() || !Waypoints.allowed(mc) || CameraPaths.playing()) return;

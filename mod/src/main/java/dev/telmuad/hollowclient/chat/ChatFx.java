@@ -9,8 +9,8 @@ import dev.telmuad.hollowclient.modules.qol.AutoGgModule;
 import dev.telmuad.hollowclient.modules.qol.ChatMacrosModule;
 import dev.telmuad.hollowclient.modules.qol.ChatPlusModule;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.GuiMessage;
-import net.minecraft.client.GuiMessageTag;
+import net.minecraft.client.multiplayer.chat.GuiMessage;
+import net.minecraft.client.multiplayer.chat.GuiMessageTag;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.network.chat.Component;
@@ -107,7 +107,8 @@ public final class ChatFx {
 		if (m.timestamps()) {
 			String pattern = (m.twentyFour() ? "HH:mm" : "h:mm") + (m.seconds() ? ":ss" : "") + (m.twentyFour() ? "" : " a");
 			String stamp = LocalTime.now().format(DateTimeFormatter.ofPattern(pattern, Locale.ENGLISH));
-			out = Component.literal("[" + stamp + "] ").withStyle(ChatFormatting.DARK_GRAY).append(out);
+			// the timestamp is a sibling, so its gray doesn't spill into the message (children inherit style)
+			out = Component.empty().append(Component.literal("[" + stamp + "] ").withStyle(ChatFormatting.DARK_GRAY)).append(out);
 		}
 		return new Result(out, outTag);
 	}

@@ -3,7 +3,7 @@ package dev.telmuad.hollowclient.gui;
 import dev.telmuad.hollowclient.HollowClient;
 import dev.telmuad.hollowclient.modules.Modules;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FontDescription;
 import net.minecraft.network.chat.MutableComponent;
@@ -57,29 +57,29 @@ public final class Ui {
 		return font.width(bold(s));
 	}
 
-	public static void draw(GuiGraphics g, Font font, String s, int x, int y, int color) {
-		g.drawString(font, text(s), x, y, color, false);
+	public static void draw(GuiGraphicsExtractor g, Font font, String s, int x, int y, int color) {
+		g.text(font, text(s), x, y, color, false);
 	}
 
-	public static void draw(GuiGraphics g, Font font, Component c, int x, int y, int color) {
-		g.drawString(font, styled(c), x, y, color, false);
+	public static void draw(GuiGraphicsExtractor g, Font font, Component c, int x, int y, int color) {
+		g.text(font, styled(c), x, y, color, false);
 	}
 
-	public static void drawShadow(GuiGraphics g, Font font, String s, int x, int y, int color, boolean shadow) {
-		g.drawString(font, text(s), x, y, color, shadow);
+	public static void drawShadow(GuiGraphicsExtractor g, Font font, String s, int x, int y, int color, boolean shadow) {
+		g.text(font, text(s), x, y, color, shadow);
 	}
 
-	public static void drawBold(GuiGraphics g, Font font, String s, int x, int y, int color) {
-		g.drawString(font, bold(s), x, y, color, false);
+	public static void drawBold(GuiGraphicsExtractor g, Font font, String s, int x, int y, int color) {
+		g.text(font, bold(s), x, y, color, false);
 	}
 
-	public static void center(GuiGraphics g, Font font, String s, int cx, int y, int color) {
-		g.drawString(font, text(s), cx - width(font, s) / 2, y, color, false);
+	public static void center(GuiGraphicsExtractor g, Font font, String s, int cx, int y, int color) {
+		g.text(font, text(s), cx - width(font, s) / 2, y, color, false);
 	}
 
-	public static void center(GuiGraphics g, Font font, Component c, int cx, int y, int color) {
+	public static void center(GuiGraphicsExtractor g, Font font, Component c, int cx, int y, int color) {
 		Component sc = styled(c);
-		g.drawString(font, sc, cx - font.width(sc) / 2, y, color, false);
+		g.text(font, sc, cx - font.width(sc) / 2, y, color, false);
 	}
 
 	// ---- HUD text: the UI font only if the UI Font module says "use it for HUD elements too"
@@ -93,8 +93,8 @@ public final class Ui {
 		return font.width(hudText(s));
 	}
 
-	public static void drawHud(GuiGraphics g, Font font, String s, int x, int y, int color, boolean shadow) {
-		g.drawString(font, hudText(s), x, y, color, shadow);
+	public static void drawHud(GuiGraphicsExtractor g, Font font, String s, int x, int y, int color, boolean shadow) {
+		g.text(font, hudText(s), x, y, color, shadow);
 	}
 
 	/** Cut text to a width, ending in "…" when it doesn't fit. */

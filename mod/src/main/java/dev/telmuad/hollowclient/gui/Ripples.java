@@ -1,7 +1,7 @@
 package dev.telmuad.hollowclient.gui;
 
 import dev.telmuad.hollowclient.util.ColorUtil;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.Util;
 
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ public final class Ripples {
 		ripples.add(new Ripple((float) x, (float) y, clip, Util.getMillis(), color, strength));
 	}
 
-	public void render(GuiGraphics g, float alpha) {
+	public void render(GuiGraphicsExtractor g, float alpha) {
 		long now = Util.getMillis();
 		float speed = Theme.speed();
 		for (Iterator<Ripple> it = ripples.iterator(); it.hasNext(); ) {

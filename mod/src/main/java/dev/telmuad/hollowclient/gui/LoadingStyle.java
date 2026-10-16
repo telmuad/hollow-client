@@ -3,7 +3,7 @@ package dev.telmuad.hollowclient.gui;
 import dev.telmuad.hollowclient.modules.Modules;
 import dev.telmuad.hollowclient.modules.ui.LoadingScreenModule;
 import dev.telmuad.hollowclient.util.ColorUtil;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 /**
  * The loading screen in Hollow's look (used by LoadingOverlayMixin): dark background, the glowing sigil and
@@ -24,7 +24,7 @@ public final class LoadingStyle {
 	}
 
 	/** Draw the logo block. {@code alpha} follows vanilla's fade in/out. */
-	public static void drawLogo(GuiGraphics g, float alpha) {
+	public static void drawLogo(GuiGraphicsExtractor g, float alpha) {
 		long now = System.nanoTime();
 		float dt = lastNanos == 0 ? 0f : Math.min(0.1f, (now - lastNanos) / 1_000_000_000f);
 		lastNanos = now;
@@ -42,7 +42,7 @@ public final class LoadingStyle {
 	}
 
 	/** The progress bar, inside the box vanilla would use. */
-	public static void drawBar(GuiGraphics g, int x0, int y0, int x1, int y1, float alpha, float progress) {
+	public static void drawBar(GuiGraphicsExtractor g, int x0, int y0, int x1, int y1, float alpha, float progress) {
 		int w = x1 - x0;
 		int cy = (y0 + y1) / 2;
 		Draw.roundRect(g, x0, cy - 2, w, 4, 2, ColorUtil.fade(0x26FFFFFF, alpha));

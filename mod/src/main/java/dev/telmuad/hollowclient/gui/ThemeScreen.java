@@ -9,7 +9,7 @@ import dev.telmuad.hollowclient.theme.HollowTheme;
 import dev.telmuad.hollowclient.theme.ThemeStore;
 import dev.telmuad.hollowclient.theme.Themes;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.CharacterEvent;
@@ -121,7 +121,7 @@ public final class ThemeScreen extends HollowScreen {
 	}
 
 	@Override
-	protected void renderContent(GuiGraphics g, int mouseX, int mouseY, float a) {
+	protected void renderContent(GuiGraphicsExtractor g, int mouseX, int mouseY, float a) {
 		frameHits.clear();
 		int mx = picker != null ? -10000 : mouseX;
 		int my = picker != null ? -10000 : mouseY;
@@ -150,7 +150,7 @@ public final class ThemeScreen extends HollowScreen {
 		return Math.max(0, store().all().size() * (CARD_H + CARD_GAP) - CARD_GAP - list.h());
 	}
 
-	private void renderThemes(GuiGraphics g, int mx, int my, float a) {
+	private void renderThemes(GuiGraphicsExtractor g, int mx, int my, float a) {
 		Ui.draw(g, font, Ui.bold("Presets & saved"), left.x(), left.y(), Theme.fade(Theme.TEXT_DIM, a));
 		List<HollowTheme> all = store().all();
 		listScrollTarget = Math.max(0, Math.min(maxListScroll(), listScrollTarget));
@@ -212,7 +212,7 @@ public final class ThemeScreen extends HollowScreen {
 		}
 	}
 
-	private void renderSaveRow(GuiGraphics g, int mx, int my, float a) {
+	private void renderSaveRow(GuiGraphicsExtractor g, int mx, int my, float a) {
 		int bw = save.preferredWidth(font);
 		Rect box = new Rect(saveRow.x(), saveRow.y(), saveRow.w() - bw - 4, saveRow.h());
 		boolean focused = name.isFocused();
@@ -221,13 +221,13 @@ public final class ThemeScreen extends HollowScreen {
 		name.setX(box.x() + 5);
 		name.setY(box.y() + 4);
 		name.setWidth(box.w() - 10);
-		if (a > 0.5f) name.render(g, mx, my, 0);
+		if (a > 0.5f) name.extractRenderState(g, mx, my, 0);
 		Rect sr = new Rect(box.right() + 4, saveRow.y(), bw, saveRow.h());
 		save.bounds(sr).render(g, font, mx, my, dt, a);
 		hit(sr, () -> save.click(lastX, lastY));
 	}
 
-	private void renderEditor(GuiGraphics g, int mx, int my, float a) {
+	private void renderEditor(GuiGraphicsExtractor g, int mx, int my, float a) {
 		HollowTheme t = theme();
 		int x = right.x();
 		int y = right.y();
@@ -264,7 +264,7 @@ public final class ThemeScreen extends HollowScreen {
 		}
 	}
 
-	private int colorRow(GuiGraphics g, int x, int y, int w, String label, int color, Consumer<Integer> set, int mx, int my, float a) {
+	private int colorRow(GuiGraphicsExtractor g, int x, int y, int w, String label, int color, Consumer<Integer> set, int mx, int my, float a) {
 		Ui.draw(g, font, label, x, y + (row - 8) / 2, Theme.fade(Theme.TEXT, a));
 		Rect sw = new Rect(x + w - 30, y + (row - 12) / 2, 30, 12);
 		boolean hover = sw.contains(mx, my);
@@ -280,7 +280,7 @@ public final class ThemeScreen extends HollowScreen {
 		return y + row;
 	}
 
-	private int sliderRow(GuiGraphics g, int x, int y, int w, String label, String value, UiSlider slider, int mx, int my, float a) {
+	private int sliderRow(GuiGraphicsExtractor g, int x, int y, int w, String label, String value, UiSlider slider, int mx, int my, float a) {
 		Ui.draw(g, font, label, x, y + (row - 8) / 2, Theme.fade(Theme.TEXT, a));
 		int sw = Math.max(50, Math.min(90, w - Ui.width(font, label) - 44));
 		Rect sr = new Rect(x + w - sw, y + (row - 10) / 2, sw, 10);
@@ -315,7 +315,7 @@ public final class ThemeScreen extends HollowScreen {
 		statusAt = net.minecraft.util.Util.getMillis();
 	}
 
-	private void renderFooter(GuiGraphics g, float a) {
+	private void renderFooter(GuiGraphicsExtractor g, float a) {
 		long age = net.minecraft.util.Util.getMillis() - statusAt;
 		String text = status != null && age < 5000 ? status : "Tip: presets can be tweaked, then saved under your own name.";
 		int color = status != null && age < 5000 ? (statusError ? Theme.DANGER : Theme.SUCCESS) : Theme.TEXT_FAINT;
@@ -323,7 +323,7 @@ public final class ThemeScreen extends HollowScreen {
 	}
 
 	@Override
-	protected void renderOverlay(GuiGraphics g, int mouseX, int mouseY) {
+	protected void renderOverlay(GuiGraphicsExtractor g, int mouseX, int mouseY) {
 		if (picker != null) {
 			g.nextStratum();
 			picker.render(g, font, mouseX, mouseY);

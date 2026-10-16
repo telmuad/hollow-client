@@ -2,7 +2,38 @@
 
 This file is the source of truth for where the build is. A new session should read it first and pick up at the first unticked item.
 
-## Milestones
+## Resume here
+
+**Plan 3 (26.2 port, rebrand, SkyBlock Mode)** — the full request is in `plans/HOLLOW_SKYBLOCK.md`. Current step: the
+first unticked item below. Plans 1 and 2 (Minecraft 1.21.11) are finished and frozen on the `legacy/1.21.11` branch
+(tag `legacy-1.21.11`); their log is further down.
+
+## Plan 3 milestones
+
+- [x] **P0. Freeze legacy**: tag `legacy-1.21.11`, branch `legacy/1.21.11` (README note says frozen), pushed
+- [x] **P1–P3. Port to Minecraft 26.2**
+  - [x] Build: `net.fabricmc.fabric-loom` 1.18.4 (no remapping), Gradle 9.7.1, Java 25 (`release 25`), MC 26.2, Loader 0.19.5, Fabric API 0.161.0+26.2, Sodium mc26.2-0.9.2 for `-PwithSodium`; access widener in the `official` namespace; mod version 2.0.0
+  - [x] Fixed on the way: nebula pipeline declared `Globals` twice (OpenGL refused it); chat timestamp gray spilling into the message; per-letter HUD text drifting and getting clipped
+  - [x] Code: GUI (`GuiGraphics` → `GuiGraphicsExtractor`, `render` → `extractRenderState`, screens via `mc.gui`, HUD via `mc.gui.hud`), chat classes moved, `LightTexture` → `LightCoordsUtil`/lightmap extractor, keybinds (`KeyMappingHelper`), level render events (`LevelRenderEvents.COLLECT_SUBMITS` + submit nodes), render pipelines (bind group layouts, `ColorTargetState`, reversed depth), post-processing passes, `Immediate` helper instead of Tesselator, item icons before a world loads
+  - [x] All 44 mixin targets re-checked against the 26.2 bytecode (script + javap); FOV moved to `Camera.calculateFov`, title-screen swap to `Gui.setScreen`, time of day to `ClientClockManager`, hotbar/scoreboard/titles to `Hud`
+  - [x] Gametest suite green on OpenGL: 61/61 checks (new: Hollow's shaders compile) + FPS benchmark, screenshots reviewed
+  - [x] Gametest 61/61 with Sodium 0.9.2 and on Vulkan (`-Pvulkan` → `--graphicsBackend vulkan`)
+  - [x] Mixin config `required: true`; 99 JUnit tests incl. `NoRawOpenGlTest`; `tools/mixincheck.py` reports 0 problems
+  - [x] `VERSION_BUMP.md`; TESTING.md FPS tables for 26.2 (OpenGL, Sodium, Vulkan); README/USER_GUIDE mod versions (launcher text follows in L1)
+- [ ] **R1. Rebrand**: 3 SVG concepts, chosen emblem, PNG/ICO/icon/wordmark/badge, banner + social preview, animations, SkyBlock theme preset
+- [ ] **L1–L2. Launcher**: profiles + instances (26.2 default, 1.21.11 legacy), migration, Java per profile, Join Hypixel, SkyBlock dashboard, duplicate-mod warning, `build_all` builds both jars
+- [ ] **F1–F6. SkyBlock foundation**: detection (Mod API + fallback), SkyBlock Mode, data layer (sources → parsers → state + events, patterns in JSON), items + prices (NEU repo, Hypixel API, Elite API), menu category + HUD + Hub (H), alerts + editor, setup checker, compatibility, debug recorder, simulator, feature health
+- [ ] **A1–A14. SkyBlock features** (see the plan, section 6): general/HUD, items/GUI, economy, garden, dungeons, slayers, mining, fishing, foraging/hunting, Crimson Isle/Kuudra, Rift, events, progression, chat/party
+- [ ] **T/Z. Finish**: TESTING_SKYBLOCK.md, USER_GUIDE, README, LICENSE/THIRD_PARTY_NOTICES, final summary
+
+### Plan 3 notes
+
+- The launcher still installs 1.21.11 until L1–L2; don't run `build_all.bat` for a real install before then (it would bundle the 26.2 jar into a 1.21.11 install).
+- Reference sources for porting: decompiled 26.2 game code via `gradlew genSources` (Loom cache), Fabric API sources from maven.fabricmc.net, NeoForge primers for 26.1 and 26.2.
+
+## Plan 1 and 2 log (Minecraft 1.21.11, finished)
+
+### Milestones
 
 - [x] **0. Setup**: repo cloned, layout (`mod/`, `launcher/`, `scripts/`), `.gitignore`, doc skeletons
 - [x] **1. Mod skeleton**: Gradle project (Loom 1.18.4, MC 1.21.11, Loader 0.19.5, Fabric API 0.141.6), `fabric.mod.json`, entrypoint, JUnit wired into `gradlew build`

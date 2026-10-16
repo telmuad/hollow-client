@@ -5,8 +5,8 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import dev.telmuad.hollowclient.hud.HotbarFx;
 import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.Hud;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -14,12 +14,12 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 /** Animated hotbar: a gliding, glowing selection frame and a popping selected item. Vanilla still draws everything. */
-@Mixin(Gui.class)
+@Mixin(Hud.class)
 abstract class GuiMixin {
 	/** The second sprite vanilla draws in the hotbar is the selection frame. */
-	@WrapOperation(method = "renderItemHotbar", at = @At(value = "INVOKE", ordinal = 1,
-			target = "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIII)V"))
-	private void hollowclient$selection(GuiGraphics g, RenderPipeline pipeline, Identifier sprite, int x, int y, int w, int h,
+	@WrapOperation(method = "extractItemHotbar", at = @At(value = "INVOKE", ordinal = 1,
+			target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIII)V"))
+	private void hollowclient$selection(GuiGraphicsExtractor g, RenderPipeline pipeline, Identifier sprite, int x, int y, int w, int h,
 										Operation<Void> original) {
 		if (HotbarFx.amount() <= 0f) {
 			original.call(g, pipeline, sprite, x, y, w, h);
@@ -34,9 +34,9 @@ abstract class GuiMixin {
 		g.pose().popMatrix();
 	}
 
-	@WrapOperation(method = "renderItemHotbar", at = @At(value = "INVOKE",
-			target = "Lnet/minecraft/client/gui/Gui;renderSlot(Lnet/minecraft/client/gui/GuiGraphics;IILnet/minecraft/client/DeltaTracker;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/ItemStack;I)V"))
-	private void hollowclient$slot(Gui gui, GuiGraphics g, int x, int y, DeltaTracker delta, Player player, ItemStack stack, int seed,
+	@WrapOperation(method = "extractItemHotbar", at = @At(value = "INVOKE",
+			target = "Lnet/minecraft/client/gui/Hud;extractSlot(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IILnet/minecraft/client/DeltaTracker;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/ItemStack;I)V"))
+	private void hollowclient$slot(Hud gui, GuiGraphicsExtractor g, int x, int y, DeltaTracker delta, Player player, ItemStack stack, int seed,
 								   Operation<Void> original) {
 		// seeds 1..9 are the hotbar slots in order; 10 is the offhand
 		float s = seed <= 9 ? HotbarFx.itemScale(seed - 1, player.getInventory().getSelectedSlot()) : 1f;

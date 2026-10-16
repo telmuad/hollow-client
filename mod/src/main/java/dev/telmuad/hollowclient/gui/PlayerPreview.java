@@ -1,9 +1,9 @@
 package dev.telmuad.hollowclient.gui;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.util.Mth;
@@ -24,22 +24,22 @@ public final class PlayerPreview {
 	}
 
 	/** Draw inside (x, y, w, h), turned to {@code bodyYaw} degrees (180 = facing you). Does nothing outside a world. */
-	public static void render(GuiGraphics g, int x, int y, int w, int h, float bodyYaw) {
+	public static void render(GuiGraphicsExtractor g, int x, int y, int w, int h, float bodyYaw) {
 		draw(g, x, y, w, h, bodyYaw);
 	}
 
 	/** Draw inside (x, y, w, h). Does nothing outside a world. */
-	public static void render(GuiGraphics g, int x, int y, int w, int h, View view) {
+	public static void render(GuiGraphicsExtractor g, int x, int y, int w, int h, View view) {
 		float t = (Util.getMillis() % 14000L) / 14000f * (float) (Math.PI * 2);
 		draw(g, x, y, w, h, view == View.BACK ? Mth.sin(t) * 40f : (Util.getMillis() % 14000L) / 14000f * 360f);
 	}
 
-	private static void draw(GuiGraphics g, int x, int y, int w, int h, float bodyYaw) {
+	private static void draw(GuiGraphicsExtractor g, int x, int y, int w, int h, float bodyYaw) {
 		Minecraft mc = Minecraft.getInstance();
 		LocalPlayer player = mc.player;
 		if (player == null) return;
 		EntityRenderState state = mc.getEntityRenderDispatcher().getRenderer(player).createRenderState(player, 1.0F);
-		state.lightCoords = LightTexture.FULL_BRIGHT;
+		state.lightCoords = LightCoordsUtil.FULL_BRIGHT;
 		state.shadowPieces.clear();
 		state.outlineColor = 0;
 		if (state instanceof LivingEntityRenderState living) {
@@ -55,6 +55,6 @@ public final class PlayerPreview {
 		float scale = Math.max(8, Math.min(h * 0.42f, w * 0.9f));
 		Vector3f offset = new Vector3f(0f, state.boundingBoxHeight / 2f + 0.0625f, 0f);
 		Quaternionf rotation = new Quaternionf().rotateZ((float) Math.PI);
-		g.submitEntityRenderState(state, scale, offset, rotation, new Quaternionf(), x, y, x + w, y + h);
+		g.entity(state, scale, offset, rotation, new Quaternionf(), x, y, x + w, y + h);
 	}
 }

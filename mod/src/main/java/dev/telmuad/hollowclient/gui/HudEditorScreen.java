@@ -6,7 +6,7 @@ import dev.telmuad.hollowclient.hud.HudModule;
 import dev.telmuad.hollowclient.hud.HudPosition;
 import dev.telmuad.hollowclient.hud.HudRenderer;
 import dev.telmuad.hollowclient.module.Module;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -109,13 +109,13 @@ public final class HudEditorScreen extends HollowScreen {
 	}
 
 	@Override
-	public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+	public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
 		// Light dim only, so the real HUD layout is easy to judge.
 		g.fill(0, 0, width, height, Theme.fade(0x40000000, openProgress()));
 	}
 
 	@Override
-	protected void renderContent(GuiGraphics g, int mx, int my, float a) {
+	protected void renderContent(GuiGraphicsExtractor g, int mx, int my, float a) {
 		// Center lines, faint, as a hint for where snapping happens.
 		g.fill(width / 2, 0, width / 2 + 1, height, Theme.fade(0x18FFFFFF, a));
 		g.fill(0, height / 2, width, height / 2 + 1, Theme.fade(0x18FFFFFF, a));
@@ -138,7 +138,7 @@ public final class HudEditorScreen extends HollowScreen {
 			boolean sel = m == selected;
 			int color = sel ? Theme.accent() : (m == hovered ? 0xCCFFFFFF : 0x55FFFFFF);
 			if (!m.isEnabled()) color = Theme.fade(color, 0.5f);
-			g.renderOutline(x, y, w, h, Theme.fade(color, a));
+			g.outline(x, y, w, h, Theme.fade(color, a));
 			if (sel || m == hovered) {
 				Rect hr = handle(b);
 				g.fill(hr.x(), hr.y(), hr.right(), hr.bottom(), Theme.fade(sel ? Theme.accent() : 0xCCFFFFFF, a));

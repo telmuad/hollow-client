@@ -8,7 +8,7 @@ import dev.telmuad.hollowclient.setting.Labeled;
 import dev.telmuad.hollowclient.util.ColorUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -105,13 +105,15 @@ public final class ArmorHud extends HudModule {
 	}
 
 	private static ItemStack sample(net.minecraft.world.item.Item item, float damage) {
-		ItemStack s = new ItemStack(item);
+		// before a world has loaded (HUD editor from the title screen) no item stacks can be made
+		ItemStack s = dev.telmuad.hollowclient.gui.ItemIcons.stackOrNull(item);
+		if (s == null) return ItemStack.EMPTY;
 		if (s.isDamageableItem()) s.setDamageValue(Math.round(s.getMaxDamage() * damage));
 		return s;
 	}
 
 	@Override
-	public void draw(GuiGraphics g, Minecraft mc, Font font, boolean preview) {
+	public void draw(GuiGraphicsExtractor g, Minecraft mc, Font font, boolean preview) {
 		if (entries.isEmpty()) return;
 		int w = 2 * PAD + 16 + (textWidth > 0 ? 3 + textWidth : 0);
 		drawBackground(g, w, 2 * PAD + entries.size() * ROW - 1);
@@ -119,7 +121,7 @@ public final class ArmorHud extends HudModule {
 		int y = PAD;
 		for (Entry e : entries) {
 			int iconX = right ? w - PAD - 16 : PAD;
-			g.renderItem(e.stack, iconX, y);
+			g.item(e.stack, iconX, y);
 			if (!e.text.isEmpty()) {
 				int tx = right ? iconX - 3 - width(font, e.text) : PAD + 16 + 3;
 				text(g, font, e.text, tx, y + 4, e.color);

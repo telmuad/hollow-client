@@ -9,8 +9,8 @@ import dev.telmuad.hollowclient.modules.Modules;
 import dev.telmuad.hollowclient.modules.ui.ScoreboardTitlesModule;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.Hud;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.BossHealthOverlay;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.numbers.BlankFormat;
@@ -32,7 +32,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * Scoreboard & Titles: the sidebar, boss bars and titles drawn moved, scaled, restyled or not at all. Only the
  * drawing is wrapped; what the server sent is untouched.
  */
-@Mixin(Gui.class)
+@Mixin(Hud.class)
 abstract class GuiScoreboardMixin {
 	@Unique
 	private static int hollowclient$titleTop;
@@ -47,9 +47,9 @@ abstract class GuiScoreboardMixin {
 
 	// ------------------------------------------------------------------------------------------------ scoreboard
 
-	@WrapOperation(method = "renderScoreboardSidebar", at = @At(value = "INVOKE",
-			target = "Lnet/minecraft/client/gui/Gui;displayScoreboardSidebar(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/world/scores/Objective;)V"))
-	private void hollowclient$placeSidebar(Gui self, GuiGraphics g, Objective objective, Operation<Void> original) {
+	@WrapOperation(method = "extractScoreboardSidebar", at = @At(value = "INVOKE",
+			target = "Lnet/minecraft/client/gui/Hud;displayScoreboardSidebar(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/world/scores/Objective;)V"))
+	private void hollowclient$placeSidebar(Hud self, GuiGraphicsExtractor g, Objective objective, Operation<Void> original) {
 		ScoreboardTitlesModule m = hollowclient$module();
 		if (m == null) {
 			original.call(self, g, objective);
@@ -106,8 +106,8 @@ abstract class GuiScoreboardMixin {
 
 	/** Glass look: one rounded panel with an accent line under the title instead of the two flat boxes. */
 	@WrapOperation(method = "displayScoreboardSidebar", at = @At(value = "INVOKE", ordinal = 0,
-			target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V"))
-	private void hollowclient$titleBox(GuiGraphics g, int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
+			target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V"))
+	private void hollowclient$titleBox(GuiGraphicsExtractor g, int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
 		ScoreboardTitlesModule m = hollowclient$module();
 		if (m == null || m.look() != ScoreboardTitlesModule.Look.GLASS) {
 			original.call(g, x0, y0, x1, y1, color);
@@ -118,8 +118,8 @@ abstract class GuiScoreboardMixin {
 	}
 
 	@WrapOperation(method = "displayScoreboardSidebar", at = @At(value = "INVOKE", ordinal = 1,
-			target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V"))
-	private void hollowclient$bodyBox(GuiGraphics g, int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
+			target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V"))
+	private void hollowclient$bodyBox(GuiGraphicsExtractor g, int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
 		ScoreboardTitlesModule m = hollowclient$module();
 		if (m == null || m.look() != ScoreboardTitlesModule.Look.GLASS) {
 			original.call(g, x0, y0, x1, y1, color);
@@ -133,9 +133,9 @@ abstract class GuiScoreboardMixin {
 
 	// ------------------------------------------------------------------------------------------------ boss bars
 
-	@WrapOperation(method = "renderBossOverlay", at = @At(value = "INVOKE",
-			target = "Lnet/minecraft/client/gui/components/BossHealthOverlay;render(Lnet/minecraft/client/gui/GuiGraphics;)V"))
-	private void hollowclient$bossBars(BossHealthOverlay overlay, GuiGraphics g, Operation<Void> original) {
+	@WrapOperation(method = "extractBossOverlay", at = @At(value = "INVOKE",
+			target = "Lnet/minecraft/client/gui/components/BossHealthOverlay;extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;)V"))
+	private void hollowclient$bossBars(BossHealthOverlay overlay, GuiGraphicsExtractor g, Operation<Void> original) {
 		ScoreboardTitlesModule m = hollowclient$module();
 		if (m == null) {
 			original.call(overlay, g);
@@ -157,19 +157,19 @@ abstract class GuiScoreboardMixin {
 
 	// ------------------------------------------------------------------------------------------------ titles
 
-	@Inject(method = "renderTitle", at = @At("HEAD"), cancellable = true)
-	private void hollowclient$hideTitles(GuiGraphics g, net.minecraft.client.DeltaTracker deltaTracker, CallbackInfo ci) {
+	@Inject(method = "extractTitle", at = @At("HEAD"), cancellable = true)
+	private void hollowclient$hideTitles(GuiGraphicsExtractor g, net.minecraft.client.DeltaTracker deltaTracker, CallbackInfo ci) {
 		ScoreboardTitlesModule m = hollowclient$module();
 		if (m != null && !m.showTitles()) ci.cancel();
 	}
 
-	@WrapOperation(method = "renderTitle", at = @At(value = "INVOKE", ordinal = 0, target = "Lorg/joml/Matrix3x2fStack;translate(FF)Lorg/joml/Matrix3x2f;"))
+	@WrapOperation(method = "extractTitle", at = @At(value = "INVOKE", ordinal = 0, target = "Lorg/joml/Matrix3x2fStack;translate(FF)Lorg/joml/Matrix3x2f;"))
 	private Matrix3x2f hollowclient$titlePlace(Matrix3x2fStack pose, float x, float y, Operation<Matrix3x2f> original) {
 		ScoreboardTitlesModule m = hollowclient$module();
 		return original.call(pose, x, m == null ? y : y + m.titleOffset());
 	}
 
-	@WrapOperation(method = "renderTitle", at = @At(value = "INVOKE", target = "Lorg/joml/Matrix3x2fStack;scale(FF)Lorg/joml/Matrix3x2f;"))
+	@WrapOperation(method = "extractTitle", at = @At(value = "INVOKE", target = "Lorg/joml/Matrix3x2fStack;scale(FF)Lorg/joml/Matrix3x2f;"))
 	private Matrix3x2f hollowclient$titleSize(Matrix3x2fStack pose, float x, float y, Operation<Matrix3x2f> original) {
 		ScoreboardTitlesModule m = hollowclient$module();
 		float s = m == null ? 1f : m.titleScale();

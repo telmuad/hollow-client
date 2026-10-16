@@ -11,7 +11,7 @@ import dev.telmuad.hollowclient.util.ColorUtil;
 import net.fabricmc.fabric.api.client.rendering.v1.RenderStateDataKey;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.player.PlayerModel;
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
@@ -59,7 +59,7 @@ public final class CosmeticsLayer extends RenderLayer<AvatarRenderState, PlayerM
 	}
 
 	private void part(SubmitNodeCollector collector, ModelPart part, PoseStack pose, RenderType type, int light, int color) {
-		collector.submitModelPart(part, pose, type, light, OverlayTexture.NO_OVERLAY, null, false, false, color, null, 0);
+		collector.submitModelPart(part, pose, type, light, OverlayTexture.NO_OVERLAY, null, color, null, 0);
 	}
 
 	private void hat(PoseStack pose, SubmitNodeCollector collector, int light, AvatarRenderState state, Look look) {
@@ -70,7 +70,7 @@ public final class CosmeticsLayer extends RenderLayer<AvatarRenderState, PlayerM
 			pose.translate(0f, -0.07f, 0f);
 			pose.scale(1.14f, 1.14f, 1.14f);
 		}
-		part(collector, CosmeticModels.hat(look.hat()), pose, RenderTypes.entityCutoutNoCull(look.hat().texture()), light, look.hatTint());
+		part(collector, CosmeticModels.hat(look.hat()), pose, RenderTypes.entityCutout(look.hat().texture()), light, look.hatTint());
 		pose.popPose();
 	}
 
@@ -78,7 +78,7 @@ public final class CosmeticsLayer extends RenderLayer<AvatarRenderState, PlayerM
 		pose.pushPose();
 		getParentModel().head.translateAndRotate(pose);
 		if (!state.headEquipment.isEmpty()) pose.scale(1.1f, 1.1f, 1.1f);
-		part(collector, CosmeticModels.horns(look.horns()), pose, RenderTypes.entityCutoutNoCull(CosmeticModels.HORNS), light, look.hornsTint());
+		part(collector, CosmeticModels.horns(look.horns()), pose, RenderTypes.entityCutout(CosmeticModels.HORNS), light, look.hornsTint());
 		pose.popPose();
 	}
 
@@ -92,8 +92,8 @@ public final class CosmeticsLayer extends RenderLayer<AvatarRenderState, PlayerM
 		boolean glow = look.haloGlow() > 0f;
 		float pulse = glow ? 0.75f + 0.25f * Mth.sin(t * 0.12f) : 1f;
 		int color = ColorUtil.fade(look.haloColor(), glow ? (0.55f + 0.45f * look.haloGlow()) * pulse : 1f);
-		RenderType type = glow ? RenderTypes.entityTranslucentEmissive(CosmeticModels.GLOW_WHITE) : RenderTypes.entityCutoutNoCull(CosmeticModels.GLOW_WHITE);
-		part(collector, CosmeticModels.halo(look.halo()), pose, type, glow ? LightTexture.FULL_BRIGHT : light, color);
+		RenderType type = glow ? RenderTypes.entityTranslucentEmissive(CosmeticModels.GLOW_WHITE) : RenderTypes.entityCutout(CosmeticModels.GLOW_WHITE);
+		part(collector, CosmeticModels.halo(look.halo()), pose, type, glow ? LightCoordsUtil.FULL_BRIGHT : light, color);
 		pose.popPose();
 	}
 
@@ -116,7 +116,7 @@ public final class CosmeticsLayer extends RenderLayer<AvatarRenderState, PlayerM
 			pose.mulPose(Axis.YP.rotation(left ? -spread : spread));
 			// Tilt so the leading edge rises up and out from the shoulder and the feathers hang below it.
 			pose.mulPose(Axis.ZP.rotation(left ? -0.75f : 0.75f));
-			part(collector, CosmeticModels.wing(left), pose, RenderTypes.entityCutoutNoCull(look.wings().texture()), light, look.wingsTint());
+			part(collector, CosmeticModels.wing(left), pose, RenderTypes.entityCutout(look.wings().texture()), light, look.wingsTint());
 			pose.popPose();
 		}
 		pose.popPose();
@@ -134,21 +134,21 @@ public final class CosmeticsLayer extends RenderLayer<AvatarRenderState, PlayerM
 				pose.mulPose(Axis.YP.rotation(t * 0.06f));
 				pose.mulPose(Axis.XP.rotation(t * 0.04f));
 				part(collector, CosmeticModels.wispCore(), pose, RenderTypes.entityTranslucentEmissive(CosmeticModels.GLOW_WHITE),
-						LightTexture.FULL_BRIGHT, ColorUtil.fade(glow, 0.85f));
+						LightCoordsUtil.FULL_BRIGHT, ColorUtil.fade(glow, 0.85f));
 				pose.popPose();
 				for (int i = 0; i < 3; i++) {
 					float a = t * 0.15f + i * (float) (Math.PI * 2 / 3);
 					pose.pushPose();
 					pose.translate(Mth.cos(a) * 0.28f, Mth.sin(a * 1.3f) * 0.08f, Mth.sin(a) * 0.28f);
 					part(collector, CosmeticModels.wispMote(), pose, RenderTypes.entityTranslucentEmissive(CosmeticModels.GLOW_WHITE),
-							LightTexture.FULL_BRIGHT, ColorUtil.fade(ColorUtil.mix(glow, 0xFFFFFFFF, 0.4f), 0.9f));
+							LightCoordsUtil.FULL_BRIGHT, ColorUtil.fade(ColorUtil.mix(glow, 0xFFFFFFFF, 0.4f), 0.9f));
 					pose.popPose();
 				}
 			}
 			case CUBE -> {
 				pose.mulPose(Axis.YP.rotation(Mth.sin(t * 0.03f) * 0.5f));
 				pose.scale(0.55f, 0.55f, 0.55f);
-				part(collector, CosmeticModels.petCube(), pose, RenderTypes.entityCutoutNoCull(CosmeticModels.PET_CUBE), light, look.petTint());
+				part(collector, CosmeticModels.petCube(), pose, RenderTypes.entityCutout(CosmeticModels.PET_CUBE), light, look.petTint());
 			}
 		}
 		pose.popPose();

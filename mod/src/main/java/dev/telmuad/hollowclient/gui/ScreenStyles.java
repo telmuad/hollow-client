@@ -6,7 +6,7 @@ import dev.telmuad.hollowclient.modules.ui.PauseMenuModule;
 import dev.telmuad.hollowclient.render.Quality;
 import dev.telmuad.hollowclient.util.ColorUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -29,7 +29,7 @@ public final class ScreenStyles {
 	}
 
 	/** Blur everything drawn so far, unless something already blurred this frame (only one blur per frame is allowed). */
-	public static void tryBlur(GuiGraphics g) {
+	public static void tryBlur(GuiGraphicsExtractor g) {
 		try {
 			g.blurBeforeThisStratum();
 		} catch (IllegalStateException alreadyBlurred) {
@@ -46,11 +46,11 @@ public final class ScreenStyles {
 
 	/** Vanilla buttons are drawn in Hollow's style on the (styled) pause menu. */
 	public static boolean restyleButtons() {
-		Screen s = Minecraft.getInstance().screen;
+		Screen s = Minecraft.getInstance().gui.screen();
 		return s instanceof PauseScreen && pauseStyled() && Modules.PAUSE_MENU.buttons();
 	}
 
-	public static void pauseBackground(Screen screen, GuiGraphics g, int mouseX, int mouseY) {
+	public static void pauseBackground(Screen screen, GuiGraphicsExtractor g, int mouseX, int mouseY) {
 		float dt = frameDt();
 		PauseMenuModule m = Modules.PAUSE_MENU;
 		if (blurRadius(screen, 0) >= 1) tryBlur(g);
@@ -83,7 +83,7 @@ public final class ScreenStyles {
 	}
 
 	/** Hollow-style replacement for a vanilla button's background sprite (the label is still drawn by vanilla). */
-	public static float drawButton(AbstractButton b, GuiGraphics g, float hover, float dt) {
+	public static float drawButton(AbstractButton b, GuiGraphicsExtractor g, float hover, float dt) {
 		boolean hovered = b.active && b.isHoveredOrFocused();
 		hover = Anim.approach(hover, hovered ? 1f : 0f, dt, 16f);
 		Rect r = new Rect(b.getX(), b.getY(), b.getWidth(), b.getHeight());
@@ -107,7 +107,7 @@ public final class ScreenStyles {
 		return m != null && m.isEnabled() && screen instanceof AbstractContainerScreen<?>;
 	}
 
-	public static void containerBackground(Screen screen, GuiGraphics g) {
+	public static void containerBackground(Screen screen, GuiGraphicsExtractor g) {
 		if (blurRadius(screen, 0) >= 1) tryBlur(g);
 		if (Modules.INVENTORY_BLUR.dim()) g.fillGradient(0, 0, screen.width, screen.height, 0xA0101016, 0xC0101016);
 		else g.fillGradient(0, 0, screen.width, screen.height, 0x30000000, 0x50000000);

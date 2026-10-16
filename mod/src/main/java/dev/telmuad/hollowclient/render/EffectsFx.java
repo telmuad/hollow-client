@@ -9,7 +9,7 @@ import dev.telmuad.hollowclient.render.HollowParticle.Kind;
 import dev.telmuad.hollowclient.util.ColorUtil;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
@@ -175,7 +175,7 @@ public final class EffectsFx {
 	}
 
 	/** Crit flash: a quick glow in from the screen edges. Drawn with the HUD. */
-	public static void renderFlash(GuiGraphics g) {
+	public static void renderFlash(GuiGraphicsExtractor g) {
 		if (flashAt == 0) return;
 		float t = (Util.getMillis() - flashAt) / FLASH_MS;
 		if (t >= 1f) {

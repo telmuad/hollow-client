@@ -3,7 +3,7 @@ package dev.telmuad.hollowclient.gui;
 import dev.telmuad.hollowclient.chat.ChatFx;
 import dev.telmuad.hollowclient.gui.widget.UiButton;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
@@ -68,7 +68,7 @@ public final class ChatSearchScreen extends HollowScreen {
 	}
 
 	@Override
-	protected void renderContent(GuiGraphics g, int mx, int my, float a) {
+	protected void renderContent(GuiGraphicsExtractor g, int mx, int my, float a) {
 		refresh();
 		drawPanel(g, panel, 8, a);
 		back.render(g, font, mx, my, dt, a);
@@ -76,7 +76,7 @@ public final class ChatSearchScreen extends HollowScreen {
 		Draw.roundRect(g, searchBox, Theme.radius(4), Theme.fade(focused ? Theme.CARD_HOVER : Theme.CARD, a));
 		Draw.roundOutline(g, searchBox, Theme.radius(4), Theme.fade(focused ? Theme.accent() : Theme.STROKE, a));
 		HollowMenuScreen.drawMagnifier(g, searchBox.x() + 4, searchBox.y() + 4, Theme.fade(focused ? Theme.accent() : Theme.TEXT_DIM, a));
-		if (a > 0.5f) search.render(g, mx, my, 0);
+		if (a > 0.5f) search.extractRenderState(g, mx, my, 0);
 
 		scroll = Anim.approach(scroll, scrollTarget, dt, 18f);
 		g.enableScissor(list.x(), list.y(), list.right(), list.bottom());
@@ -99,7 +99,7 @@ public final class ChatSearchScreen extends HollowScreen {
 		Ui.draw(g, font, count, panel.x() + 10, panel.bottom() - 14, Theme.fade(Theme.TEXT_FAINT, a));
 	}
 
-	private void drawWithMatch(GuiGraphics g, String text, String q, int x, int y, float a) {
+	private void drawWithMatch(GuiGraphicsExtractor g, String text, String q, int x, int y, float a) {
 		int at = q.isEmpty() ? -1 : text.toLowerCase(Locale.ROOT).indexOf(q);
 		if (at < 0) {
 			Ui.draw(g, font, text, x, y, Theme.fade(Theme.TEXT, a));

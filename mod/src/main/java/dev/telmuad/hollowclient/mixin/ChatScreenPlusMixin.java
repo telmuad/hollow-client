@@ -23,7 +23,7 @@ abstract class ChatScreenPlusMixin {
 		var m = Modules.CHAT_PLUS;
 		if (m == null || !m.isEnabled() || !m.copy() || event.button() != GLFW.GLFW_MOUSE_BUTTON_RIGHT) return;
 		Minecraft mc = Minecraft.getInstance();
-		String text = ChatFx.messageAt(mc.gui.getChat(), event.x(), event.y());
+		String text = ChatFx.messageAt(mc.gui.hud.getChat(), event.x(), event.y());
 		if (text == null || text.isEmpty()) return;
 		text = ChatFx.withoutHollowParts(text);
 		mc.keyboardHandler.setClipboard(text);
@@ -39,7 +39,7 @@ abstract class ChatScreenPlusMixin {
 		boolean ctrl = event.hasControlDown() || InputConstants.isKeyDown(mc.getWindow(), GLFW.GLFW_KEY_LEFT_CONTROL)
 				|| InputConstants.isKeyDown(mc.getWindow(), GLFW.GLFW_KEY_RIGHT_CONTROL);
 		if (event.key() == GLFW.GLFW_KEY_F && ctrl) {
-			mc.setScreen(new ChatSearchScreen(mc.screen));
+			mc.gui.setScreen(new ChatSearchScreen(mc.gui.screen()));
 			cir.setReturnValue(true);
 		}
 	}

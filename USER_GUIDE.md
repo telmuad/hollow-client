@@ -9,7 +9,7 @@ This guide covers building Hollow Client, setting up Microsoft sign-in, using th
 | Program | Why | Where |
 |---|---|---|
 | **Git** | to download and update this project | git-scm.com |
-| **Java JDK 21 or newer** | to build the mod (the game itself uses Mojang's own Java, which the launcher downloads) | adoptium.net (Temurin) |
+| **Java JDK 25 or newer** | to build the mod (the game itself uses Mojang's own Java, which the launcher downloads) | adoptium.net (Temurin) |
 | **Python 3.12 or newer** | to build the launcher | python.org (tick "Add python.exe to PATH" when installing) |
 
 Your PC already has all three (Git 2.55, Temurin 25, Python 3.14).
@@ -24,7 +24,7 @@ Your PC already has all three (Git 2.55, Temurin 25, Python 3.14).
 
 When it says **All done**, you have:
 
-- the mod: `mod\build\libs\hollowclient-1.1.0.jar`
+- the mod: `mod\build\libs\hollowclient-2.0.0.jar`
 - the launcher: `launcher\dist\HollowClient\HollowClient.exe`
 
 You can move the whole `launcher\dist\HollowClient` folder anywhere you like (for example to your Desktop) and start `HollowClient.exe` from there. When you rebuild, copy the new folder over the old one: the launcher notices the new mod and puts it in place the next time you press PLAY.
@@ -185,15 +185,16 @@ You can also play with Hollow Client through the official Minecraft Launcher, fo
 
 > Your app ID hasn't been approved by Mojang yet. You can still install and update everything, and launch from the official launcher in the meantime.
 
-1. **Install Fabric** with the official Fabric installer from fabricmc.net/use/installer. Choose **Client**, Minecraft **1.21.11**, Loader **0.19.5** (or newer), and click Install. This adds a "fabric-loader-1.21.11" installation to the official launcher.
+1. **Install Fabric** with the official Fabric installer from fabricmc.net/use/installer. Choose **Client**, Minecraft **26.2**, Loader **0.19.5** (or newer), and click Install. This adds a "fabric-loader-26.2" installation to the official launcher. Minecraft 26.2 needs Java 25; the official launcher brings its own.
 2. **Open your normal mods folder**: press Windows+R, type `%APPDATA%\.minecraft` and press Enter. Make a folder called **`mods`** if there isn't one.
-3. **Copy these three files into it.** Hollow's launcher has already downloaded them into `%APPDATA%\.hollowclient\mods`, so you can copy them from there:
-   - `hollowclient-1.1.0.jar`
-   - `fabric-api-0.141.6+1.21.11.jar`
-   - `sodium-fabric-0.8.14+mc1.21.11.jar`
+3. **Put these four files into it:**
+   - `hollowclient-2.0.0.jar` (from `mod\build\libs`, or from Hollow's launcher folder)
+   - **Fabric API** for 26.2 (modrinth.com/mod/fabric-api, pick the newest file for 26.2 and Fabric)
+   - **Sodium** for 26.2 (modrinth.com/mod/sodium, same)
+   - **Hypixel Mod API** for 26.2 (modrinth.com/mod/hypixel-mod-api); Hollow's SkyBlock Mode uses it to know where you are on Hypixel
 
-   (You can also get Fabric API and Sodium from modrinth.com; pick the versions for 1.21.11 and Fabric.)
-4. In the official Minecraft Launcher, pick the **fabric-loader-1.21.11** installation and press **Play**.
+   Hollow's launcher downloads exactly these into its own game folder, so once it has installed the 26.2 profile you can also copy them from there.
+4. In the official Minecraft Launcher, pick the **fabric-loader-26.2** installation and press **Play**.
 
 ---
 

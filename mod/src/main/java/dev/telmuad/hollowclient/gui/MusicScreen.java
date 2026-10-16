@@ -7,7 +7,7 @@ import dev.telmuad.hollowclient.modules.qol.MusicPlayerModule;
 import dev.telmuad.hollowclient.music.AudioInfo;
 import dev.telmuad.hollowclient.music.MusicPlayer;
 import dev.telmuad.hollowclient.music.Visualizer;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -90,7 +90,7 @@ public final class MusicScreen extends HollowScreen {
 	}
 
 	@Override
-	protected void renderContent(GuiGraphics g, int mx, int my, float a) {
+	protected void renderContent(GuiGraphicsExtractor g, int mx, int my, float a) {
 		drawPanel(g, panel, 8, a);
 		back.render(g, font, mx, my, dt, a);
 		folder.render(g, font, mx, my, dt, a);
@@ -104,7 +104,7 @@ public final class MusicScreen extends HollowScreen {
 		Ui.draw(g, font, Ui.fit(font, foot, panel.w() - 20), panel.x() + 10, panel.bottom() - 15, Theme.fade(Theme.TEXT_FAINT, a));
 	}
 
-	private void renderList(GuiGraphics g, int mx, int my, float a) {
+	private void renderList(GuiGraphicsExtractor g, int mx, int my, float a) {
 		Draw.roundRect(g, list, Theme.radius(5), Theme.fade(Theme.PANEL_RAISED, a * 0.7f));
 		if (tracks.isEmpty()) {
 			int cy = list.y() + 30;
@@ -146,7 +146,7 @@ public final class MusicScreen extends HollowScreen {
 		g.disableScissor();
 	}
 
-	private void renderNowPlaying(GuiGraphics g, int mx, int my, float a) {
+	private void renderNowPlaying(GuiGraphicsExtractor g, int mx, int my, float a) {
 		MusicPlayerModule m = module();
 		Draw.roundRect(g, now, Theme.radius(5), Theme.fade(Theme.PANEL_RAISED, a * 0.7f));
 		MusicPlayer.Track t = MusicPlayer.current();

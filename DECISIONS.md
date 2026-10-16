@@ -227,3 +227,25 @@ Choices made while building Hollow Client, with the reason for each. Newest sect
 - **Version 1.1.0** for both the mod and the launcher, so the jar name shows the expansion; the launcher also compares the jar by content, so even a rebuild with the same number is picked up.
 - **Settings for features with their own screen**: right-clicking those cards opens their screen, so each such screen has a Settings button leading to the usual settings page.
 
+# Plan 3: 26.2 port, rebrand, SkyBlock Mode
+
+## General
+
+- **Target Minecraft 26.2, not 26.3**: Hypixel recommends 26.2 for SkyBlock, and on 2026-10-15 the Hypixel Mod API, Skyblocker and SkyHanni all publish builds up to 26.2 only. 26.3 came out a month ago; moving there is what `VERSION_BUMP.md` is for once the SkyBlock mods follow.
+- **Legacy frozen**: tag `legacy-1.21.11` and branch `legacy/1.21.11` keep Hollow 1.1.0 for 1.21.11 building. No features go there. The launcher keeps offering it as a second profile.
+- **Hypixel rules win inside SkyBlock Mode**: plan 3's section 1 is the rulebook for SkyBlock features (display only; highlights depth-tested; one press = one action; item protection is the only blocked vanilla action). Plan 2's list (no entity markers etc.) still applies everywhere else. Anything doubtful goes under "Skipped for Hypixel rules" below.
+- **Testing tools come early**: the debug recorder's file format, the simulator and the parser fixtures are built in the foundation milestone, not at the end, because every SkyBlock area is verified with them (nothing can be tested on Hypixel itself).
+
+## P1–P3 Port to 26.2
+
+- **Loom 1.18.4 with the new `net.fabricmc.fabric-loom` plugin**: Loom 1.19.1 needs Gradle 9.8; Fabric's own 26.2 example uses 1.18 with Gradle 9.7.1, which this project already had. No remapping any more: Minecraft is unobfuscated and Hollow already used Mojang's names, so the port was about API changes, not names.
+- **Mod version 2.0.0** for the 26.2 build (a new Minecraft generation; 1.1.x stays the 1.21.11 line).
+- **World drawing goes through submits**: waypoint beams and the block-outline fill are submitted in `LevelRenderEvents.COLLECT_SUBMITS` / `submitBlockOutline` as custom geometry, in camera-relative coordinates like vanilla's entities. Pipelines are built on vanilla's `DEBUG_FILLED_SNIPPET` (position + color, depth-tested, no depth writes) with additive blending, so they follow 26.2's reversed depth automatically.
+- **`Immediate` replaces Tesselator**: 26.2 removed immediate-mode drawing. Effects that change every frame inside a vanilla pass (the aurora and shooting stars in the sky pass) build their vertices into a staged vertex buffer (the same class vanilla's GUI uses), upload it and draw it right away with the render type's pipeline.
+- **Post-processing**: pipelines declare their samplers and uniform block as a bind group layout; passes draw a full-screen triangle with the new `draw(3, 1, 0, 0)`. The GLSL files didn't need changes: 26.2 compiles the same `#version 330` style (named uniform blocks) to SPIR-V for Vulkan.
+- **No raw OpenGL**: a unit test (`NoRawOpenGlTest`) fails the build if LWJGL's GL classes or `GlStateManager` appear in the mod. `RenderBackend` tells OpenGL from Vulkan; an effect whose shaders fail to compile on a backend turns itself off for the session (post-processing already did this).
+- **Item icons before a world loads**: 26.1+ can't create item stacks until a world has bound the item components, but the Hollow menu opens on the title screen. Menu icons draw the item when possible and the item's texture file otherwise (`ItemIcons`); the HUD editor's armor preview simply skips items then.
+- **Time & Weather**: the time of day is now a world clock; Hollow replaces the client's overworld clock reading (`ClientClockManager.getTotalTicks`), which the sky, sun, moon and light all follow. The server's clocks are untouched, as before.
+- **Zoom** moved to `Camera.calculateFov` (the world FOV; the hand uses a separate HUD FOV, so it doesn't zoom), and **camera paths** hook `Camera.update` right after the camera is placed on the player, before the culling frustum is built.
+- **Two old bugs found while checking the 26.2 screenshots**: (1) with Chat+ timestamps on, the whole message took the timestamp's dark gray (a style inherited by appended text); the timestamp is now a sibling. (2) Per-letter HUD text (rolling numbers, gradient text) added up rounded letter widths and drifted right, getting clipped at the end ("CPS: 2 | 1"); letters are now placed by the width of the text before them.
+

@@ -1,5 +1,5 @@
 plugins {
-	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
+	id 'net.fabricmc.fabric-loom' version "${loom_version}"
 }
 
 base {
@@ -39,12 +39,19 @@ fabricApi {
 	}
 }
 
+// `gradlew runClient -Pvulkan` / `gradlew runClientGameTest -Pvulkan` start the game on Minecraft's Vulkan backend
+// (26.2's Video Settings -> Graphics API), to check that Hollow's drawing works there too.
+if (project.hasProperty('vulkan')) {
+	loom.runs.configureEach {
+		programArgs "--graphicsBackend", "vulkan"
+	}
+}
+
 dependencies {
 	// Versions live in gradle.properties
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings loom.officialMojangMappings()
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
 	// MP3 decoding for the music player (JavaMP3, MIT license; bundled inside the mod jar)
 	implementation "fr.delthas:javamp3:1.0.1"
@@ -53,7 +60,7 @@ dependencies {
 	// `gradlew runClient -PwithSodium` runs the dev client with Sodium to check compatibility.
 	// Sodium is never bundled in the jar; the launcher downloads it from Modrinth.
 	if (project.hasProperty('withSodium')) {
-		modLocalRuntime "maven.modrinth:sodium:${project.sodium_version}"
+		localRuntime "maven.modrinth:sodium:${project.sodium_version}"
 	}
 
 	testImplementation platform("org.junit:junit-bom:${project.junit_version}")
@@ -71,13 +78,14 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
+	it.options.release = 25
 	it.options.encoding = "UTF-8"
+	it.options.compilerArgs += ["-Xmaxerrs", "5000"]
 }
 
 java {
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
 }
 
 test {

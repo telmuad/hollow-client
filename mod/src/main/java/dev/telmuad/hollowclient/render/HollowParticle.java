@@ -93,7 +93,7 @@ public final class HollowParticle extends SingleQuadParticle {
 	}
 
 	@Override
-	protected int getLightColor(float partialTick) {
-		return glow ? 0xF000F0 : super.getLightColor(partialTick);
+	protected int getLightCoords(float partialTick) {
+		return glow ? 0xF000F0 : super.getLightCoords(partialTick);
 	}
 }

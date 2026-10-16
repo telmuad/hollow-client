@@ -7,7 +7,7 @@ import dev.telmuad.hollowclient.module.KeyDef;
 import dev.telmuad.hollowclient.module.Module;
 import dev.telmuad.hollowclient.module.ModuleRegistry;
 import dev.telmuad.hollowclient.modules.client.PerformanceModule;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -39,22 +39,22 @@ public final class Keybinds {
 
 	public static void register(ModuleRegistry registry, Supplier<net.minecraft.client.gui.screens.Screen> menu) {
 		menuFactory = menu;
-		menuKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.hollowclient.menu",
+		menuKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.hollowclient.menu",
 				InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, CATEGORY));
-		emoteKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.hollowclient.emote_wheel",
+		emoteKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.hollowclient.emote_wheel",
 				InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, CATEGORY));
 		for (int i = 0; i < ACTIONS.length; i++) {
-			ACTION_KEYS[i] = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.hollowclient." + ACTIONS[i],
+			ACTION_KEYS[i] = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.hollowclient." + ACTIONS[i],
 					InputConstants.Type.KEYSYM, InputConstants.UNKNOWN.getValue(), CATEGORY));
 		}
 		for (int i = 0; i < MACRO_KEYS.length; i++) {
-			MACRO_KEYS[i] = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.hollowclient.macro" + (i + 1),
+			MACRO_KEYS[i] = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.hollowclient.macro" + (i + 1),
 					InputConstants.Type.KEYSYM, InputConstants.UNKNOWN.getValue(), CATEGORY));
 		}
 		for (Module m : registry.all()) {
 			KeyDef def = m.keyDef();
 			int key = def.defaultKey() == KeyDef.UNBOUND ? InputConstants.UNKNOWN.getValue() : def.defaultKey();
-			MODULE_KEYS.put(m, KeyBindingHelper.registerKeyBinding(new KeyMapping("key.hollowclient." + m.id(),
+			MODULE_KEYS.put(m, KeyMappingHelper.registerKeyMapping(new KeyMapping("key.hollowclient." + m.id(),
 					InputConstants.Type.KEYSYM, key, CATEGORY)));
 		}
 	}
@@ -82,25 +82,25 @@ public final class Keybinds {
 	public static void tick(Minecraft mc) {
 		if (menuKey == null) return;
 		while (menuKey.consumeClick()) {
-			if (mc.screen == null) {
+			if (mc.gui.screen() == null) {
 				var screen = menuFactory.get();
-				if (screen != null) mc.setScreen(screen);
+				if (screen != null) mc.gui.setScreen(screen);
 			}
 		}
 		while (emoteKey.consumeClick()) {
 			var emotes = dev.telmuad.hollowclient.modules.Modules.EMOTES;
-			if (mc.screen == null && mc.player != null && emotes != null && emotes.isEnabled()) {
-				mc.setScreen(new dev.telmuad.hollowclient.gui.EmoteWheelScreen());
+			if (mc.gui.screen() == null && mc.player != null && emotes != null && emotes.isEnabled()) {
+				mc.gui.setScreen(new dev.telmuad.hollowclient.gui.EmoteWheelScreen());
 			}
 		}
 		for (int i = 0; i < ACTION_KEYS.length; i++) {
 			while (ACTION_KEYS[i].consumeClick()) {
-				if (mc.screen == null) action(mc, ACTIONS[i]);
+				if (mc.gui.screen() == null) action(mc, ACTIONS[i]);
 			}
 		}
 		for (int i = 0; i < MACRO_KEYS.length; i++) {
 			while (MACRO_KEYS[i].consumeClick()) {
-				if (mc.screen == null) dev.telmuad.hollowclient.chat.ChatFx.macro(mc, i);
+				if (mc.gui.screen() == null) dev.telmuad.hollowclient.chat.ChatFx.macro(mc, i);
 			}
 		}
 		for (Map.Entry<Module, KeyMapping> e : MODULE_KEYS.entrySet()) {
@@ -114,7 +114,7 @@ public final class Keybinds {
 			while (e.getValue().consumeClick()) {
 				if (m instanceof ScreenProvider provider) {
 					// Theme: the key opens its editor
-					if (mc.screen == null) mc.setScreen(provider.createScreen(null));
+					if (mc.gui.screen() == null) mc.gui.setScreen(provider.createScreen(null));
 					continue;
 				}
 				String label = m.name();
@@ -128,7 +128,7 @@ public final class Keybinds {
 					on = m.isEnabled();
 				}
 				if (mc.player != null) {
-					mc.gui.setOverlayMessage(Component.literal(label + ": ")
+					mc.gui.hud.setOverlayMessage(Component.literal(label + ": ")
 							.append(on ? Component.literal("ON").withStyle(ChatFormatting.GREEN)
 									: Component.literal("OFF").withStyle(ChatFormatting.RED)), false);
 				}

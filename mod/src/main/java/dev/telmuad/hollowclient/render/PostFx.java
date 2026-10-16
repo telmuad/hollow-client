@@ -1,7 +1,10 @@
 package dev.telmuad.hollowclient.render;
 
+import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.Std140Builder;
+import com.mojang.blaze3d.pipeline.BindGroupLayout;
+import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
@@ -22,7 +25,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
 import org.lwjgl.system.MemoryStack;
 
-import java.util.OptionalInt;
+import java.util.Optional;
 
 /**
  * Hollow's screen effects, run right after the world is drawn and before the HUD and menus:
@@ -56,14 +59,17 @@ public final class PostFx {
 	}
 
 	private static RenderPipeline pipeline(String name, String... samplers) {
-		RenderPipeline.Builder b = RenderPipeline.builder(RenderPipelines.POST_PROCESSING_SNIPPET)
+		// 26.2: samplers and uniform blocks are declared as a bind group layout (works on OpenGL and Vulkan)
+		BindGroupLayout.Builder layout = BindGroupLayout.builder();
+		for (String s : samplers) layout.withSampler(s + "Sampler");
+		layout.withUniform("HollowPost", UniformType.UNIFORM_BUFFER);
+		return RenderPipeline.builder(RenderPipelines.POST_PROCESSING_SNIPPET)
 				.withLocation(HollowClient.id("pipeline/post_" + name))
 				.withVertexShader(SCREENQUAD)
 				.withFragmentShader(HollowClient.id("post/" + name))
-				.withUniform("HollowPost", UniformType.UNIFORM_BUFFER)
-				.withoutBlend();
-		for (String s : samplers) b.withSampler(s + "Sampler");
-		return b.build();
+				.withBindGroupLayout(layout.build())
+				.withColorTargetState(ColorTargetState.DEFAULT)
+				.build();
 	}
 
 	/** False once the shaders failed to compile or a pass threw (then the effects stay off). */
@@ -105,7 +111,7 @@ public final class PostFx {
 	}
 
 	private static void run(Minecraft mc, PostProcessingModule m, GpuDevice device) {
-		RenderTarget main = mc.getMainRenderTarget();
+		RenderTarget main = mc.gameRenderer.mainRenderTarget();
 		int w = main.width;
 		int h = main.height;
 		if (w <= 0 || h <= 0) return;
@@ -168,14 +174,14 @@ public final class PostFx {
 	}
 
 	private static TextureTarget sized(TextureTarget t, String label, int w, int h) {
-		if (t == null) return new TextureTarget(label, w, h, false);
+		if (t == null) return new TextureTarget(label, w, h, false, GpuFormat.RGBA8_UNORM);
 		if (t.width != w || t.height != h) t.resize(w, h);
 		return t;
 	}
 
 	/** Draw one full-screen pass into {@code out}. Inputs come in triples: sampler name, target, bilinear. */
 	private static void pass(CommandEncoder enc, RenderPipeline pipeline, RenderTarget out, GpuBuffer ubo, Object... inputs) {
-		try (RenderPass rp = enc.createRenderPass(() -> "Hollow post " + pipeline.getLocation(), out.getColorTextureView(), OptionalInt.empty())) {
+		try (RenderPass rp = enc.createRenderPass(() -> "Hollow post " + pipeline.getLocation(), out.getColorTextureView(), Optional.empty())) {
 			rp.setPipeline(pipeline);
 			RenderSystem.bindDefaultUniforms(rp);
 			rp.setUniform("HollowPost", ubo);
@@ -186,7 +192,7 @@ public final class PostFx {
 				rp.bindTexture(name + "Sampler", t.getColorTextureView(),
 						RenderSystem.getSamplerCache().getClampToEdge(bilinear ? FilterMode.LINEAR : FilterMode.NEAREST));
 			}
-			rp.draw(0, 3);
+			rp.draw(3, 1, 0, 0);
 		}
 	}
 

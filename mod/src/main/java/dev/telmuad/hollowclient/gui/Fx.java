@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import dev.telmuad.hollowclient.HollowClient;
 import dev.telmuad.hollowclient.util.ColorUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
@@ -33,7 +33,7 @@ public final class Fx {
 	// ------------------------------------------------------------------------------------------------ sigil
 
 	/** The sigil at (x, y) with a pulsing glow. {@code alpha} fades everything. */
-	public static void sigil(GuiGraphics g, int x, int y, int size, float alpha, boolean pulse) {
+	public static void sigil(GuiGraphicsExtractor g, int x, int y, int size, float alpha, boolean pulse) {
 		sigil(g, (float) x, (float) y, size, alpha, pulse ? 1f : 0f, Theme.glow());
 	}
 
@@ -41,7 +41,7 @@ public final class Fx {
 	 * The sigil with float position and size. {@code pulse} 0..1 is how much the glow breathes, {@code glow} 0..1 how
 	 * bright it is.
 	 */
-	public static void sigil(GuiGraphics g, float x, float y, float size, float alpha, float pulse, float glow) {
+	public static void sigil(GuiGraphicsExtractor g, float x, float y, float size, float alpha, float pulse, float glow) {
 		float p = 0.8f + pulse * 0.35f * ((float) Math.sin(Util.getMillis() * Theme.speed() / 520.0) - 0.43f);
 		float pad = size / 3f;
 		if (glow > 0f) {
@@ -55,7 +55,7 @@ public final class Fx {
 	 * The "HOLLOW CLIENT" wordmark, {@code height} GUI pixels tall: HOLLOW in a slowly moving theme gradient, CLIENT
 	 * in a dim tone next to it. Returns the total width.
 	 */
-	public static float wordmark(GuiGraphics g, float x, float y, float height, float alpha, boolean withClient) {
+	public static float wordmark(GuiGraphicsExtractor g, float x, float y, float height, float alpha, boolean withClient) {
 		float hw = height * WORDMARK_HOLLOW.aspect();
 		int strips = 12;
 		float phase = (float) ((Util.getMillis() * Theme.speed() / 4000.0) % 1.0);
@@ -97,7 +97,7 @@ public final class Fx {
 	 * A soft glow around a rectangle, {@code spread} pixels wide, tinted {@code color} (alpha = strength).
 	 * The middle is left empty so it works behind translucent panels.
 	 */
-	public static void glow(GuiGraphics g, int x, int y, int w, int h, int spread, int color) {
+	public static void glow(GuiGraphicsExtractor g, int x, int y, int w, int h, int spread, int color) {
 		if (spread <= 0 || (color >>> 24) == 0) return;
 		ensureGlow();
 		int s = spread;
@@ -113,7 +113,7 @@ public final class Fx {
 		piece(g, x + w, y, s, h, G - E, E, E, G - 2 * E, color);
 	}
 
-	private static void piece(GuiGraphics g, int x, int y, int w, int h, int u, int v, int uw, int vh, int color) {
+	private static void piece(GuiGraphicsExtractor g, int x, int y, int w, int h, int u, int v, int uw, int vh, int color) {
 		if (w <= 0 || h <= 0) return;
 		g.blit(RenderPipelines.GUI_TEXTURED, GLOW, x, y, u, v, w, h, uw, vh, G, G, color);
 	}
@@ -142,7 +142,7 @@ public final class Fx {
 	}
 
 	/** A soft round light centered on (cx, cy). Float position: moves smoothly between pixels. */
-	public static void dot(GuiGraphics g, float cx, float cy, float radius, int color) {
+	public static void dot(GuiGraphicsExtractor g, float cx, float cy, float radius, int color) {
 		if (radius <= 0 || (color >>> 24) == 0) return;
 		ensureDots();
 		g.pose().pushMatrix();
@@ -153,7 +153,7 @@ public final class Fx {
 	}
 
 	/** A filled circle (for ripples), centered on (cx, cy). */
-	public static void disc(GuiGraphics g, float cx, float cy, float radius, int color) {
+	public static void disc(GuiGraphicsExtractor g, float cx, float cy, float radius, int color) {
 		if (radius <= 0 || (color >>> 24) == 0) return;
 		ensureDots();
 		g.pose().pushMatrix();
@@ -169,7 +169,7 @@ public final class Fx {
 	 * A frosted-glass panel: soft shadow, theme glow, translucent body (the world behind is blurred), a light sheen
 	 * at the top, a thin highlight line and a border that flows through the theme gradient.
 	 */
-	public static void glass(GuiGraphics g, Rect r, int radius, float alpha, float glowAmount, float borderAmount, float phase) {
+	public static void glass(GuiGraphicsExtractor g, Rect r, int radius, float alpha, float glowAmount, float borderAmount, float phase) {
 		if (r.w() <= 0 || r.h() <= 0 || alpha <= 0f) return;
 		Draw.roundRect(g, r.x() + 1, r.y() + 4, r.w(), r.h(), radius, ColorUtil.fade(0x48000000, alpha));
 		if (glowAmount > 0f) glow(g, r.x(), r.y(), r.w(), r.h(), 16, ColorUtil.fade(Theme.accent(), alpha * glowAmount * 0.32f));
@@ -191,7 +191,7 @@ public final class Fx {
 	 * A rounded outline whose color flows along the theme gradient over time. Straight edges are drawn in short
 	 * runs, so this is a few dozen quads per panel.
 	 */
-	public static void gradientOutline(GuiGraphics g, Rect r, int radius, float alpha, float phase) {
+	public static void gradientOutline(GuiGraphicsExtractor g, Rect r, int radius, float alpha, float phase) {
 		int x = r.x();
 		int y = r.y();
 		int w = r.w();
@@ -225,12 +225,12 @@ public final class Fx {
 	}
 
 	/** Vertical gradient between two colors (used for glassy highlights). */
-	public static void vGradient(GuiGraphics g, int x, int y, int w, int h, int top, int bottom) {
+	public static void vGradient(GuiGraphicsExtractor g, int x, int y, int w, int h, int top, int bottom) {
 		g.fillGradient(x, y, x + w, y + h, top, bottom);
 	}
 
 	/** Bold title text with a slowly moving theme gradient across its letters. Returns its width. */
-	public static int gradientBold(GuiGraphics g, net.minecraft.client.gui.Font font, String text, int x, int y, float alpha) {
+	public static int gradientBold(GuiGraphicsExtractor g, net.minecraft.client.gui.Font font, String text, int x, int y, float alpha) {
 		int cx = x;
 		int n = text.length();
 		float phase = (float) ((Util.getMillis() * Theme.speed() / 4000.0) % 1.0);
@@ -239,15 +239,15 @@ public final class Fx {
 			String ch = new String(Character.toChars(cp));
 			float t = n <= 1 ? 0f : (float) i / (n - 1);
 			int c = ColorUtil.fade(Theme.current().gradientAt(Math.abs(((t * 0.8f + phase) % 1f) * 2 - 1), Util.getMillis()), alpha);
-			g.drawString(font, Ui.bold(ch), cx, y, c, false);
-			cx += Ui.boldWidth(font, ch);
+			g.text(font, Ui.bold(ch), cx, y, c, false);
 			i += Character.charCount(cp);
+			cx = x + Ui.boldWidth(font, text.substring(0, i));
 		}
 		return cx - x;
 	}
 
 	/** Text with a horizontal gradient: each character is colored along the theme gradient. */
-	public static int gradientText(GuiGraphics g, net.minecraft.client.gui.Font font, String text, int x, int y, float alpha, boolean shadow, boolean hud) {
+	public static int gradientText(GuiGraphicsExtractor g, net.minecraft.client.gui.Font font, String text, int x, int y, float alpha, boolean shadow, boolean hud) {
 		int cx = x;
 		int n = text.length();
 		float phase = (float) ((Util.getMillis() * Theme.speed() / 4000.0) % 1.0);
@@ -258,8 +258,10 @@ public final class Fx {
 			int c = ColorUtil.fade(Theme.current().gradientAt(Math.abs(((t * 0.8f + phase) % 1f) * 2 - 1), Util.getMillis()), alpha);
 			if (hud) Ui.drawHud(g, font, ch, cx, y, c, shadow);
 			else Ui.drawShadow(g, font, ch, cx, y, c, shadow);
-			cx += hud ? Ui.hudWidth(font, ch) : Ui.width(font, ch);
 			i += Character.charCount(cp);
+			// place by the width of everything so far: per-character widths are rounded and would drift
+			String sofar = text.substring(0, i);
+			cx = x + (hud ? Ui.hudWidth(font, sofar) : Ui.width(font, sofar));
 		}
 		return cx - x;
 	}

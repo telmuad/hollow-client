@@ -11,7 +11,7 @@ A personal, non-commercial launcher and client for Minecraft: Java Edition.
 
 ## Hollow Client mod
 
-A client-side Fabric mod for Minecraft 1.21.11 that adds:
+A client-side Fabric mod for Minecraft 26.2 that adds:
 
 - Client-side cosmetics ("styles")
 - HUD elements: FPS, coordinates, CPS, keystrokes, armor durability
@@ -32,7 +32,7 @@ Not affiliated with or endorsed by Mojang or Microsoft.
 
 ```
 hollow-client/
-├── mod/        the Hollow Client Fabric mod (Gradle project, Java 21, Minecraft 1.21.11)
+├── mod/        the Hollow Client Fabric mod (Gradle project, Java 25, Minecraft 26.2; 1.21.11 lives on the legacy/1.21.11 branch)
 ├── launcher/   the Hollow Client launcher (Python 3.12+, PySide6 / Qt Quick), packaged as HollowClient.exe
 ├── scripts/    build_all.bat (builds everything), run_launcher_dev.bat
 ├── USER_GUIDE.md   how to build, set up login, play, and use every feature (start here)
@@ -63,7 +63,7 @@ hollow-client/
 
 ## Building
 
-You need Windows 10/11, Git, a Java 21+ JDK and Python 3.12+ (details in USER_GUIDE.md). Then run:
+You need Windows 10/11, Git, a Java 25+ JDK and Python 3.12+ (details in USER_GUIDE.md). Then run:
 
 ```
 scripts\build_all.bat
@@ -71,7 +71,7 @@ scripts\build_all.bat
 
 It builds and tests the mod, bundles it into the launcher, tests and packages the launcher, and checks the packaged app. Results:
 
-- `mod\build\libs\hollowclient-1.1.0.jar`
+- `mod\build\libs\hollowclient-2.0.0.jar`
 - `launcher\dist\HollowClient\HollowClient.exe`
 
 Other useful commands (from `mod\`): `gradlew.bat runClient` (dev game), `gradlew.bat runClientGameTest` (automated in-game checks with screenshots and the FPS benchmark). See TESTING.md.

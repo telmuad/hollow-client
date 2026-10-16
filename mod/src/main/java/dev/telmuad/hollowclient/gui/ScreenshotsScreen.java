@@ -5,7 +5,7 @@ import dev.telmuad.hollowclient.HollowClient;
 import dev.telmuad.hollowclient.gui.widget.UiButton;
 import dev.telmuad.hollowclient.modules.Modules;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -224,7 +224,7 @@ public final class ScreenshotsScreen extends HollowScreen {
 	// ------------------------------------------------------------------------------------------------ render
 
 	@Override
-	protected void renderContent(GuiGraphics g, int mx, int my, float a) {
+	protected void renderContent(GuiGraphicsExtractor g, int mx, int my, float a) {
 		drawPanel(g, panel, 8, a);
 		back.render(g, font, mx, my, dt, a);
 		folder.render(g, font, mx, my, dt, a);
@@ -256,7 +256,7 @@ public final class ScreenshotsScreen extends HollowScreen {
 		return Math.max(0, last.bottom() + Math.round(scroll) - grid.bottom());
 	}
 
-	private void renderGrid(GuiGraphics g, int mx, int my, float a) {
+	private void renderGrid(GuiGraphicsExtractor g, int mx, int my, float a) {
 		if (files.isEmpty()) {
 			Ui.center(g, font, "No screenshots yet. Press F2 in game to take one.", grid.centerX(), grid.y() + 40, Theme.fade(Theme.TEXT_FAINT, a));
 			return;
@@ -284,7 +284,7 @@ public final class ScreenshotsScreen extends HollowScreen {
 	}
 
 	/** Draw a picture as large as fits inside {@code box}, keeping its shape. */
-	private static void blitFit(GuiGraphics g, Pic p, Rect box, float a) {
+	private static void blitFit(GuiGraphicsExtractor g, Pic p, Rect box, float a) {
 		float s = Math.min(box.w() / (float) p.w(), box.h() / (float) p.h());
 		int w = Math.max(1, Math.round(p.w() * s));
 		int h = Math.max(1, Math.round(p.h() * s));
@@ -293,7 +293,7 @@ public final class ScreenshotsScreen extends HollowScreen {
 		g.blit(RenderPipelines.GUI_TEXTURED, p.id(), x, y, 0f, 0f, w, h, p.w(), p.h(), p.w(), p.h(), Theme.fade(0xFFFFFFFF, a));
 	}
 
-	private void renderViewer(GuiGraphics g, int mx, int my, float a) {
+	private void renderViewer(GuiGraphicsExtractor g, int mx, int my, float a) {
 		Path f = current();
 		Rect area = new Rect(grid.x(), grid.y(), grid.w(), grid.h() - 22);
 		Draw.roundRect(g, area, Theme.radius(4), Theme.fade(0x60000000, a));

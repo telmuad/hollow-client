@@ -6,7 +6,7 @@ import dev.telmuad.hollowclient.render.WaypointFx;
 import dev.telmuad.hollowclient.waypoints.Waypoint;
 import dev.telmuad.hollowclient.waypoints.Waypoints;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
@@ -113,7 +113,7 @@ public final class WaypointsScreen extends HollowScreen {
 	}
 
 	@Override
-	protected void renderContent(GuiGraphics g, int mx, int my, float a) {
+	protected void renderContent(GuiGraphicsExtractor g, int mx, int my, float a) {
 		Minecraft mc = Minecraft.getInstance();
 		drawPanel(g, panel, 8, a);
 		back.render(g, font, mx, my, dt, a);
@@ -176,7 +176,7 @@ public final class WaypointsScreen extends HollowScreen {
 			Ui.center(g, font, "x", del.centerX() + 1, del.y() + 4, Theme.fade(delHover ? 0xFFFFFFFF : Theme.TEXT_DIM, a));
 		}
 		rename.visible = renameShown;
-		if (renameShown && a > 0.5f) rename.render(g, mx, my, 0);
+		if (renameShown && a > 0.5f) rename.extractRenderState(g, mx, my, 0);
 		g.disableScissor();
 		Ui.draw(g, font, "Click a name to rename it, the dot to change its color. A death point is saved where you die.",
 				panel.x() + 10, panel.bottom() - 14, Theme.fade(Theme.TEXT_FAINT, a));

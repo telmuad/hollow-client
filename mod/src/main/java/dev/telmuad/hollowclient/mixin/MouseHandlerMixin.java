@@ -27,7 +27,7 @@ abstract class MouseHandlerMixin {
 	@Inject(method = "onScroll", at = @At("HEAD"), cancellable = true)
 	private void hollowclient$zoomScroll(long window, double horizontal, double vertical, CallbackInfo ci) {
 		Minecraft mc = Minecraft.getInstance();
-		if (Modules.ZOOM == null || mc.screen != null || mc.player == null || window != mc.getWindow().handle()) return;
+		if (Modules.ZOOM == null || mc.gui.screen() != null || mc.player == null || window != mc.getWindow().handle()) return;
 		if (Modules.ZOOM.onScroll(vertical)) ci.cancel();
 	}
 
