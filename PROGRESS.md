@@ -134,5 +134,6 @@ Everything in the expansion plan is done, built, tested and pushed. Versions: mo
 - `gradlew build`: 98 JUnit tests. `gradlew runClientGameTest`: 60 in-game checks with screenshots, passing with and without Sodium, plus the FPS benchmark (TESTING.md has the table: every effect alone costs at most +0.12 ms per frame on an RTX 3080 at 720p except the HUD at +0.58 ms; everything at once +1.26 ms).
 - Launcher: 80 pytest tests; `--screenshots` reviewed for every page, the intro and the PLAY burst; packaged exe self-test and screenshots.
 
-### Next
-- Sign in and launch end to end through the launcher with your Microsoft account now that the app ID is approved (you sign in yourself in the browser).
+### Sign-in and launch (2026-10-15)
+- Verified end to end with a real Microsoft account on the packaged launcher: PLAY opened the Microsoft sign-in page, the sign-in went through Xbox Live and the Minecraft services, the launcher put the new Hollow jar in place (1.0.0 -> 1.1.0 by content), and the game started signed in with Hollow Client 1.1.0, Fabric API and Sodium, no errors in the log, and quit cleanly. Reopening the launcher signed in again silently from Windows Credential Manager.
+- Discord Presence checked with a real Discord application: Discord accepted the ID and the profile showed "Playing Hollow Client".
