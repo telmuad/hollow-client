@@ -1,3 +1,5 @@
+> **Frozen legacy branch (Minecraft 1.21.11).** This branch keeps Hollow Client 1.1.0 for Minecraft 1.21.11 working and gets no new features. Development continues on `main` (Minecraft 26.2, SkyBlock Mode). The launcher on `main` still offers this version as the "Hollow 1.21.11 — Legacy" profile.
+
 # Hollow Client
 
 A personal, non-commercial launcher and client for Minecraft: Java Edition.
