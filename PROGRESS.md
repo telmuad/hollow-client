@@ -39,7 +39,7 @@ first unticked item below. Plans 1 and 2 (Minecraft 1.21.11) are finished and fr
   - [x] `build_all.bat` end to end: both jars built and bundled, launcher packaged, packaged self-test OK
   - [x] Real install into the real `%APPDATA%\.hollowclient` (2026-10-16, started outside the app container): the 1.x install migrated into `instances/legacy-1.21.11` (mods, config, saves, options, logs, packs; shared files stayed); 26.2 profile installed with `java-runtime-epsilon` (25), Fabric 0.19.5, Fabric API 0.161.0+26.2, Sodium 0.9.2, Hypixel Mod API 1.0.2, Hollow 2.0.0; legacy profile recognised as installed with `java-runtime-delta` (21) and Hollow 1.1.0
   - [x] First play of a profile copies your Hollow config, `options.txt` and server list from the other profile (only when it has no Hollow config yet)
-- [ ] **F1–F6. SkyBlock foundation**
+- [x] **F1–F6. SkyBlock foundation**
   - [x] Data layer (`skyblock/`): game text → `SkyBlockInput` → parsers (`SidebarParser`, `TabListParser`, `ActionBarParser`, `ChatParser`, `ItemParser`) → `SkyBlockState` + typed `SbEvent`s on an `EventBus`; patterns in `assets/hollowclient/skyblock/patterns/*.json` (overridable from `config/hollowclient/skyblock/patterns/`)
   - [x] Game adapter (`skyblock/mc/GameReader`): sidebar, tab list, open containers, item custom data → JSON; chat and action bar/titles via mixins (`ChatComponentAddMixin`, new `HudMessagesMixin`); Hollow's own overlay messages excluded
   - [x] Detection: Hypixel Mod API location (+ party) packets when the mod is installed (compile-only dependency, loaded by reflection), else scoreboard title / tab "Area:" / Rift, dungeon and Kuudra lines; profile name, id and game mode (♲ ☀ Ⓑ); per-profile store
@@ -47,9 +47,11 @@ first unticked item below. Plans 1 and 2 (Minecraft 1.21.11) are finished and fr
   - [x] Session totals (`SessionStats`) saved as `session_stats.json` per profile for the launcher's SkyBlock page
   - [x] Data: `Http` disk cache with TTLs and stale-on-outage, `Prices` (bazaar, Elite lowest BIN incl. pets by rarity/level, NPC prices and names), `NeuRepo` (MIT zip, daily commit check, read in place), refreshed in the background only while on SkyBlock
   - [x] Tests: 42 JUnit (parsers with fixtures, input router, recorder privacy, every scenario, prices, cache, NEU repo); gametest 70/70 incl. 9 SkyBlock checks (server action bar and chat read, simulator end to end, items with SkyBlock data in singleplayer)
-  - [ ] Menu: SkyBlock category with area sub-tabs; SkyBlock module base classes (island gating, health)
-  - [ ] SkyBlock Mode on join: badge toast, SkyBlock HUD layout, modules per island; SkyBlock HUD elements
-  - [ ] Hub screen (H), alerts engine + editor, setup checker, compatibility screen, feature health, hover-dump key, optional API key
+  - [x] Menu: SkyBlock category (nether star) with area sub-tabs; `SkyBlockModule`/`SkyBlockHudModule` base classes (island gating, feature health, overlaps)
+  - [x] SkyBlock Mode module: badge toast on join, SkyBlock HUD layout (shared or per island, swapped back on leaving and at startup), downloads switch; SkyBlock Info HUD and SkyBlock Session HUD
+  - [x] Hub (H): session, calendar, held item value, mayor (keyless election resource), latest events, tools; alerts engine (built-ins + your own chat regex alerts, title/sound/toast, cooldowns) + editor; setup checker; feature health; compatibility (Skyblocker/SkyHanni/Firmament); hover-dump key (unbound) and "Save held item"; optional API key stored with Windows DPAPI (JNA ships with Minecraft)
+  - [x] Tests: 51 SkyBlock JUnit tests (150 in all); gametest 75/75 incl. screenshots of the join toast, SkyBlock HUD, an alert, Hub, setup checker, feature health, alerts editor, compatibility and the SkyBlock menu category
+  - [x] TESTING_SKYBLOCK.md started (setup checker + foundation)
 - [ ] **A1–A14. SkyBlock features** (see the plan, section 6): general/HUD, items/GUI, economy, garden, dungeons, slayers, mining, fishing, foraging/hunting, Crimson Isle/Kuudra, Rift, events, progression, chat/party
 - [ ] **T/Z. Finish**: TESTING_SKYBLOCK.md, USER_GUIDE, README, LICENSE/THIRD_PARTY_NOTICES, final summary
 

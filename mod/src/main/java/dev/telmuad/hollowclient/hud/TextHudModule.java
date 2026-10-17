@@ -23,6 +23,11 @@ public abstract class TextHudModule extends HudModule {
 		super(id, name, description, enabledByDefault, defaults);
 	}
 
+	protected TextHudModule(String id, String name, String description, dev.telmuad.hollowclient.module.Category category,
+							boolean enabledByDefault, HudPosition defaults) {
+		super(id, name, description, category, enabledByDefault, defaults);
+	}
+
 	/** Fill {@code out} with the lines to show. */
 	protected abstract void lines(Minecraft mc, boolean preview, List<Line> out);
 

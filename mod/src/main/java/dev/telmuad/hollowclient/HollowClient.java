@@ -52,6 +52,8 @@ public final class HollowClient implements ClientModInitializer {
 	public void onInitializeClient() {
 		// Shared with the launcher, which reads and writes the same file
 		Themes.init(dataDir().resolve("theme.json"));
+		// SkyBlock Mode's data layer first: SkyBlock modules subscribe to its events when they load
+		dev.telmuad.hollowclient.skyblock.SkyBlock.init();
 		modules = new ModuleRegistry();
 		Modules.registerAll(modules);
 
@@ -74,7 +76,7 @@ public final class HollowClient implements ClientModInitializer {
 		dev.telmuad.hollowclient.config.Profiles.load();
 		dev.telmuad.hollowclient.render.WaypointFx.register();
 		Modules.registerHooks();
-		dev.telmuad.hollowclient.skyblock.SkyBlock.init();
+		dev.telmuad.hollowclient.skyblock.ui.SkyBlockUi.init();
 
 		LOG.info("Hollow Client ready: {} modules", modules.all().size());
 	}

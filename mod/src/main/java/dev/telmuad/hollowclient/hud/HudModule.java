@@ -29,7 +29,12 @@ public abstract class HudModule extends Module {
 	}
 
 	protected HudModule(String id, String name, String description, boolean enabledByDefault, HudPosition defaults) {
-		super(id, name, description, Category.HUD, enabledByDefault);
+		this(id, name, description, Category.HUD, enabledByDefault, defaults);
+	}
+
+	/** A HUD element listed under another menu category (SkyBlock HUD elements). */
+	protected HudModule(String id, String name, String description, Category category, boolean enabledByDefault, HudPosition defaults) {
+		super(id, name, description, category, enabledByDefault);
 		this.defaults = defaults.copy();
 		this.position = defaults.copy();
 		textColor = add(new ColorSetting("textColor", "Text color", 0xFFFFFFFF));

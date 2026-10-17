@@ -69,5 +69,10 @@
 	"key.hollowclient.camera_play": "Play / stop camera path",
 	"key.hollowclient.music_play": "Music: play / pause",
 	"key.hollowclient.music_next": "Music: next song",
-	"key.hollowclient.music_previous": "Music: previous song"
+	"key.hollowclient.music_previous": "Music: previous song",
+	"key.hollowclient.skyblock_hub": "SkyBlock Hub",
+	"key.hollowclient.skyblock_dump": "SkyBlock: save hovered item (debug)",
+	"key.hollowclient.skyblock_mode": "Toggle SkyBlock Mode",
+	"key.hollowclient.sb_info": "Toggle SkyBlock Info",
+	"key.hollowclient.sb_session": "Toggle SkyBlock Session"
 }

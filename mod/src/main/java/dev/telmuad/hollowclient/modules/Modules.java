@@ -123,6 +123,7 @@ public final class Modules {
 	public static ScoreboardTitlesModule SCOREBOARD_TITLES;
 	public static DiscordModule DISCORD;
 	public static ProfilesModule PROFILES;
+	public static dev.telmuad.hollowclient.skyblock.modules.SkyBlockModeModule SKYBLOCK_MODE;
 
 	private Modules() {
 	}
@@ -183,6 +184,10 @@ public final class Modules {
 		AURA = registry.register(new AuraModule());
 		PET = registry.register(new PetModule());
 		EMOTES = registry.register(new EmotesModule());
+		// SkyBlock Mode (display-only features for Hypixel SkyBlock, grouped by area in the menu)
+		SKYBLOCK_MODE = registry.register(new dev.telmuad.hollowclient.skyblock.modules.SkyBlockModeModule());
+		registry.register(new dev.telmuad.hollowclient.skyblock.modules.SkyBlockInfoHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.modules.SkyBlockSessionHud());
 		// Client: theme, font, sounds and the global Performance Mode
 		THEME = registry.register(new ThemeModule());
 		PROFILES = registry.register(new ProfilesModule());

@@ -29,6 +29,10 @@ public sealed interface SbEvent {
 	record ProfileChanged(String name, String id, TabListParser.GameMode mode) implements SbEvent {
 	}
 
+	/** Every chat line from the server that isn't another player's message (cleaned). Custom alerts match these. */
+	record ChatLine(String line) implements SbEvent {
+	}
+
 	/** Any chat pattern that matched (alerts use these). */
 	record ChatMatched(ChatParser.ChatMatch match, String line) implements SbEvent {
 	}

@@ -1,0 +1,39 @@
+# Testing SkyBlock Mode on Hypixel
+
+A checklist for your first SkyBlock sessions with Hollow Client 2.x. Everything here was built and tested without
+Hypixel (unit tests with realistic text, the singleplayer simulator, screenshots), so this is where the real server
+gets checked. Go top to bottom; each area builds on the ones before it.
+
+**If something is wrong:** turn on the debug recorder (Hub → Record session, or `/hollow sbrec on`), do the thing
+again, stop it (`/hollow sbrec off`) and send the file from `hollow-debug/` (in the 26.2 profile's game folder). For a
+wrong item, hover it in a menu and press the "save hovered item" key (set it in Controls → Hollow Client), or hold it
+and use `/hollow sbdump`. Other players' chat is never recorded and names are replaced.
+
+## 0. Setup checker (do this first)
+
+1. Launch the **Hollow 26.2** profile (or press **Join Hypixel**), join SkyBlock (`/skyblock`).
+2. You should see a **SkyBlock Mode** toast with the SkyBlock badge.
+3. Press **H** → **Setup checker**. Expected: Hypixel Mod API ✓, SkyBlock Mode on ✓, SkyBlock detected ✓ ("from the
+   Hypixel Mod API"), Profile ✓ (your profile name; Ironman/Stranded/Bingo shown if you play one), Prices ✓ after a
+   minute, Item repository ✓ after a few minutes (one ~30 MB download).
+4. **Tab list widgets:** if it says something is missing, find Hypixel's tab widget settings and turn it on.
+   - [ ] Confirm where those settings are (the checker says: SkyBlock Menu → Settings → player list / tab widgets).
+     If the path is different, note the real one.
+5. `/hollow sbstate` prints what SkyBlock Mode knows: island, area, profile, purse, bits.
+
+## 1. Foundation
+
+- [ ] Changing islands (warp around) updates the island in `/hollow sbstate` and the SkyBlock Info HUD.
+- [ ] SkyBlock Info HUD (top left): island · area, SkyBlock date and time, purse (gold), bits (aqua); motes in the
+  Rift, copper on the Garden.
+- [ ] SkyBlock HUD layout: move a HUD element while on SkyBlock (Right Shift → Edit HUD), leave to the lobby: your
+  normal layout comes back; rejoin SkyBlock: the SkyBlock layout comes back.
+- [ ] Session HUD (switch it on in Right Shift → SkyBlock): purse change, bits, skill XP and rare drops add up.
+- [ ] The launcher's SkyBlock page shows "Last session" after you've played a few minutes.
+- [ ] Alerts: a rare drop shows the "RARE DROP!" title with a sound; a pet drop the pet one. Right Shift → H → Alerts:
+  switch one off, change a sound, add your own (e.g. pattern `Fairy Soul`, title `Soul!`) and trigger it.
+- [ ] Hub (H): session, coming up (compare with the in-game calendar), held item value (hold an item you know the price
+  of), mayor, latest events.
+- [ ] Feature health: every switched-on feature shows ✓ where its data should be.
+- [ ] Compatibility (only if you also use Skyblocker, SkyHanni or Firmament): their names are listed.
+- [ ] Chat from other players never fires an alert (ask a friend to type "RARE DROP! test").

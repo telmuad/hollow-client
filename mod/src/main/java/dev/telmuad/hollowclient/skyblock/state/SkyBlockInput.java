@@ -210,6 +210,7 @@ public final class SkyBlockInput {
 			record("chat", j);
 		}
 		if (fromPlayer) return;
+		bus.post(new SbEvent.ChatLine(clean));
 		for (ChatParser.ChatMatch m : ChatParser.parse(line)) {
 			bus.post(new SbEvent.ChatMatched(m, clean));
 			switch (m.name()) {

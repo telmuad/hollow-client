@@ -7,6 +7,7 @@ public enum Category {
 	EFFECTS("Effects"),
 	QOL("Quality of Life"),
 	STYLES("Styles"),
+	SKYBLOCK("SkyBlock"),
 	CLIENT("Client");
 
 	private final String label;

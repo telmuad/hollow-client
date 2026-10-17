@@ -61,6 +61,11 @@ public abstract class Module {
 		return enabledByDefault;
 	}
 
+	/** A sub-tab inside the category (SkyBlock areas: "General", "Garden", ...); empty for none. */
+	public String group() {
+		return "";
+	}
+
 	/** False for modules that are always on (Theme, Performance): their card has no switch. */
 	public boolean toggleable() {
 		return true;

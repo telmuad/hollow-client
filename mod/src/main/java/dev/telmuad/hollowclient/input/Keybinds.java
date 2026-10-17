@@ -28,6 +28,8 @@ public final class Keybinds {
 
 	private static KeyMapping menuKey;
 	private static KeyMapping emoteKey;
+	private static KeyMapping hubKey;
+	private static KeyMapping dumpKey;
 	private static final String[] ACTIONS = {"waypoint_add", "camera_point", "camera_play", "music_play", "music_next", "music_previous"};
 	private static final KeyMapping[] ACTION_KEYS = new KeyMapping[ACTIONS.length];
 	private static final KeyMapping[] MACRO_KEYS = new KeyMapping[dev.telmuad.hollowclient.modules.qol.ChatMacrosModule.SLOTS];
@@ -43,6 +45,10 @@ public final class Keybinds {
 				InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, CATEGORY));
 		emoteKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.hollowclient.emote_wheel",
 				InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, CATEGORY));
+		hubKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.hollowclient.skyblock_hub",
+				InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_H, CATEGORY));
+		dumpKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.hollowclient.skyblock_dump",
+				InputConstants.Type.KEYSYM, InputConstants.UNKNOWN.getValue(), CATEGORY));
 		for (int i = 0; i < ACTIONS.length; i++) {
 			ACTION_KEYS[i] = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.hollowclient." + ACTIONS[i],
 					InputConstants.Type.KEYSYM, InputConstants.UNKNOWN.getValue(), CATEGORY));
@@ -66,6 +72,16 @@ public final class Keybinds {
 	/** Hold to open the emote wheel (B by default). */
 	public static KeyMapping emoteKey() {
 		return emoteKey;
+	}
+
+	/** Opens the SkyBlock Hub (H by default). */
+	public static KeyMapping hubKey() {
+		return hubKey;
+	}
+
+	/** Saves the hovered (or held) item's SkyBlock data for parser fixes (unbound by default). */
+	public static KeyMapping dumpKey() {
+		return dumpKey;
 	}
 
 	public static KeyMapping of(Module module) {
@@ -92,6 +108,12 @@ public final class Keybinds {
 			if (mc.gui.screen() == null && mc.player != null && emotes != null && emotes.isEnabled()) {
 				mc.gui.setScreen(new dev.telmuad.hollowclient.gui.EmoteWheelScreen());
 			}
+		}
+		while (hubKey.consumeClick()) {
+			if (mc.gui.screen() == null && mc.player != null) mc.gui.setScreen(new dev.telmuad.hollowclient.skyblock.ui.SkyBlockHubScreen(null));
+		}
+		while (dumpKey.consumeClick()) {
+			if (mc.gui.screen() == null && mc.player != null) dev.telmuad.hollowclient.skyblock.ui.SkyBlockUi.dump(mc, mc.player.getMainHandItem());
 		}
 		for (int i = 0; i < ACTION_KEYS.length; i++) {
 			while (ACTION_KEYS[i].consumeClick()) {

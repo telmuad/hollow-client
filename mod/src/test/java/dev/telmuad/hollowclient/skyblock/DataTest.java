@@ -2,6 +2,7 @@ package dev.telmuad.hollowclient.skyblock;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import dev.telmuad.hollowclient.skyblock.data.ApiKeyStore;
 import dev.telmuad.hollowclient.skyblock.data.Http;
 import dev.telmuad.hollowclient.skyblock.data.NeuRepo;
 import dev.telmuad.hollowclient.skyblock.data.Prices;
@@ -181,5 +182,39 @@ class DataTest {
 		}, false);
 		assertFalse(repo.available());
 		assertFalse(repo.error().isEmpty());
+	}
+
+	// ------------------------------------------------------------------------------------------------ API key
+
+	@Test
+	void apiKeyIsStoredProtectedAndMasked(@TempDir Path dir) throws Exception {
+		ApiKeyStore.Protector reverse = new ApiKeyStore.Protector() {
+			@Override
+			public byte[] protect(byte[] d) {
+				byte[] o = new byte[d.length];
+				for (int i = 0; i < d.length; i++) o[i] = (byte) ~d[d.length - 1 - i];
+				return o;
+			}
+
+			@Override
+			public byte[] unprotect(byte[] d) {
+				return protect(d);
+			}
+
+			@Override
+			public boolean secure() {
+				return true;
+			}
+		};
+		ApiKeyStore store = new ApiKeyStore(dir.resolve("api_key.dat"), reverse);
+		String key = "0b1c2d3e-0000-4000-8000-00000000abcd";
+		assertThrows(IOException.class, () -> store.save("not a key"));
+		store.save(key);
+		assertFalse(Files.readString(dir.resolve("api_key.dat"), StandardCharsets.ISO_8859_1).contains("abcd"), "not stored as plain text");
+		assertEquals(key, store.read());
+		assertEquals("••••••••-abcd", ApiKeyStore.masked(key));
+		store.clear();
+		assertNull(store.read());
+		assertFalse(store.present());
 	}
 }

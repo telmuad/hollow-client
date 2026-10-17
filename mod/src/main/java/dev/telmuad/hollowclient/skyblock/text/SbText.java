@@ -149,6 +149,7 @@ public final class SbText {
 	/** "1h 2m", "4m 05s", "12s". */
 	public static String duration(long ms) {
 		long s = Math.max(0, ms / 1000);
+		if (s >= 86_400) return (s / 86_400) + "d " + (s % 86_400) / 3600 + "h";
 		if (s >= 3600) return (s / 3600) + "h " + (s % 3600) / 60 + "m";
 		if (s >= 60) return (s / 60) + "m " + String.format(Locale.ROOT, "%02ds", s % 60);
 		return s + "s";

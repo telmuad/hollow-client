@@ -44,6 +44,7 @@ public final class SkyBlock {
 	private static ProfileStore store;
 	private static SessionStats session;
 	private static SkyBlockData data;
+	private static dev.telmuad.hollowclient.skyblock.data.ApiKeyStore apiKeys;
 	/** Set while a SkyBlock screen (Hub, setup checker) wants fresh data even off SkyBlock. */
 	private static boolean dataWanted;
 	private static LocationSource locationSource;
@@ -77,6 +78,8 @@ public final class SkyBlock {
 		store = new ProfileStore(dir().resolve("profiles"));
 		session = new SessionStats(state, bus, System::currentTimeMillis);
 		bus.on(SbEvent.LeftSkyBlock.class, e -> saveSession());
+		apiKeys = new dev.telmuad.hollowclient.skyblock.data.ApiKeyStore(dir().resolve("api_key.dat"),
+				dev.telmuad.hollowclient.skyblock.data.ApiKeyStore.systemProtector());
 		data = new SkyBlockData(dir(), Http.javaFetcher(), System::currentTimeMillis);
 		data.setErrorSink(t -> HollowClient.LOG.warn("SkyBlock data refresh failed: {}", t.toString()));
 		java.util.concurrent.CompletableFuture.runAsync(data::loadCached);
@@ -100,6 +103,7 @@ public final class SkyBlock {
 			}
 		}
 		SbCommands.register();
+		dev.telmuad.hollowclient.skyblock.alerts.SkyBlockAlerts.init();
 	}
 
 	public static SkyBlockState state() {
@@ -130,6 +134,11 @@ public final class SkyBlock {
 		return session;
 	}
 
+	/** The optional Hypixel API key (encrypted with Windows DPAPI). */
+	public static dev.telmuad.hollowclient.skyblock.data.ApiKeyStore apiKeys() {
+		return apiKeys;
+	}
+
 	/** Prices and the NEU item repository. */
 	public static SkyBlockData data() {
 		return data;
@@ -150,9 +159,10 @@ public final class SkyBlock {
 		return party;
 	}
 
-	/** True while on SkyBlock (or in a simulation). SkyBlock features do nothing otherwise. */
+	/** True while on SkyBlock (or in a simulation) with SkyBlock Mode on. SkyBlock features do nothing otherwise. */
 	public static boolean active() {
-		return state != null && state.onSkyBlock();
+		var mode = dev.telmuad.hollowclient.modules.Modules.SKYBLOCK_MODE;
+		return state != null && state.onSkyBlock() && (mode == null || mode.isEnabled());
 	}
 
 	public static void tick(Minecraft mc) {
@@ -166,7 +176,9 @@ public final class SkyBlock {
 			reader.tick(mc, input);
 		}
 		if (ticks % 20 == 0) recorder.flush();
-		data.tick(state.onSkyBlock() || dataWanted);
+		var mode = dev.telmuad.hollowclient.modules.Modules.SKYBLOCK_MODE;
+		boolean downloads = mode == null || mode.downloads();
+		data.tick(downloads && (active() || dataWanted));
 		if (state.onSkyBlock() && now - lastSessionSave > 60_000 && session.playedMs() > 30_000) saveSession();
 	}
 
@@ -195,12 +207,26 @@ public final class SkyBlock {
 	private static String subtitle = "";
 
 	public static void onSubtitle(Component sub) {
+		if (clientOverlay) return;
 		subtitle = sub == null ? "" : LegacyText.of(sub);
 	}
 
 	public static void onTitle(Component title) {
+		if (clientOverlay) return;
 		if (input != null && !simulator.running()) input.title(LegacyText.of(title), subtitle);
 		subtitle = "";
+	}
+
+	/** Shows Hollow's own title (alerts) without SkyBlock Mode reading it as the server's. */
+	public static void showTitle(Minecraft mc, Component title, Component sub) {
+		clientOverlay = true;
+		try {
+			mc.gui.hud.setTimes(4, 36, 10);
+			mc.gui.hud.setSubtitle(sub);
+			mc.gui.hud.setTitle(title);
+		} finally {
+			clientOverlay = false;
+		}
 	}
 
 	/** Shows Hollow's own message above the hotbar without SkyBlock Mode reading it as the server's action bar. */

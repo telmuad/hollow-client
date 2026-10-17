@@ -39,6 +39,8 @@ import java.util.Set;
 public final class HollowMenuScreen extends HollowScreen {
 	private static Category lastCategory = Category.HUD;
 	private static String lastQuery = "";
+	/** The SkyBlock area sub-tab ("" = all areas). */
+	private static String lastGroup = "";
 
 	private static final int CARD_H = 46;
 	private static final int TILE_H = 58;
@@ -53,6 +55,8 @@ public final class HollowMenuScreen extends HollowScreen {
 	private Rect grid = Rect.EMPTY;
 	private Rect section = Rect.EMPTY;
 	private Rect footer = Rect.EMPTY;
+	private Rect chipsRow = Rect.EMPTY;
+	private String group = lastGroup;
 	private Rect searchBox = Rect.EMPTY;
 	private Rect clearSearch = Rect.EMPTY;
 	private boolean railLabels = true;
@@ -114,7 +118,7 @@ public final class HollowMenuScreen extends HollowScreen {
 		rail = new Rect(panel.x() + 8, header.bottom() + 2, railW, footer.y() - header.bottom() - 6);
 		railRow = Math.max(18, Math.min(26, (rail.h() - 2) / Category.values().length));
 		section = new Rect(rail.right() + 8, header.bottom() + 2, panel.right() - 8 - rail.right() - 8, 14);
-		grid = new Rect(section.x(), section.bottom() + 2, section.w(), footer.y() - section.bottom() - 6);
+		layoutGrid();
 		gap = 6;
 		cols = Math.max(1, (grid.w() + gap) / (140 + gap));
 		cardW = (grid.w() - 6 - gap * (cols - 1)) / cols;
@@ -148,12 +152,69 @@ public final class HollowMenuScreen extends HollowScreen {
 		return !query.isEmpty();
 	}
 
+	/** Area sub-tabs ("" first, meaning all), for categories whose modules have groups (SkyBlock). */
+	private List<String> groups() {
+		List<String> out = new ArrayList<>();
+		out.add("");
+		for (Module m : HollowClient.modules().all()) {
+			if (m.category() == category && !m.group().isEmpty() && !out.contains(m.group())) out.add(m.group());
+		}
+		return out;
+	}
+
+	private boolean showingChips() {
+		return !searching() && groups().size() > 1;
+	}
+
+	/** The card grid sits under the section title, and under the sub-tab chips when there are some. */
+	private void layoutGrid() {
+		int top = section.bottom() + 2;
+		if (showingChips()) {
+			chipsRow = new Rect(section.x(), section.bottom() + 1, section.w(), 14);
+			top = chipsRow.bottom() + 4;
+		} else {
+			chipsRow = Rect.EMPTY;
+		}
+		grid = new Rect(section.x(), top, section.w(), footer.y() - 4 - top);
+	}
+
+	/** Where each chip is drawn (in the order of {@link #groups()}). */
+	private List<Rect> chipRects(List<String> names) {
+		List<Rect> out = new ArrayList<>();
+		int x = chipsRow.x();
+		for (String n : names) {
+			int w = Ui.width(font, n.isEmpty() ? "All" : n) + 12;
+			out.add(new Rect(x, chipsRow.y(), w, chipsRow.h()));
+			x += w + 4;
+		}
+		return out;
+	}
+
+	private void renderChips(GuiGraphicsExtractor g, int mx, int my, float a) {
+		if (!showingChips()) return;
+		List<String> names = groups();
+		if (!names.contains(group)) group = "";
+		List<Rect> rects = chipRects(names);
+		g.enableScissor(chipsRow.x(), chipsRow.y() - 1, chipsRow.right(), chipsRow.bottom() + 1);
+		for (int i = 0; i < names.size(); i++) {
+			Rect r = rects.get(i);
+			boolean selected = names.get(i).equals(group);
+			float h = animate("chip:" + names.get(i), r.contains(mx, my));
+			int bg = selected ? Theme.accentSoft() : Theme.mix(Theme.CARD, Theme.CARD_HOVER, h);
+			Draw.roundRect(g, r, 7, Theme.fade(bg, a));
+			Draw.roundOutline(g, r, 7, Theme.fade(selected ? Theme.accent() : Theme.mix(Theme.STROKE, Theme.accent(), h * 0.6f), a));
+			Ui.center(g, font, names.get(i).isEmpty() ? "All" : names.get(i), r.centerX(), r.y() + 3,
+					Theme.fade(selected ? Theme.TEXT : Theme.mix(Theme.TEXT_DIM, Theme.TEXT, h), a));
+		}
+		g.disableScissor();
+	}
+
 	private List<Module> visibleModules() {
 		List<Module> out = new ArrayList<>();
 		for (Module m : HollowClient.modules().all()) {
 			if (searching()) {
 				if (m.name().toLowerCase(Locale.ROOT).contains(query) || m.description().toLowerCase(Locale.ROOT).contains(query)) out.add(m);
-			} else if (m.category() == category) {
+			} else if (m.category() == category && (group.isEmpty() || m.group().equals(group) || !showingChips())) {
 				out.add(m);
 			}
 		}
@@ -185,6 +246,7 @@ public final class HollowMenuScreen extends HollowScreen {
 		listShownAt = Util.getMillis();
 		if (searching()) search.setValue("");
 		search.setFocused(false);
+		layoutGrid();
 	}
 
 	// ---------------------------------------------------------------------------------------------------- render
@@ -192,9 +254,11 @@ public final class HollowMenuScreen extends HollowScreen {
 	@Override
 	protected void renderContent(GuiGraphicsExtractor g, int mx, int my, float a) {
 		drawPanel(g, panel, 8, a);
+		layoutGrid();
 		renderHeader(g, mx, my, a);
 		renderRail(g, mx, my, a);
 		renderSection(g, a);
+		renderChips(g, mx, my, a);
 		scroll = Anim.approach(scroll, scrollTarget, dt, 18f);
 		g.enableScissor(grid.x() - 1, grid.y(), grid.right() + 1, grid.bottom());
 		Set<Object> shown = new HashSet<>();
@@ -310,6 +374,7 @@ public final class HollowMenuScreen extends HollowScreen {
 			case EFFECTS -> new ItemIcons.Icon(Items.FIREWORK_ROCKET, "firework_rocket");
 			case QOL -> new ItemIcons.Icon(Items.FEATHER, "feather");
 			case STYLES -> new ItemIcons.Icon(Items.GOLDEN_CHESTPLATE, "golden_chestplate");
+			case SKYBLOCK -> new ItemIcons.Icon(Items.NETHER_STAR, "nether_star");
 			case CLIENT -> new ItemIcons.Icon(Items.AMETHYST_SHARD, "amethyst_shard");
 		};
 	}
@@ -613,6 +678,23 @@ public final class HollowMenuScreen extends HollowScreen {
 				return true;
 			}
 			y += railRow;
+		}
+
+		if (left && showingChips() && chipsRow.contains(mx, my)) {
+			List<String> names = groups();
+			List<Rect> rects = chipRects(names);
+			for (int i = 0; i < names.size(); i++) {
+				if (rects.get(i).contains(mx, my)) {
+					UiSounds.click();
+					ripple(mx, my, rects.get(i));
+					group = names.get(i);
+					lastGroup = group;
+					scroll = scrollTarget = 0;
+					listShownAt = Util.getMillis();
+					return true;
+				}
+			}
+			return true;
 		}
 
 		if (grid.contains(mx, my)) {

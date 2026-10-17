@@ -42,6 +42,7 @@ public final class Toasts {
 
 	private static final class Card {
 		final Kind kind;
+		final net.minecraft.resources.Identifier icon;
 		final String title;
 		final String message;
 		final long created;
@@ -51,8 +52,9 @@ public final class Toasts {
 		boolean leaving;
 		long last = Util.getMillis();
 
-		Card(Kind kind, String title, String message, long duration) {
+		Card(Kind kind, String title, String message, long duration, net.minecraft.resources.Identifier icon) {
 			this.kind = kind;
+			this.icon = icon;
 			this.title = title;
 			this.message = message;
 			this.created = Util.getMillis();
@@ -81,11 +83,22 @@ public final class Toasts {
 		show(Kind.ERROR, title, message);
 	}
 
+	private static final net.minecraft.resources.Identifier SKYBLOCK_BADGE = dev.telmuad.hollowclient.HollowClient.id("textures/gui/skyblock_badge.png");
+
+	/** A notification with the SkyBlock badge instead of the Hollow emblem. */
+	public static void showBadge(String title, String message) {
+		show(Kind.INFO, title, message, SKYBLOCK_BADGE);
+	}
+
 	/** Show a notification. Safe to call from any thread. */
 	public static void show(Kind kind, String title, String message) {
+		show(kind, title, message, null);
+	}
+
+	public static void show(Kind kind, String title, String message, net.minecraft.resources.Identifier icon) {
 		Minecraft mc = Minecraft.getInstance();
 		if (!mc.isSameThread()) {
-			mc.execute(() -> show(kind, title, message));
+			mc.execute(() -> show(kind, title, message, icon));
 			return;
 		}
 		ToastsModule module = Modules.TOASTS;
@@ -106,7 +119,7 @@ public final class Toasts {
 			}
 		}
 		while (CARDS.size() >= MAX * 2) CARDS.remove(0);
-		CARDS.add(new Card(kind, title, message, module.durationMs()));
+		CARDS.add(new Card(kind, title, message, module.durationMs(), icon));
 		if (module.sound()) UiSounds.play(kind == Kind.ERROR || kind == Kind.WARNING ? UiSounds.NOTIFY : UiSounds.TOAST);
 	}
 
@@ -162,7 +175,12 @@ public final class Toasts {
 			Fx.glass(g, r, Theme.radius(6), a, Theme.glow() * 0.8f, 0f, 0f);
 			// kind stripe and icon
 			Draw.roundRect(g, r.x() + 5, r.y() + 6, 2, H - 12, 1, ColorUtil.fade(accent, a));
-			Fx.sigil(g, r.x() + 11, r.y() + (H - 16) / 2, 16, a, false);
+			if (c.icon != null) {
+				g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, c.icon, r.x() + 10, r.y() + (H - 18) / 2, 0f, 0f, 18, 18, 18, 18,
+						ColorUtil.fade(0xFFFFFFFF, a));
+			} else {
+				Fx.sigil(g, r.x() + 11, r.y() + (H - 16) / 2, 16, a, false);
+			}
 			int tx = r.x() + 32;
 			Ui.draw(g, font, Ui.bold(Text.fit(font, c.title, W - 40)), tx, r.y() + 7, ColorUtil.fade(Theme.TEXT, a));
 			if (c.message != null && !c.message.isEmpty()) {

@@ -78,7 +78,7 @@ final class SbCommands {
 
 	private static int state(CommandContext<FabricClientCommandSource> c) {
 		SkyBlockState s = SkyBlock.state();
-		String source = s.fromModApi() ? "Hypixel Mod API" : "scoreboard and tab list";
+		String source = SkyBlock.simulator().running() ? "simulator" : s.fromModApi() ? "Hypixel Mod API" : "scoreboard and tab list";
 		ok(c, s.onSkyBlock() ? "On SkyBlock (" + source + ")" : "Not on SkyBlock");
 		if (!s.onSkyBlock()) return 1;
 		info(c, "Island: " + s.island().displayName() + (s.area().isEmpty() ? "" : " / " + s.area()));

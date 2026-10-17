@@ -149,13 +149,52 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		// the simulator plays the Hub scenario end to end
 		String problem = ctx.computeOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.simulate(mc, "hub"));
 		check("The simulator starts in singleplayer (" + problem + ")", problem == null);
-		ctx.waitTicks(110);
+		ctx.waitTicks(12);
+		screenshot(ctx, "skyblock_join_toast");
+		check("Joining SkyBlock loads the SkyBlock HUD layout", ctx.computeOnClient(mc ->
+				"skyblock".equals(dev.telmuad.hollowclient.modules.Modules.SKYBLOCK_MODE.activeLayout())));
+		ctx.waitTicks(98);
 		check("Hub scenario: on SkyBlock in the Hub as Apple with 1,251,000 coins", ctx.computeOnClient(mc -> {
 			var st = dev.telmuad.hollowclient.skyblock.SkyBlock.state();
 			return st.onSkyBlock() && st.island() == dev.telmuad.hollowclient.skyblock.state.Island.HUB
 					&& "Apple".equals(st.profileName()) && st.purse() == 1_251_000;
 		}));
 		check("Hub scenario: the session counts the rare drop", ctx.computeOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.session().rareDrops() == 1));
+		setEnabled(ctx, "sb_session", true);
+		setEnabled(ctx, "sb_info", true); // the HUD tests above switch every HUD element off
+		ctx.waitTicks(10);
+		check("The SkyBlock Info HUD shows on SkyBlock", ctx.computeOnClient(mc -> module("sb_info") instanceof dev.telmuad.hollowclient.hud.HudModule h
+				&& h.isEnabled() && h.visibleInGame(mc)));
+		screenshot(ctx, "skyblock_hud_hub");
+		long titlesBefore = ctx.computeOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.bus().recent().stream()
+				.filter(l -> l.event() instanceof dev.telmuad.hollowclient.skyblock.event.SbEvent.TitleShown).count());
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.alerts.SkyBlockAlerts.show(new dev.telmuad.hollowclient.skyblock.alerts.AlertEngine.Fired(
+				dev.telmuad.hollowclient.skyblock.alerts.SkyBlockAlerts.rules().getFirst(), "§6§lRARE DROP!", "Shard of the Shredded 312%")));
+		ctx.waitTicks(8);
+		screenshot(ctx, "skyblock_alert");
+		check("A Hollow alert title isn't read back as the server's", ctx.computeOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.bus().recent().stream()
+				.filter(l -> l.event() instanceof dev.telmuad.hollowclient.skyblock.event.SbEvent.TitleShown).count()) == titlesBefore);
+		ctx.setScreen(() -> new dev.telmuad.hollowclient.skyblock.ui.SkyBlockHubScreen(null));
+		ctx.waitTicks(25);
+		check("H-key screen: the SkyBlock Hub opens", ctx.computeOnClient(mc -> mc.gui.screen() instanceof dev.telmuad.hollowclient.skyblock.ui.SkyBlockHubScreen));
+		screenshot(ctx, "skyblock_hub");
+		ctx.setScreen(() -> new dev.telmuad.hollowclient.skyblock.ui.SetupCheckerScreen(null));
+		ctx.waitTicks(25);
+		screenshot(ctx, "skyblock_setup_checker");
+		ctx.setScreen(() -> new dev.telmuad.hollowclient.skyblock.ui.FeatureHealthScreen(null));
+		ctx.waitTicks(25);
+		screenshot(ctx, "skyblock_feature_health");
+		ctx.setScreen(() -> new dev.telmuad.hollowclient.skyblock.ui.AlertsScreen(null));
+		ctx.waitTicks(25);
+		screenshot(ctx, "skyblock_alerts");
+		ctx.setScreen(() -> new dev.telmuad.hollowclient.skyblock.ui.CompatibilityScreen(null));
+		ctx.waitTicks(20);
+		screenshot(ctx, "skyblock_compatibility");
+		ctx.setScreen(() -> dev.telmuad.hollowclient.gui.HollowMenuScreen.at(dev.telmuad.hollowclient.module.Category.SKYBLOCK));
+		ctx.waitTicks(25);
+		screenshot(ctx, "skyblock_menu");
+		ctx.setScreen(() -> null);
+		setEnabled(ctx, "sb_session", false);
 
 		// the items scenario gives real items with SkyBlock data
 		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.simulate(mc, "items"));
@@ -171,6 +210,8 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.stopSimulation());
 		ctx.waitTicks(5);
 		check("Stopping the simulator leaves SkyBlock", ctx.computeOnClient(mc -> !dev.telmuad.hollowclient.skyblock.SkyBlock.active()));
+		check("Leaving SkyBlock puts the normal HUD layout back", ctx.computeOnClient(mc ->
+				"outside".equals(dev.telmuad.hollowclient.modules.Modules.SKYBLOCK_MODE.activeLayout())));
 		sp.getServer().runCommand("clear @a");
 	}
 
