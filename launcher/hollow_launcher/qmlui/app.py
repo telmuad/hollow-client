@@ -11,10 +11,10 @@ from PySide6.QtCore import QUrl
 from .. import APP_NAME, emblem, paths
 
 QML_DIR = Path(__file__).resolve().parent.parent / "qml"
-PAGES = ["home", "wardrobe", "stats", "settings", "logs"]
+PAGES = ["home", "skyblock", "wardrobe", "stats", "settings", "logs"]
 
 
-def create_engine(backend, theme, sounds, skip_intro: bool):
+def create_engine(backend, theme, sounds, skip_intro: bool, skyblock=None):
     from PySide6.QtQml import QQmlApplicationEngine, qmlRegisterType
 
     from .skin_view import SkinView
@@ -26,6 +26,12 @@ def create_engine(backend, theme, sounds, skip_intro: bool):
     ctx.setContextProperty("backend", backend)
     ctx.setContextProperty("theme", theme)
     ctx.setContextProperty("sounds", sounds)
+    if skyblock is None:
+        from .skyblock_bridge import SkyBlockBridge
+
+        skyblock = SkyBlockBridge(backend.root / "skyblock_cache", backend.skyblock_instance, network=False)
+    ctx.setContextProperty("skyblock", skyblock)
+    engine._skyblock = skyblock  # keep it alive as long as the engine
     ctx.setContextProperty("introPoints", emblem.intro_points())
     ctx.setContextProperty("sigilImage", QUrl.fromLocalFile(str(emblem.flat_file())).toString())
     ctx.setContextProperty("emblemDir", QUrl.fromLocalFile(str(emblem.emblem_dir())).toString() + "/")
@@ -56,6 +62,7 @@ def run(selftest: bool = False, screenshots: str | None = None) -> int:
     from PySide6.QtGui import QGuiApplication, QIcon
 
     from .backend import Backend
+    from .skyblock_bridge import SkyBlockBridge
     from .sounds import Sounds
     from .theme_bridge import ThemeBridge
 
@@ -66,9 +73,10 @@ def run(selftest: bool = False, screenshots: str | None = None) -> int:
         app.setWindowIcon(QIcon(str(ico)))
     offline = selftest or bool(screenshots)
     backend = Backend(network=not offline)
-    theme = ThemeBridge(backend.game_dir / "config" / "hollowclient" / "theme.json")
+    theme = ThemeBridge(backend.theme_files())
     sounds = Sounds(paths.assets_dir() / "sounds", enabled=backend.settings.ui_sounds and not offline)
-    engine = create_engine(backend, theme, sounds, skip_intro=offline)
+    skyblock = SkyBlockBridge(backend.root / "skyblock_cache", backend.skyblock_instance, network=not offline)
+    engine = create_engine(backend, theme, sounds, skip_intro=offline, skyblock=skyblock)
     roots = engine.rootObjects()
     if not roots:
         print("SELFTEST FAILED: the QML window didn't load", file=sys.stderr)
@@ -109,11 +117,16 @@ def _selftest(app, window, backend) -> int:
         problems.append("window icon missing (assets/icon.ico)")
     if not (QML_DIR / "shaders" / "nebula.frag.qsb").is_file():
         problems.append("compiled shader missing (qml/shaders/nebula.frag.qsb)")
-    jar = paths.find_mod_jar()
-    if jar is None:
-        problems.append("Hollow Client mod jar not found (bundled/ or mod/build/libs)")
-    if paths.is_frozen() and (jar is None or not str(jar).startswith(str(paths.bundle_dir()))):
-        problems.append("the packaged app has no bundled mod jar")
+    jars = {}
+    for p in backend.profiles:
+        jar = paths.find_mod_jar(minecraft=p.minecraft)
+        jars[p.id] = jar
+        if jar is None:
+            problems.append(f"no Hollow Client jar for Minecraft {p.minecraft} ({p.id}) in bundled/ or the build folders")
+        elif paths.is_frozen() and not str(jar).startswith(str(paths.bundle_dir())):
+            problems.append(f"the packaged app has no bundled jar for Minecraft {p.minecraft}")
+    if not backend.profiles:
+        problems.append("profiles.json has no profiles")
     try:
         import keyring  # noqa: F401
         import minecraft_launcher_lib  # noqa: F401
@@ -126,7 +139,8 @@ def _selftest(app, window, backend) -> int:
             problems.append(f"no usable keyring backend ({type(kr).__name__})")
     except Exception as e:
         problems.append(f"import failed: {e}")
-    print(f"{APP_NAME} self-test: frozen={paths.is_frozen()} jar={jar.name if jar else None}")
+    found = ", ".join(f"{pid}={j.name if j else None}" for pid, j in jars.items())
+    print(f"{APP_NAME} self-test: frozen={paths.is_frozen()} jars: {found}")
     for p in problems:
         print(f"PROBLEM: {p}")
     print("SELFTEST OK" if not problems else "SELFTEST FAILED")

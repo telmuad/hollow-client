@@ -1,0 +1,31 @@
+{
+  "_comment": "Hollow's version profiles. Everything version-specific for the launcher lives here (see VERSION_BUMP.md). Mods are Modrinth project ids, downloaded at install time for the profile's Minecraft version; the Hollow jar is the bundled one whose fabric.mod.json depends on that Minecraft version.",
+  "default": "hollow-26.2",
+  "profiles": [
+    {
+      "id": "hollow-26.2",
+      "name": "Hollow 26.2",
+      "tagline": "SkyBlock ready",
+      "minecraft": "26.2",
+      "min_loader": "0.19.5",
+      "mods": [
+        {"project": "P7dR8mSH", "name": "Fabric API"},
+        {"project": "AANobbMI", "name": "Sodium"},
+        {"project": "1A2mKfBx", "name": "Hypixel Mod API"}
+      ],
+      "hypixel": true
+    },
+    {
+      "id": "legacy-1.21.11",
+      "name": "Hollow 1.21.11",
+      "tagline": "Legacy",
+      "minecraft": "1.21.11",
+      "min_loader": "0.19.5",
+      "mods": [
+        {"project": "P7dR8mSH", "name": "Fabric API"},
+        {"project": "AANobbMI", "name": "Sodium"}
+      ],
+      "hypixel": false
+    }
+  ]
+}

@@ -1,8 +1,10 @@
-"""Installing and repairing everything in the Hollow game folder.
+"""Installing and repairing one version profile.
 
-Order: vanilla Minecraft 1.21.11 (official Mojang servers, including Mojang's Java 21 runtime) -> the newest stable
-Fabric Loader (the official Fabric installer) -> Fabric API and Sodium (Modrinth) -> the Hollow Client mod jar.
-Nothing from Minecraft is bundled; everything is downloaded from the official sources here.
+Order: vanilla Minecraft (official Mojang servers, including Mojang's Java runtime for that version) -> the newest
+stable Fabric Loader (the official Fabric installer) -> the profile's mods from Modrinth (Fabric API, Sodium, and for
+26.2 the Hypixel Mod API) -> the Hollow Client jar built for that Minecraft version. Minecraft versions, libraries,
+assets and Java go into the shared root folder; mods, config and everything else the game writes go into the
+profile's instance folder. Nothing from Minecraft is bundled; everything is downloaded from the official sources.
 """
 
 from __future__ import annotations
@@ -14,9 +16,9 @@ from typing import Any, Callable, Protocol
 
 import minecraft_launcher_lib as mll
 
-from . import MC_VERSION, MIN_FABRIC_LOADER
+from .profiles import Profile
 from .jsonfile import read_json, write_json_atomic
-from .modrinth import FABRIC_API, SODIUM, WANTED, ModrinthClient, ModrinthError, ModVersion, sha1_of, sha512_of
+from .modrinth import WANTED, ModrinthClient, ModrinthError, ModVersion, sha1_of, sha512_of
 from .paths import find_mod_jar
 
 MANIFEST_NAME = ".hollow-mods.json"
@@ -73,11 +75,11 @@ def _version_tuple(v: str) -> tuple[int, ...]:
     return tuple(parts)
 
 
-def pick_loader(stable_versions: list[str], minimum: str = MIN_FABRIC_LOADER) -> str:
+def pick_loader(stable_versions: list[str], minimum: str, minecraft: str = "") -> str:
     """Newest stable Fabric Loader that is at least the version the mod was built with."""
     ok = [v for v in stable_versions if _version_tuple(v) >= _version_tuple(minimum)]
     if not ok:
-        raise InstallError(f"Fabric has no stable loader {minimum} or newer for Minecraft {MC_VERSION}.")
+        raise InstallError(f"Fabric has no stable loader {minimum} or newer for Minecraft {minecraft}.")
     return max(ok, key=_version_tuple)
 
 
@@ -109,25 +111,38 @@ def installed_version(manifest: dict[str, Any], mods: Path, project_id: str) -> 
     return v if isinstance(v, str) else None
 
 
-def updates_needed(manifest: dict[str, Any], mods: Path, latest: dict[str, ModVersion]) -> list[UpdateInfo]:
+def updates_needed(manifest: dict[str, Any], mods: Path, latest: dict[str, ModVersion],
+                   names: dict[str, str] | None = None) -> list[UpdateInfo]:
     """Compare what is installed (by Modrinth version id) with the newest versions."""
     out = []
+    names = {**WANTED, **(names or {})}
     for pid, v in latest.items():
         installed_id = installed_version(manifest, mods, pid)
         entry = manifest.get("projects", {}).get(pid, {})
         number = entry.get("version_number") if installed_id and isinstance(entry, dict) else None
-        out.append(UpdateInfo(pid, WANTED.get(pid, pid), number, v.version_number, installed_id != v.version_id))
+        out.append(UpdateInfo(pid, names.get(pid, pid), number, v.version_number, installed_id != v.version_id))
     return out
 
 
 # ------------------------------------------------------------------------------------------------ installer
 
 class Installer:
-    def __init__(self, game_dir: Path, progress: Progress, modrinth: ModrinthClient | None = None):
-        self.game_dir = game_dir
-        self.mods = game_dir / "mods"
+    """Installs one profile: shared files into `root`, the profile's own files into its instance folder."""
+
+    def __init__(self, root: Path, profile: Profile, progress: Progress, modrinth: ModrinthClient | None = None):
+        self.root = root
+        self.profile = profile
+        self.game_dir = profile.instance_dir(root)
+        self.mods = self.game_dir / "mods"
         self.p = progress
         self.modrinth = modrinth or ModrinthClient()
+
+    @property
+    def minecraft(self) -> str:
+        return self.profile.minecraft
+
+    def names(self) -> dict[str, str]:
+        return {**WANTED, **self.profile.mod_names()}
 
     # ---- state
 
@@ -143,10 +158,10 @@ class Installer:
         vid = self.version_id()
         if not vid:
             return False
-        if not (self.game_dir / "versions" / vid / f"{vid}.json").is_file():
+        if not (self.root / "versions" / vid / f"{vid}.json").is_file():
             return False
         manifest = read_manifest(self.mods)
-        return all(installed_version(manifest, self.mods, pid) for pid in (FABRIC_API, SODIUM)) and bool(
+        return all(installed_version(manifest, self.mods, m.project) for m in self.profile.mods) and bool(
             manifest.get("hollowclient", {}).get("filename")) and (self.mods / manifest["hollowclient"]["filename"]).is_file()
 
     def _callback(self) -> dict[str, Callable]:
@@ -164,20 +179,23 @@ class Installer:
 
     def install_all(self) -> str:
         """Install or repair everything. Returns the Fabric version id to launch. Safe to run again (repair)."""
+        self.root.mkdir(parents=True, exist_ok=True)
         self.game_dir.mkdir(parents=True, exist_ok=True)
         self.mods.mkdir(parents=True, exist_ok=True)
+        mc = self.minecraft
         try:
-            self.p.status(f"Installing Minecraft {MC_VERSION}")
-            mll.install.install_minecraft_version(MC_VERSION, str(self.game_dir), callback=self._callback())
+            self.p.status(f"Installing Minecraft {mc}")
+            mll.install.install_minecraft_version(mc, str(self.root), callback=self._callback())
             java = self.java_path()
             self.p.log(f"Java runtime: {java}")
 
             self.p.status("Installing Fabric Loader")
             fabric = mll.mod_loader.get_mod_loader("fabric")
-            loader = pick_loader(fabric.get_loader_versions(MC_VERSION, True))
-            version_id = fabric.install(MC_VERSION, str(self.game_dir), loader_version=loader, callback=self._callback(), java=java)
+            loader = pick_loader(fabric.get_loader_versions(mc, True), self.profile.min_loader, mc)
+            version_id = fabric.install(mc, str(self.root), loader_version=loader, callback=self._callback(), java=java)
             self.p.log(f"Fabric version: {version_id}")
-            write_json_atomic(self.game_dir / STATE_NAME, {"mc_version": MC_VERSION, "loader_version": loader, "version_id": version_id})
+            write_json_atomic(self.game_dir / STATE_NAME, {"mc_version": mc, "loader_version": loader, "version_id": version_id,
+                                                           "profile": self.profile.id})
         except InstallError:
             raise
         except Exception as e:  # minecraft-launcher-lib raises many kinds (network, checksum, subprocess)
@@ -190,25 +208,27 @@ class Installer:
 
     def java_path(self) -> str:
         """Mojang's Java runtime for this Minecraft version (installed together with the game)."""
-        info = mll.runtime.get_version_runtime_information(MC_VERSION, str(self.game_dir))
-        component = info["name"] if info else "java-runtime-delta"
-        path = mll.runtime.get_executable_path(component, str(self.game_dir))
+        info = mll.runtime.get_version_runtime_information(self.minecraft, str(self.root))
+        if not info:
+            raise InstallError(f"Minecraft {self.minecraft} doesn't name a Java runtime.")
+        component = info["name"]
+        path = mll.runtime.get_executable_path(component, str(self.root))
         if not path:
-            mll.runtime.install_jvm_runtime(component, str(self.game_dir), callback=self._callback())
-            path = mll.runtime.get_executable_path(component, str(self.game_dir))
+            mll.runtime.install_jvm_runtime(component, str(self.root), callback=self._callback())
+            path = mll.runtime.get_executable_path(component, str(self.root))
         if not path:
             raise InstallError("Mojang's Java runtime couldn't be installed.")
         return path
 
     def latest_mods(self) -> dict[str, ModVersion]:
-        return self.modrinth.resolve([FABRIC_API, SODIUM], MC_VERSION)
+        return self.modrinth.resolve([m.project for m in self.profile.mods], self.minecraft)
 
     def check_updates(self) -> list[UpdateInfo]:
-        return updates_needed(read_manifest(self.mods), self.mods, self.latest_mods())
+        return updates_needed(read_manifest(self.mods), self.mods, self.latest_mods(), self.names())
 
     def install_mods(self, force: bool) -> list[str]:
-        """Download Fabric API, Sodium (and anything they require) if missing or out of date. Returns what changed."""
-        self.p.status("Checking Fabric API and Sodium on Modrinth")
+        """Download the profile's mods (and anything they require) if missing or out of date. Returns what changed."""
+        self.p.status("Checking " + ", ".join(m.name for m in self.profile.mods) + " on Modrinth")
         try:
             latest = self.latest_mods()
         except ModrinthError as e:
@@ -216,7 +236,7 @@ class Installer:
         manifest = read_manifest(self.mods)
         changed = []
         for pid, v in latest.items():
-            name = WANTED.get(pid, v.filename)
+            name = self.names().get(pid, v.filename)
             current = installed_version(manifest, self.mods, pid)
             target = self.mods / v.filename
             if not force and current == v.version_id and target.is_file() and (not v.sha512 or sha512_of(target) == v.sha512):
@@ -245,12 +265,13 @@ class Installer:
             path.unlink()
 
     def install_hollow_jar(self, jar: Path | None = None) -> str:
-        """Copy the Hollow Client mod into mods/ (bundled copy first, then mod/build/libs). Old copies are replaced."""
+        """Copy the Hollow Client jar built for this profile's Minecraft version into mods/ (bundled copy first, then
+        mod/build/libs). Old copies are replaced."""
         self.p.status("Installing the Hollow Client mod")
-        source = jar or find_mod_jar()
+        source = jar or find_mod_jar(minecraft=self.minecraft)
         if source is None:
-            raise InstallError("The Hollow Client mod jar wasn't found. Build it first (scripts\\build_all.bat) "
-                               "or put hollowclient-<version>.jar in the launcher's bundled folder.")
+            raise InstallError(f"The Hollow Client mod for Minecraft {self.minecraft} wasn't found. Build it first "
+                               "(scripts\\build_all.bat) or put the hollowclient jar in the launcher's bundled folder.")
         manifest = read_manifest(self.mods)
         for old in self.mods.glob("hollowclient-*.jar"):
             if old.name != source.name:
@@ -267,10 +288,10 @@ class Installer:
         """Installed versions for the Home screen."""
         manifest = read_manifest(self.mods)
         st = self.state()
-        out = {"Minecraft": MC_VERSION}
+        out = {"Minecraft": self.minecraft}
         if isinstance(st.get("loader_version"), str):
             out["Fabric"] = st["loader_version"]
-        for pid, label in ((FABRIC_API, "Fabric API"), (SODIUM, "Sodium")):
+        for pid, label in ((m.project, m.name) for m in self.profile.mods):
             entry = manifest["projects"].get(pid)
             if isinstance(entry, dict) and installed_version(manifest, self.mods, pid):
                 out[label] = str(entry.get("version_number", "?"))

@@ -27,14 +27,23 @@ first unticked item below. Plans 1 and 2 (Minecraft 1.21.11) are finished and fr
   - [x] Launcher: icon, title bar, home page, new intro (particles → facets → hollow H → glow → wordmark); old code-drawn logo removed
   - [x] SkyBlock theme preset (sky blue → gold) in mod and launcher
   - [x] Launcher tests no longer read the real `config.json` or open a browser (autouse fixture)
-- [ ] **L1–L2. Launcher**: profiles + instances (26.2 default, 1.21.11 legacy), migration, Java per profile, Join Hypixel, SkyBlock dashboard, duplicate-mod warning, `build_all` builds both jars
+- [x] **L1–L2. Launcher** (launcher 2.0.0)
+  - [x] `profiles.json` + `profiles.py`: "Hollow 26.2 — SkyBlock ready" (default; Fabric API, Sodium, Hypixel Mod API) and "Hollow 1.21.11 — Legacy" (Fabric API, Sodium); profile switch on Home, remembered in settings
+  - [x] Shared root (versions/libraries/assets/runtime) + `instances/<id>` game folders; installer, launch (`--gameDir`, cwd), Java runtime per version json, jars matched by `depends.minecraft`
+  - [x] Migration of a 1.x install into `instances/legacy-1.21.11` (rename, never delete, `migration.txt`, runs once)
+  - [x] Join Hypixel (Home and SkyBlock page): switches to the 26.2 profile, `quickPlayMultiplayer = mc.hypixel.net` for that launch only
+  - [x] SkyBlock page + `skyblock_data.py`: mayor/minister/election, calendar math (wiki-checked), Jacob's contests (Elite), bazaar movers (hourly snapshots) and margins, mod session totals; disk cache, stale-when-offline
+  - [x] Duplicate-feature note for Skyblocker/SkyHanni/Firmament (by mod id); theme sync across instances; stats per profile
+  - [x] `build_all.bat` builds the legacy jar from the `build/legacy` worktree and bundles both; `hollow.spec` bundles `profiles.json`; self-test checks a jar per profile
+  - [x] pytest 121 (new: profiles, migration, conflicts, theme sync, quick play, backend profile switching, calendar, election, contests, bazaar, cache/outages, SkyBlock page QML); screenshots of Home and SkyBlock reviewed
+  - [ ] Real install of both profiles into the real `%APPDATA%\.hollowclient` (WMI launch) incl. migration of the current install — done with the packaged build at the end of L (see notes)
 - [ ] **F1–F6. SkyBlock foundation**: detection (Mod API + fallback), SkyBlock Mode, data layer (sources → parsers → state + events, patterns in JSON), items + prices (NEU repo, Hypixel API, Elite API), menu category + HUD + Hub (H), alerts + editor, setup checker, compatibility, debug recorder, simulator, feature health
 - [ ] **A1–A14. SkyBlock features** (see the plan, section 6): general/HUD, items/GUI, economy, garden, dungeons, slayers, mining, fishing, foraging/hunting, Crimson Isle/Kuudra, Rift, events, progression, chat/party
 - [ ] **T/Z. Finish**: TESTING_SKYBLOCK.md, USER_GUIDE, README, LICENSE/THIRD_PARTY_NOTICES, final summary
 
 ### Plan 3 notes
 
-- The launcher still installs 1.21.11 until L1–L2; don't run `build_all.bat` for a real install before then (it would bundle the 26.2 jar into a 1.21.11 install).
+- L1–L2: the launcher's session-totals file format (`session_stats.json`) is fixed in DECISIONS; the mod writes it in the F/A milestones.
 - Reference sources for porting: decompiled 26.2 game code via `gradlew genSources` (Loom cache), Fabric API sources from maven.fabricmc.net, NeoForge primers for 26.1 and 26.2.
 
 ## Plan 1 and 2 log (Minecraft 1.21.11, finished)

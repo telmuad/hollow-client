@@ -8,7 +8,9 @@ A personal, non-commercial launcher and client for Minecraft: Java Edition.
 
 - Signs in with a Microsoft account using the official Microsoft OAuth flow and verifies game ownership
 - Downloads Minecraft and the Fabric mod loader from official sources
-- Installs and updates the Hollow client mod plus performance mods (Sodium)
+- Two profiles: **Hollow 26.2 — SkyBlock ready** (default) and **Hollow 1.21.11 — Legacy**, each in its own instance folder
+- Installs and updates the Hollow client mod plus Fabric API, Sodium and (on 26.2) the Hypixel Mod API
+- **Join Hypixel** (connects to the server from the title screen) and a **SkyBlock page**: mayor and election, event calendar, Jacob's contests, bazaar movers and margins
 - Lets you set options like allocated RAM, then launches the game
 
 ## Hollow Client mod
@@ -60,8 +62,9 @@ hollow-client/
 ### The launcher in more detail
 
 - A frameless Qt Quick window: an animated nebula background (a shader that follows the mouse), frosted glass panels, springy page transitions, an intro, a PLAY button that charges and bursts, a 3D skin viewer with your cosmetics, animated install progress and a play-time dashboard. Its theme is the game's theme.
-- Uses its own game folder, `%APPDATA%\.hollowclient`, so it never touches the official launcher's files.
-- Installs Minecraft 1.21.11 (and Mojang's Java runtime) from Mojang, Fabric Loader with the official Fabric installer, and Fabric API and Sodium from Modrinth, then adds the Hollow Client mod. It checks for mod updates on startup and updates the Hollow mod whenever the launcher carries a newer build.
+- Uses its own folder, `%APPDATA%\.hollowclient`, so it never touches the official launcher's files. Version profiles are defined in `launcher/hollow_launcher/profiles.json`; each plays in `instances\<profile>` while Minecraft versions, libraries, assets and Java runtimes are shared. A 1.x install is moved into the legacy profile's folder on first start (nothing is deleted).
+- Installs the profile's Minecraft version (and Mojang's Java runtime for it: Java 25 for 26.2, 21 for 1.21.11) from Mojang, Fabric Loader with the official Fabric installer, and the profile's mods from Modrinth, then adds the Hollow Client jar built for that Minecraft version (picked by reading the jar's `fabric.mod.json`). It checks for mod updates on startup and updates the Hollow mod whenever the launcher carries a newer build.
+- **Join Hypixel** passes Minecraft's own quick-play argument (`--quickPlayMultiplayer mc.hypixel.net`); the SkyBlock page reads Hypixel's public resources and bazaar endpoints and the Elite API (no API key), caches everything and shows stale data when offline. A note appears when Skyblocker, SkyHanni or Firmament is in the 26.2 profile's mods folder.
 - Microsoft login uses the official OAuth flow (authorization code with PKCE) in your browser. The sign-in is kept in Windows Credential Manager. There is no offline mode.
 - The Azure app ID goes in `launcher/config.json`, which is not committed (copy `config.example.json`). If an app ID isn't approved by Mojang yet, the launcher says so plainly and still installs and updates everything (see USER_GUIDE.md).
 

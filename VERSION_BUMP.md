@@ -48,6 +48,7 @@ Each run ends with the FPS benchmark (`mod/build/run/clientGameTest/hollow_fps_r
 1. `launcher/hollow_launcher/profiles.json`: add or change the profile for the new version (Minecraft version, minimum loader, Modrinth project ids). Mojang's Java runtime is picked from the version itself.
 2. `launcher\.venv\Scripts\python -m pytest`.
 3. `scripts\build_all.bat` builds the mod, the legacy jar(s) and the launcher. Then do one real install of the new profile and check the instance folder.
+4. If the outgoing version stays as a profile: freeze it on a `legacy/<version>` branch, add its worktree build to `build_all.bat` (like `build/legacy` for 1.21.11) and its folder to `paths.jar_search_dirs()`. Jars are told apart by their `fabric.mod.json`, but their file names must differ too (they share `launcher\bundled`), which they do as long as each line keeps its own mod version.
 
 ## 6. Docs
 

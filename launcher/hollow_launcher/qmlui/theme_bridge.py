@@ -116,15 +116,21 @@ def _qcolor(argb: int) -> QColor:
 
 
 class ThemeBridge(QObject):
-    """The theme for QML. Colors are QColors; radius and speed are already scaled for the launcher."""
+    """The theme for QML. Colors are QColors; radius and speed are already scaled for the launcher.
+
+    With several theme files (one per version profile), the most recently changed one wins and the others are kept
+    in sync, so a theme picked in either game or in the launcher shows up everywhere."""
 
     changed = Signal()
 
-    def __init__(self, path: Path, poll: bool = True, parent: QObject | None = None):
+    def __init__(self, path: Path | list[Path], poll: bool = True, parent: QObject | None = None):
         super().__init__(parent)
-        self.path = path
-        self._mtime = None
-        self._theme, self._custom = read_theme_file(path)
+        self.paths = [path] if isinstance(path, Path) else list(path)
+        self.path = self.paths[0]
+        self._mtimes: tuple = ()
+        newest = self._newest()
+        self._theme, self._custom = read_theme_file(newest)
+        self._sync(newest)
         self._remember_mtime()
         if poll:
             self._timer = QTimer(self)
@@ -132,25 +138,45 @@ class ThemeBridge(QObject):
             self._timer.timeout.connect(self._poll)
             self._timer.start()
 
-    def _remember_mtime(self) -> None:
+    @staticmethod
+    def _mtime(path: Path):
         try:
-            self._mtime = self.path.stat().st_mtime_ns
+            return path.stat().st_mtime_ns
         except OSError:
-            self._mtime = None
+            return None
+
+    def _newest(self) -> Path:
+        existing = [(self._mtime(f), i, f) for i, f in enumerate(self.paths) if self._mtime(f) is not None]
+        return max(existing, key=lambda t: (t[0], -t[1]))[2] if existing else self.path
+
+    def _remember_mtime(self) -> None:
+        self._mtimes = tuple(self._mtime(f) for f in self.paths)
+
+    def _sync(self, source: Path) -> None:
+        """Copy the current theme into the other files whose current theme differs (only folders that exist)."""
+        for f in self.paths:
+            if f == source or not f.parent.parent.is_dir():
+                continue
+            theme, custom = read_theme_file(f)
+            if theme != self._theme or (custom != self._custom and self._custom):
+                try:
+                    write_theme_file(f, self._theme, self._custom or custom)
+                except OSError:
+                    pass
 
     @Slot()
     def _poll(self) -> None:
-        try:
-            m = self.path.stat().st_mtime_ns
-        except OSError:
-            m = None
-        if m != self._mtime:
-            self._mtime = m
-            theme, custom = read_theme_file(self.path)
+        now = tuple(self._mtime(f) for f in self.paths)
+        if now != self._mtimes:
+            newest = self._newest()
+            theme, custom = read_theme_file(newest)
             self._custom = custom
             if theme != self._theme:
                 self._theme = theme
                 self.changed.emit()
+            if len(self.paths) > 1:
+                self._sync(newest)
+            self._remember_mtime()
 
     @property
     def theme(self) -> Theme:
@@ -162,10 +188,13 @@ class ThemeBridge(QObject):
         for t in all_themes:
             if t.name.lower() == name.lower():
                 self._theme = t
-                try:
-                    write_theme_file(self.path, t, self._custom)
-                except OSError:
-                    pass
+                for i, f in enumerate(self.paths):
+                    if i > 0 and not f.parent.parent.is_dir():
+                        continue  # a profile that was never installed
+                    try:
+                        write_theme_file(f, t, self._custom)
+                    except OSError:
+                        pass
                 self._remember_mtime()
                 self.changed.emit()
                 return True

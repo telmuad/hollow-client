@@ -1,4 +1,4 @@
-"""Finding and downloading Fabric API and Sodium from the official Modrinth API (api.modrinth.com)."""
+"""Finding and downloading mods (Fabric API, Sodium, the Hypixel Mod API) from the official Modrinth API (api.modrinth.com)."""
 
 from __future__ import annotations
 
@@ -18,7 +18,8 @@ USER_AGENT = f"hollow-client-launcher/{VERSION} (github.com/telmuad/hollow-clien
 # Modrinth project ids (they never change, unlike slugs)
 FABRIC_API = "P7dR8mSH"
 SODIUM = "AANobbMI"
-WANTED = {FABRIC_API: "Fabric API", SODIUM: "Sodium"}
+HYPIXEL_MOD_API = "1A2mKfBx"
+WANTED = {FABRIC_API: "Fabric API", SODIUM: "Sodium", HYPIXEL_MOD_API: "Hypixel Mod API"}
 
 _TYPE_RANK = {"release": 0, "beta": 1, "alpha": 2}
 

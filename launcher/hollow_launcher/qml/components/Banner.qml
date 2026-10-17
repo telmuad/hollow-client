@@ -6,6 +6,7 @@ Item {
     property string text: backend.bannerText
     property string kind: backend.bannerKind
     property string action: backend.bannerAction
+    property bool closable: true
     readonly property bool shown: text !== ""
     implicitHeight: shown ? content.implicitHeight + 20 : 0
     clip: true
@@ -34,7 +35,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
         }
         Text {
-            width: content.width - 18 - (actionBtn.visible ? actionBtn.width + 10 : 0) - closeBtn.width - 30
+            width: content.width - 18 - (actionBtn.visible ? actionBtn.width + 10 : 0) - (closeBtn.visible ? closeBtn.width : 0) - 30
             text: b.text
             color: app.text
             font.family: app.fontFamily
@@ -53,6 +54,7 @@ Item {
         }
         HButton {
             id: closeBtn
+            visible: b.closable
             small: true
             icon: "close"
             anchors.verticalCenter: parent.verticalCenter

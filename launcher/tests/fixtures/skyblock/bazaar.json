@@ -1,0 +1,102 @@
+{
+ "success": true,
+ "lastUpdated": 1792195002798,
+ "products": {
+  "ENCHANTED_DIAMOND": {
+   "product_id": "ENCHANTED_DIAMOND",
+   "sell_summary": [],
+   "buy_summary": [],
+   "quick_status": {
+    "productId": "ENCHANTED_DIAMOND",
+    "sellPrice": 1251.5670838124724,
+    "sellVolume": 21366760,
+    "sellMovingWeek": 24543359,
+    "sellOrders": 855,
+    "buyPrice": 1311.4954091202608,
+    "buyVolume": 1032062,
+    "buyMovingWeek": 6215886,
+    "buyOrders": 594
+   }
+  },
+  "SUSPICIOUS_SCRAP": {
+   "product_id": "SUSPICIOUS_SCRAP",
+   "sell_summary": [],
+   "buy_summary": [],
+   "quick_status": {
+    "productId": "SUSPICIOUS_SCRAP",
+    "sellPrice": 126247.40793056501,
+    "sellVolume": 119036,
+    "sellMovingWeek": 360367,
+    "sellOrders": 100,
+    "buyPrice": 146792.33333333334,
+    "buyVolume": 4835,
+    "buyMovingWeek": 269327,
+    "buyOrders": 54
+   }
+  },
+  "GRIFFIN_FEATHER": {
+   "product_id": "GRIFFIN_FEATHER",
+   "sell_summary": [],
+   "buy_summary": [],
+   "quick_status": {
+    "productId": "GRIFFIN_FEATHER",
+    "sellPrice": 102100.0812646982,
+    "sellVolume": 178263,
+    "sellMovingWeek": 578474,
+    "sellOrders": 17,
+    "buyPrice": 114280.39087803212,
+    "buyVolume": 273235,
+    "buyMovingWeek": 534909,
+    "buyOrders": 397
+   }
+  },
+  "ENCHANTMENT_ULTIMATE_WISE_5": {
+   "product_id": "ENCHANTMENT_ULTIMATE_WISE_5",
+   "sell_summary": [],
+   "buy_summary": [],
+   "quick_status": {
+    "productId": "ENCHANTMENT_ULTIMATE_WISE_5",
+    "sellPrice": 412002.3058823529,
+    "sellVolume": 4883,
+    "sellMovingWeek": 2226,
+    "sellOrders": 169,
+    "buyPrice": 591688.9647727272,
+    "buyVolume": 3926,
+    "buyMovingWeek": 9587,
+    "buyOrders": 474
+   }
+  },
+  "ESSENCE_DRAGON": {
+   "product_id": "ESSENCE_DRAGON",
+   "sell_summary": [],
+   "buy_summary": [],
+   "quick_status": {
+    "productId": "ESSENCE_DRAGON",
+    "sellPrice": 3318.933042230076,
+    "sellVolume": 2959053,
+    "sellMovingWeek": 7605971,
+    "sellOrders": 137,
+    "buyPrice": 3551.517178117292,
+    "buyVolume": 9881971,
+    "buyMovingWeek": 8033046,
+    "buyOrders": 881
+   }
+  },
+  "FACTION_RABBIT_WALKER": {
+   "product_id": "FACTION_RABBIT_WALKER",
+   "sell_summary": [],
+   "buy_summary": [],
+   "quick_status": {
+    "productId": "FACTION_RABBIT_WALKER",
+    "sellPrice": 78763.95555555556,
+    "sellVolume": 187,
+    "sellMovingWeek": 31,
+    "sellOrders": 20,
+    "buyPrice": 1999996.5,
+    "buyVolume": 37,
+    "buyMovingWeek": 114,
+    "buyOrders": 32
+   }
+  }
+ }
+}

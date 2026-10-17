@@ -65,6 +65,32 @@ def test_build_command_against_a_fake_install(tmp_path):
     assert "secret-access-token" not in " ".join(launch.redact(cmd, [ACCOUNT.access_token]))
 
 
+def test_join_hypixel_adds_quick_play_multiplayer(tmp_path):
+    """26.2's version json passes --quickPlayMultiplayer only when the launcher asks for it."""
+    vid = "fake-26.2"
+    vdir = tmp_path / "versions" / vid
+    vdir.mkdir(parents=True)
+    (vdir / f"{vid}.json").write_text(json.dumps({
+        "id": vid, "mainClass": "net.example.Main", "libraries": [], "type": "release",
+        "arguments": {"game": ["--gameDir", "${game_directory}",
+                               {"rules": [{"action": "allow", "features": {"is_quick_play_multiplayer": True}}],
+                                "value": ["--quickPlayMultiplayer", "${quickPlayMultiplayer}"]}],
+                      "jvm": ["-cp", "${classpath}"]},
+        "assets": "x", "assetIndex": {"id": "x"},
+    }))
+    (vdir / f"{vid}.jar").write_bytes(b"")
+    instance = tmp_path / "instances" / "hollow-26.2"
+    plain = launch.build_options(ACCOUNT, LauncherSettings(), instance)
+    plain["executablePath"] = "java"
+    cmd = launch.build_command(vid, tmp_path, plain)
+    assert "--quickPlayMultiplayer" not in cmd
+    assert cmd[cmd.index("--gameDir") + 1] == str(instance)
+    joined = launch.build_options(ACCOUNT, LauncherSettings(), instance, server=launch.HYPIXEL)
+    joined["executablePath"] = "java"
+    cmd = launch.build_command(vid, tmp_path, joined)
+    assert cmd[cmd.index("--quickPlayMultiplayer") + 1] == "mc.hypixel.net"
+
+
 def test_unfilled_placeholders_are_dropped():
     cmd = ["java", "Main", "--accessToken", "t", "--clientId", "${clientid}", "--xuid", "${auth_xuid}", "--versionType", "release"]
     assert launch.strip_unfilled(cmd) == ["java", "Main", "--accessToken", "t", "--versionType", "release"]

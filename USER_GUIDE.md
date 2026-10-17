@@ -60,24 +60,42 @@ The launcher needs your Azure app (client) ID to sign you in with Microsoft. The
 
 Start **`HollowClient.exe`**. A short intro plays (click or press any key to skip; Settings can turn it off). The window has its own title bar: drag it to move the window, double-click it to maximize, and drag the edges to resize.
 
+**Two versions (profiles).** The switch at the top right of Home picks what PLAY starts:
+- **Hollow 26.2 — SkyBlock ready** (the default): Minecraft 26.2 with Fabric API, Sodium, the Hypixel Mod API and Hollow Client 2.x. This is the one for Hypixel SkyBlock.
+- **Hollow 1.21.11 — Legacy**: the older Hollow Client 1.1 on Minecraft 1.21.11, with Fabric API and Sodium. It gets no new features.
+
+Each profile has its own game folder (`%APPDATA%\.hollowclient\instances\<profile>`) with its own mods, settings, worlds, screenshots and texture packs. Minecraft itself, its libraries and Mojang's Java (Java 25 for 26.2, Java 21 for 1.21.11) are downloaded once and shared. The theme is kept the same in both.
+
+**Coming from launcher 1.x?** The first time launcher 2 starts, it moves your old game folder's files (mods, config, saves, options, screenshots, texture packs, ...) into `instances\legacy-1.21.11`, so your 1.21.11 setup keeps working as the Legacy profile. Nothing is deleted; `migration.txt` in `%APPDATA%\.hollowclient` lists what moved.
+
 ### Home
-- **PLAY** does everything that is still missing, in order:
-  1. The first time, it installs Minecraft 1.21.11, Mojang's Java, Fabric, Fabric API, Sodium and the Hollow Client mod into `%APPDATA%\.hollowclient` (about 700 MB). This is a separate folder, so your normal Minecraft is not touched. The steps and the progress show under the button.
+- **PLAY** does everything that is still missing for the selected profile, in order:
+  1. The first time, it installs that profile's Minecraft, Mojang's Java, Fabric, the profile's mods and the Hollow Client mod into `%APPDATA%\.hollowclient` (about 700 MB). This is a separate folder, so your normal Minecraft is not touched. The steps and the progress show under the button.
   2. It signs you in. The first time, your web browser opens Microsoft's sign-in page. Sign in there, then come back to the launcher. After that it remembers you (safely, in Windows Credential Manager). **Cancel sign-in** stops waiting for the browser.
   3. It starts the game. Its output appears on the **Logs** page.
+- **Join Hypixel** starts the 26.2 profile (switching to it if needed) and connects straight to `mc.hypixel.net` from the title screen. Only the connection is automatic: once you're there, you play as usual (type `/skyblock` yourself).
 - A banner appears when there are updates (**Update now**) or when something needs your attention.
-- **Repair** checks every game file and downloads anything missing or broken. **Game folder** opens `%APPDATA%\.hollowclient`.
+- A yellow note appears when the profile's mods folder has **Skyblocker, SkyHanni or Firmament**. They overlap with Hollow's SkyBlock Mode; you can keep them, and in game Hollow offers to switch off its matching features.
+- **Repair** checks every game file and downloads anything missing or broken. **Game folder** opens the selected profile's folder.
+
+### SkyBlock
+Live SkyBlock information, read from Hypixel's public data (no API key needed) and updated when you open the page (**Refresh** to update now). Without internet it shows the last saved data and says so.
+- **Mayor**: the current mayor and minister with their perks, and when the term ends. **Election**: while the booth is open, the candidates and their share of the votes.
+- **Coming up**: running and upcoming SkyBlock events with countdowns in your local time (Spooky Festival, Season of Jerry, Traveling Zoo, Hoppity's Hunt, the Dark Auction, Cult of the Fallen Star, Fishing Festivals when Marina is mayor, ...). The SkyBlock date is at the top.
+- **Jacob's contests**: the next three contests and their crops (crops from the Elite API).
+- **Bazaar movers**: the biggest price changes since about a day ago (the launcher keeps an hourly snapshot; movers show up once it has seen the bazaar twice, 10+ minutes apart). **Bazaar margins**: the biggest gaps between insta-buy and insta-sell on busy products, before tax.
+- **Last session**: totals from your last SkyBlock session with Hollow Client (coins, XP, drops; filled in by the mod).
 
 ### Account (bottom left)
 Your face from your skin and your name. Click it to **sign in**, **log out** (removes the saved sign-in) or open the `config.json` folder.
 
 ### Wardrobe
 - Your skin in 3D with the cape, wings and halo you switched on in the game. **Drag** to turn it and tilt it; it keeps turning slowly after a few seconds. (When you aren't signed in it shows a stand-in figure.)
-- **Mods**: installed and newest versions of Fabric API, Sodium and Hollow Client, **Check** for updates and **Update all**.
+- **Mods**: installed and newest versions of the selected profile's mods (Fabric API, Sodium, the Hypixel Mod API on 26.2) and Hollow Client, **Check** for updates and **Update all**.
 - **Your files**: buttons that open the folders for mods, texture packs, capes, music and screenshots.
 
 ### Stats
-Time played (in total, this week, longest session, how many days in a row), a chart of the last 14 days (hover a bar for the exact time), and counts from your game folder: screenshots, worlds, waypoints, your own capes, songs and how many Hollow modules are on. Play time is recorded by the launcher while the game runs (not when "close the launcher when the game starts" is on).
+Time played in both profiles (in total, this week, longest session, how many days in a row), a chart of the last 14 days (hover a bar for the exact time), and counts from the selected profile's game folder: screenshots, worlds, waypoints, your own capes, songs and how many Hollow modules are on. Play time is recorded by the launcher while the game runs (not when "close the launcher when the game starts" is on).
 
 ### Settings
 - **Game**: memory for Minecraft (default 4 GB), extra Java options, window size, close the launcher when the game starts.
@@ -213,20 +231,24 @@ You can also play with Hollow Client through the official Minecraft Launcher, fo
 
 ## 8. Where things are
 
+`<game>` is the profile's game folder: `%APPDATA%\.hollowclient\instances\hollow-26.2` or `...\instances\legacy-1.21.11`.
+
 | What | Where |
 |---|---|
-| Hollow's game folder | `%APPDATA%\.hollowclient` |
-| Mods | `%APPDATA%\.hollowclient\mods` |
-| Hollow Client settings | `%APPDATA%\.hollowclient\config\hollowclient.json` |
-| Theme (shared with the launcher) | `%APPDATA%\.hollowclient\config\hollowclient\theme.json` |
-| Your capes | `%APPDATA%\.hollowclient\config\hollowclient\capes` |
-| Your music | `%APPDATA%\.hollowclient\config\hollowclient\music` |
-| Waypoints and camera paths (per world) | `%APPDATA%\.hollowclient\config\hollowclient\worlds` |
-| Your profiles | `%APPDATA%\.hollowclient\config\hollowclient\profiles` |
-| Screenshots (deleted ones in `deleted`) | `%APPDATA%\.hollowclient\screenshots` |
-| Texture packs | `%APPDATA%\.hollowclient\resourcepacks` |
-| Launcher settings | `%APPDATA%\.hollowclient\launcher_settings.json` |
+| Hollow's folder (shared Minecraft files, launcher files) | `%APPDATA%\.hollowclient` |
+| A profile's game folder | `%APPDATA%\.hollowclient\instances\<profile>` |
+| Mods | `<game>\mods` |
+| Hollow Client settings | `<game>\config\hollowclient.json` |
+| Theme (shared with the launcher and the other profile) | `<game>\config\hollowclient\theme.json` |
+| Your capes | `<game>\config\hollowclient\capes` |
+| Your music | `<game>\config\hollowclient\music` |
+| Waypoints and camera paths (per world) | `<game>\config\hollowclient\worlds` |
+| Your HUD/module profiles | `<game>\config\hollowclient\profiles` |
+| Screenshots (deleted ones in `deleted`) | `<game>\screenshots` |
+| Texture packs | `<game>\resourcepacks` |
+| Launcher settings (including the selected profile) | `%APPDATA%\.hollowclient\launcher_settings.json` |
 | Play-time stats | `%APPDATA%\.hollowclient\launcher_stats.json` |
+| SkyBlock page cache | `%APPDATA%\.hollowclient\skyblock_cache` |
 | Launcher log | `%APPDATA%\.hollowclient\launcher.log` |
 | Your saved sign-in | Windows Credential Manager → Windows Credentials → "HollowClient" |
 

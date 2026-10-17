@@ -1,5 +1,5 @@
-"""Play statistics for the dashboard. The launcher writes down when the game starts and how long it ran
-(launcher_stats.json in the game folder); everything else is counted from the game folder itself."""
+"""Play statistics for the dashboard. The launcher writes down when the game starts, how long it ran and which
+profile it was (launcher_stats.json in the root folder); everything else is counted from the profile's game folder."""
 
 from __future__ import annotations
 
@@ -29,11 +29,16 @@ def load_sessions(game_dir: Path) -> list[dict[str, Any]]:
     return out
 
 
-def record_session(game_dir: Path, start: float, seconds: float | None) -> None:
-    sessions = load_sessions(game_dir)
-    sessions.append({"start": start, "seconds": seconds})
+def record_session(root: Path, start: float, seconds: float | None, profile: str | None = None) -> None:
+    data, _ = read_json(stats_file(root))
+    old = data.get("sessions") if isinstance(data, dict) else None
+    sessions = [s for s in old if isinstance(s, dict)] if isinstance(old, list) else []
+    entry: dict[str, Any] = {"start": start, "seconds": seconds}
+    if profile:
+        entry["profile"] = profile
+    sessions.append(entry)
     try:
-        write_json_atomic(stats_file(game_dir), {"version": 1, "sessions": sessions[-MAX_SESSIONS:]})
+        write_json_atomic(stats_file(root), {"version": 1, "sessions": sessions[-MAX_SESSIONS:]})
     except OSError:
         pass
 

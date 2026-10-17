@@ -8,6 +8,14 @@ from hollow_launcher import installer as inst_mod
 from hollow_launcher.installer import Installer, InstallError, pick_loader, read_manifest, updates_needed
 from hollow_launcher.modrinth import (FABRIC_API, SODIUM, ModrinthClient, ModrinthError, parse_version,
                                       select_version)
+from hollow_launcher.profiles import ModRef, Profile
+
+TEST_PROFILE = Profile(id="test", name="Test", tagline="", minecraft="1.21.11", min_loader="0.19.5",
+                       mods=(ModRef(FABRIC_API, "Fabric API"), ModRef(SODIUM, "Sodium")))
+
+
+def game_of(root):
+    return root / "instances" / "test"
 
 
 def version_json(project, vid, number, vtype, date, game=("1.21.11",), loaders=("fabric",), deps=(), content=b"jar",
@@ -139,10 +147,10 @@ def test_download_checks_sha512(tmp_path):
 
 
 def test_pick_loader():
-    assert pick_loader(["0.19.6", "0.19.5", "0.18.4", "0.20.0"]) == "0.20.0"
-    assert pick_loader(["0.19.5"]) == "0.19.5"
-    with pytest.raises(InstallError):
-        pick_loader(["0.18.0"])
+    assert pick_loader(["0.19.6", "0.19.5", "0.18.4", "0.20.0"], "0.19.5") == "0.20.0"
+    assert pick_loader(["0.19.5"], "0.19.5") == "0.19.5"
+    with pytest.raises(InstallError, match="26.2"):
+        pick_loader(["0.18.0"], "0.19.5", "26.2")
 
 
 class QuietProgress:
@@ -165,14 +173,14 @@ def make_installer(tmp_path, sodium=("so14", "0.8.14", b"sodium14", "2026-08-01"
                         filename="fabric-api-0.141.6+1.21.11.jar")
     sod = version_json(SODIUM, sid, number, "release", date, content=content, filename=f"sodium-{number}.jar")
     files = {"fabric-api-0.141.6+1.21.11.jar": b"fapi", f"sodium-{number}.jar": content}
-    return Installer(tmp_path / "game", QuietProgress(), ModrinthClient(FakeSession({FABRIC_API: [fapi], SODIUM: [sod]}, files)))
+    return Installer(tmp_path, TEST_PROFILE, QuietProgress(), ModrinthClient(FakeSession({FABRIC_API: [fapi], SODIUM: [sod]}, files)))
 
 
 def test_install_mods_downloads_then_is_idempotent(tmp_path):
     inst = make_installer(tmp_path)
     changed = inst.install_mods(force=False)
     assert len(changed) == 2
-    mods = tmp_path / "game" / "mods"
+    mods = game_of(tmp_path) / "mods"
     assert (mods / "fabric-api-0.141.6+1.21.11.jar").is_file()
     assert (mods / "sodium-0.8.14.jar").is_file()
     manifest = read_manifest(mods)
@@ -188,7 +196,7 @@ def test_update_replaces_the_old_file(tmp_path):
     assert updates[SODIUM].needed and updates[SODIUM].installed == "0.8.14" and updates[SODIUM].latest == "0.8.15"
     assert not updates[FABRIC_API].needed
     inst2.install_mods(force=False)
-    mods = tmp_path / "game" / "mods"
+    mods = game_of(tmp_path) / "mods"
     assert (mods / "sodium-0.8.15.jar").is_file()
     assert not (mods / "sodium-0.8.14.jar").exists()
 
@@ -196,7 +204,7 @@ def test_update_replaces_the_old_file(tmp_path):
 def test_deleted_mod_file_counts_as_missing(tmp_path):
     inst = make_installer(tmp_path)
     inst.install_mods(force=False)
-    mods = tmp_path / "game" / "mods"
+    mods = game_of(tmp_path) / "mods"
     (mods / "sodium-0.8.14.jar").unlink()
     updates = {u.project_id: u for u in updates_needed(read_manifest(mods), mods, inst.latest_mods())}
     assert updates[SODIUM].needed and updates[SODIUM].installed is None
@@ -206,7 +214,7 @@ def test_deleted_mod_file_counts_as_missing(tmp_path):
 def test_corrupted_mod_file_is_redownloaded(tmp_path):
     inst = make_installer(tmp_path)
     inst.install_mods(force=False)
-    jar = tmp_path / "game" / "mods" / "sodium-0.8.14.jar"
+    jar = game_of(tmp_path) / "mods" / "sodium-0.8.14.jar"
     jar.write_bytes(b"broken")
     assert inst.install_mods(force=False) == ["Sodium 0.8.14"]
     assert jar.read_bytes() == b"sodium14"
@@ -214,7 +222,7 @@ def test_corrupted_mod_file_is_redownloaded(tmp_path):
 
 def test_hollow_jar_is_copied_and_old_versions_removed(tmp_path):
     inst = make_installer(tmp_path)
-    mods = tmp_path / "game" / "mods"
+    mods = game_of(tmp_path) / "mods"
     mods.mkdir(parents=True)
     (mods / "hollowclient-0.9.0.jar").write_bytes(b"old")
     src_dir = tmp_path / "libs"
@@ -229,23 +237,43 @@ def test_hollow_jar_is_copied_and_old_versions_removed(tmp_path):
 
 def test_missing_hollow_jar_is_explained(tmp_path, monkeypatch):
     inst = make_installer(tmp_path)
-    monkeypatch.setattr(inst_mod, "find_mod_jar", lambda: None)
+    monkeypatch.setattr(inst_mod, "find_mod_jar", lambda **kw: None)
     with pytest.raises(InstallError, match="build_all"):
         inst.install_hollow_jar()
 
 
 def test_summary_and_is_installed(tmp_path):
     inst = make_installer(tmp_path)
-    game = tmp_path / "game"
+    game = game_of(tmp_path)
     assert not inst.is_installed()
     inst.install_mods(force=False)
     src = tmp_path / "hollowclient-1.0.0.jar"
     src.write_bytes(b"m")
     inst.install_hollow_jar(src)
     vid = "fabric-loader-0.19.5-1.21.11"
-    (game / "versions" / vid).mkdir(parents=True)
-    (game / "versions" / vid / f"{vid}.json").write_text("{}")
+    (tmp_path / "versions" / vid).mkdir(parents=True)
+    (tmp_path / "versions" / vid / f"{vid}.json").write_text("{}")
     (game / "hollow_install.json").write_text(json.dumps({"version_id": vid, "loader_version": "0.19.5"}))
     assert inst.is_installed()
     s = inst.summary()
     assert s["Fabric"] == "0.19.5" and s["Sodium"] == "0.8.14" and s["Hollow"] == "1.0.0"
+
+
+def test_versions_are_shared_and_mods_are_per_profile(tmp_path):
+    """Minecraft versions live in the root (shared); each profile's mods and install record in its instance."""
+    inst = make_installer(tmp_path)
+    assert inst.game_dir == tmp_path / "instances" / "test"
+    assert inst.mods == tmp_path / "instances" / "test" / "mods"
+    assert inst.names()[SODIUM] == "Sodium"
+    other = Installer(tmp_path, Profile(id="other", name="O", tagline="", minecraft="26.2", min_loader="0.19.5"),
+                      QuietProgress())
+    assert other.game_dir != inst.game_dir and other.minecraft == "26.2"
+
+
+def test_missing_hollow_jar_names_the_minecraft_version(tmp_path, monkeypatch):
+    inst = make_installer(tmp_path)
+    seen = {}
+    monkeypatch.setattr(inst_mod, "find_mod_jar", lambda **kw: seen.update(kw))
+    with pytest.raises(InstallError, match="1.21.11"):
+        inst.install_hollow_jar()
+    assert seen == {"minecraft": "1.21.11"}

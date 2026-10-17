@@ -1,7 +1,8 @@
-"""Everything the QML window shows and does, in one object: install, sign-in, launch, updates, settings and logs.
+"""Everything the QML window shows and does, in one object: profiles, install, sign-in, launch, updates, settings
+and logs.
 
-The logic is the same as the earlier widget window (it drives the unchanged installer, auth, launch and settings
-modules); this object only turns it into properties, signals and slots for QML.
+Launcher files (settings, sign-in note, skin cache, play stats, the launcher log) live in the root folder,
+%APPDATA%\\.hollowclient. The game folder is the selected version profile's instance folder, instances\\<id>.
 """
 
 from __future__ import annotations
@@ -9,6 +10,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 import threading
 import time
 import zipfile
@@ -21,11 +23,11 @@ from PySide6.QtCore import (Property, QAbstractListModel, QByteArray, QModelInde
                             Slot)
 from PySide6.QtGui import QGuiApplication
 
-from .. import APP_NAME, MC_VERSION, VERSION, appconfig, auth, launch, paths
+from .. import APP_NAME, VERSION, appconfig, auth, conflicts, launch, migration, paths, profiles
 from ..auth import Account, LoginError
 from ..installer import InstallError, Installer, read_manifest, sha1_of
 from ..jsonfile import read_json, write_json_atomic
-from ..modrinth import FABRIC_API, SODIUM, ModrinthError
+from ..modrinth import ModrinthError
 from ..settings import LauncherSettings, max_ram_for_slider, total_ram_mb
 from ..token_store import TokenStore
 from ..workers import GameWatcher, SignalProgress, Task
@@ -38,14 +40,11 @@ MAX_LOG_LINES = 5000
 
 
 def pretty_version(number: str) -> str:
-    """Modrinth version numbers like 'mc1.21.11-0.8.14-fabric' -> '0.8.14'."""
-    n = number
-    if n.startswith("mc") and "-" in n:
-        n = n.split("-", 1)[1]
-    for suffix in ("-fabric", "+1.21.11", "+mc1.21.11"):
-        if n.endswith(suffix):
-            n = n[: -len(suffix)]
-    return n
+    """Modrinth version numbers without the Minecraft part: 'mc26.2-0.9.2-fabric' -> '0.9.2',
+    '0.161.0+26.2' -> '0.161.0', '1.0.2+build.1+mc26.1' -> '1.0.2+build.1'."""
+    n = re.sub(r"^mc[0-9.]+-", "", number)
+    n = re.sub(r"-fabric$", "", n)
+    return re.sub(r"\+(mc)?[0-9]+(\.[0-9]+)+$", "", n)
 
 
 def install_step(status: str) -> int:
@@ -55,7 +54,7 @@ def install_step(status: str) -> int:
         return 4
     if "hollow client mod" in s:
         return 3
-    if "fabric api" in s or "sodium" in s or s.startswith("downloading"):
+    if "on modrinth" in s or "fabric api" in s or "sodium" in s or s.startswith("downloading"):
         return 2
     if "fabric loader" in s:
         return 1
@@ -146,15 +145,23 @@ class Backend(QObject):
     def __init__(self, network: bool = True, store: TokenStore | None = None, parent: QObject | None = None):
         super().__init__(parent)
         self.network = network
-        self.game_dir = paths.game_dir()
-        self.settings = LauncherSettings.load(paths.settings_file(self.game_dir))
+        self.root = paths.game_dir()
+        self.settings = LauncherSettings.load(paths.settings_file(self.root))
         self.config = appconfig.load()
         self.store = store or TokenStore()
         self.account: Account | None = None
-        public, _ = read_json(self.game_dir / "account.json")
+        public, _ = read_json(self.root / "account.json")
         self.account_public: dict[str, Any] = public if isinstance(public, dict) else {}
         self.sig_progress = SignalProgress()
-        self.installer = Installer(self.game_dir, self.sig_progress)
+        self.profiles, self.default_profile = profiles.load()
+        self.profile = profiles.by_id(self.profiles, self.settings.profile, self.default_profile)
+        self.logs = LogModel(self)
+        self._setup_logging()
+        if network:  # self-test and screenshot runs must not change the real folder
+            self._migrate()
+        self.installer = Installer(self.root, self.profile, self.sig_progress)
+        self._server: str | None = None
+        self._conflicts: list[str] = []
         self.tasks: list[Task] = []
         self.busy = False
         self.game = None
@@ -162,7 +169,6 @@ class Backend(QObject):
         self.watcher: GameWatcher | None = None
         self.login_cancel: threading.Event | None = None
         self.updates: list = []
-        self.logs = LogModel(self)
 
         self._status = ""
         self._status_kind = ""
@@ -177,7 +183,6 @@ class Backend(QObject):
         self._stats: dict[str, Any] = {}
         self._counts: dict[str, int] = {}
 
-        self._setup_logging()
         self.sig_progress.status_changed.connect(self._on_status)
         self.sig_progress.progress_changed.connect(self._on_progress)
         self.sig_progress.logged.connect(lambda t: log.info(t))
@@ -186,6 +191,21 @@ class Backend(QObject):
         if network:
             QTimer.singleShot(400, self._startup)
 
+    @property
+    def game_dir(self) -> Path:
+        """The selected profile's game folder (mods, config, saves, options, screenshots, ...)."""
+        return self.profile.instance_dir(self.root)
+
+    def skyblock_instance(self) -> Path | None:
+        """The Hypixel-ready profile's game folder (where the mod writes its SkyBlock session totals)."""
+        p = next((q for q in self.profiles if q.hypixel), None)
+        return p.instance_dir(self.root) if p else None
+
+    def theme_files(self) -> list[Path]:
+        """The mod's theme file in every profile, the selected profile first (the launcher keeps them in sync)."""
+        others = [p for p in self.profiles if p.id != self.profile.id]
+        return [p.instance_dir(self.root) / "config" / "hollowclient" / "theme.json" for p in [self.profile, *others]]
+
     # ------------------------------------------------------------------------------------------------ plumbing
 
     def _setup_logging(self) -> None:
@@ -193,8 +213,8 @@ class Backend(QObject):
         for h in list(log.handlers):
             log.removeHandler(h)
         try:
-            self.game_dir.mkdir(parents=True, exist_ok=True)
-            fh = RotatingFileHandler(self.game_dir / "launcher.log", maxBytes=1_000_000, backupCount=2, encoding="utf-8")
+            self.root.mkdir(parents=True, exist_ok=True)
+            fh = RotatingFileHandler(self.root / "launcher.log", maxBytes=1_000_000, backupCount=2, encoding="utf-8")
             fh.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
             log.addHandler(fh)
         except OSError:
@@ -202,7 +222,17 @@ class Backend(QObject):
         self._bridge = _LogBridge()
         self._bridge.line.connect(self.logs.append)
         log.addHandler(_QtLogHandler(self._bridge))
-        log.info(f"{APP_NAME} launcher {VERSION} - game folder: {self.game_dir}")
+        log.info(f"{APP_NAME} launcher {VERSION} - folder: {self.root}, profile: {self.profile.id}")
+
+    def _migrate(self) -> None:
+        """Launcher 1.x kept the 1.21.11 game in the root folder; move it into its instance folder once."""
+        try:
+            moved = migration.migrate(self.root)
+        except OSError as e:
+            log.warning(f"Moving the old install into instances/ failed: {e}")
+            return
+        if moved:
+            log.info(f"Your 1.21.11 game folder moved to instances/{migration.LEGACY_ID} ({len(moved)} items)")
 
     def _spawn(self, fn: Callable[[SignalProgress], Any], ok: Callable[[Any], None], fail: Callable[[Exception], None],
                progress: SignalProgress | None = None) -> Task:
@@ -267,7 +297,23 @@ class Backend(QObject):
         r["state"] == "update" for r in self._mod_rows), notify=changed)
     modRows = Property(list, lambda self: self._mod_rows, notify=changed)
     launcherVersion = Property(str, lambda self: VERSION, constant=True)
-    mcVersion = Property(str, lambda self: MC_VERSION, constant=True)
+    mcVersion = Property(str, lambda self: self.profile.minecraft, notify=changed)
+    profileId = Property(str, lambda self: self.profile.id, notify=changed)
+    profileName = Property(str, lambda self: self.profile.name, notify=changed)
+    profileTagline = Property(str, lambda self: self.profile.tagline, notify=changed)
+    profileHypixel = Property(bool, lambda self: self.profile.hypixel, notify=changed)
+    hasHypixelProfile = Property(bool, lambda self: any(p.hypixel for p in self.profiles), constant=True)
+    conflictText = Property(str, lambda self: conflicts.message(self._conflicts), notify=changed)
+
+    def _get_profile_list(self) -> list[dict[str, Any]]:
+        out = []
+        for p in self.profiles:
+            inst = self.installer if p.id == self.profile.id else Installer(self.root, p, self.sig_progress)
+            out.append({"id": p.id, "name": p.name, "tagline": p.tagline, "minecraft": p.minecraft,
+                        "hypixel": p.hypixel, "installed": inst.is_installed(), "label": p.label})
+        return out
+
+    profileList = Property(list, _get_profile_list, notify=changed)
     canLogin = Property(bool, lambda self: self._can_login(), notify=changed)
     configStatus = Property(str, lambda self: self.config.status_text() + (
         f" (looked in {paths.app_dir()})" if self.config.source is None else ""), notify=changed)
@@ -276,7 +322,7 @@ class Backend(QObject):
     def _get_play_sub(self) -> str:
         if self.game is not None:
             return "Minecraft is running"
-        return "" if self.installer.is_installed() else "Installs first (about 700 MB)"
+        return "" if self.installer.is_installed() else f"Installs Minecraft {self.profile.minecraft} first (about 700 MB)"
 
     playSub = Property(str, _get_play_sub, notify=changed)
 
@@ -308,7 +354,7 @@ class Backend(QObject):
     accountText = Property(str, _get_account_text, notify=changed)
 
     def _skin_file(self) -> Path:
-        return self.game_dir / "cache" / "skin.png"
+        return self.root / "cache" / "skin.png"
 
     def _get_skin_url(self) -> str:
         f = self._skin_file()
@@ -333,10 +379,10 @@ class Backend(QObject):
 
     def _jar_texture(self, inner: str) -> str:
         """Extract a texture from the mod jar into the launcher cache (built-in capes and wings live there)."""
-        jar = paths.find_mod_jar()
+        jar = paths.find_mod_jar(minecraft=self.profile.minecraft) or paths.find_mod_jar()
         if jar is None:
             return ""
-        target = self.game_dir / "cache" / "textures" / inner.replace("/", "_")
+        target = self.root / "cache" / "textures" / inner.replace("/", "_")
         try:
             if not target.is_file() or target.stat().st_mtime < jar.stat().st_mtime:
                 with zipfile.ZipFile(jar) as z:
@@ -389,7 +435,7 @@ class Backend(QObject):
     def _save_settings(self) -> None:
         self.settings.sanitize()
         try:
-            self.settings.save(paths.settings_file(self.game_dir))
+            self.settings.save(paths.settings_file(self.root))
         except OSError as e:
             log.warning(f"Settings couldn't be saved: {e}")
         self.settingsChanged.emit()
@@ -428,9 +474,32 @@ class Backend(QObject):
 
     @Slot()
     def refreshStats(self) -> None:  # noqa: N802
-        self._stats = stats.summarize(stats.load_sessions(self.game_dir))
+        self._stats = stats.summarize(stats.load_sessions(self.root))
         self._counts = stats.folder_counts(self.game_dir)
         self.statsChanged.emit()
+
+    # ------------------------------------------------------------------------------------------------ profiles
+
+    @Slot(str)
+    def selectProfile(self, pid: str) -> None:  # noqa: N802
+        """Switch the version profile (not while installing or playing)."""
+        if self.busy or self.game is not None or pid == self.profile.id:
+            return
+        p = next((q for q in self.profiles if q.id == pid), None)
+        if p is None:
+            return
+        self.profile = p
+        self.installer = Installer(self.root, p, self.sig_progress)
+        self.updates = []
+        self._update_status = "Not checked yet."
+        self._banner = ("", "", "")
+        self.settings.profile = p.id
+        self._save_settings()
+        log.info(f"Profile: {p.label} (Minecraft {p.minecraft})")
+        self.refresh()
+        self.refreshStats()
+        if self.network and self.installer.is_installed():
+            self.checkUpdates()
 
     # ------------------------------------------------------------------------------------------------ refresh
 
@@ -440,16 +509,18 @@ class Backend(QObject):
             if self.installer.is_installed():
                 self._status = "Ready to play." if self._can_login() else "Installed. Microsoft login isn't set up yet, see Settings."
             else:
-                self._status = "Not installed yet. Press PLAY to download Minecraft, Fabric, Sodium and Hollow Client."
+                self._status = (f"Not installed yet. Press PLAY to download Minecraft {self.profile.minecraft}, Fabric, "
+                                f"{', '.join(m.name for m in self.profile.mods)} and Hollow Client.")
             self._status_kind = ""
         self._refresh_mod_rows()
+        self._conflicts = conflicts.find(self.game_dir / "mods")
         self.changed.emit()
 
     def _refresh_mod_rows(self) -> None:
         manifest = read_manifest(self.game_dir / "mods")
         latest = {u.project_id: u for u in self.updates}
         rows = []
-        for pid, name in ((FABRIC_API, "Fabric API"), (SODIUM, "Sodium")):
+        for pid, name in ((m.project, m.name) for m in self.profile.mods):
             entry = manifest["projects"].get(pid) if isinstance(manifest.get("projects"), dict) else None
             present = isinstance(entry, dict) and (self.game_dir / "mods" / str(entry.get("filename", ""))).is_file()
             installed = str(entry.get("version_number", "")) if present else ""
@@ -458,7 +529,7 @@ class Backend(QObject):
             rows.append({"name": name, "installed": pretty_version(installed), "latest": pretty_version(u.latest) if u else "", "state": state})
         hollow = manifest.get("hollowclient", {})
         hollow_name = hollow.get("filename", "") if isinstance(hollow, dict) else ""
-        bundled = paths.find_mod_jar()
+        bundled = paths.find_mod_jar(minecraft=self.profile.minecraft)
         hv = hollow_name[len("hollowclient-"):-4] if hollow_name.startswith("hollowclient-") else ""
         bv = bundled.name[len("hollowclient-"):-4] if bundled else ""
         state = "missing" if not hv else ("update" if self._hollow_outdated() else "ok")
@@ -468,7 +539,7 @@ class Backend(QObject):
     def _hollow_outdated(self) -> bool:
         """True when the installed Hollow Client jar isn't the one this launcher carries (compared by content,
         so a rebuilt jar with the same version number still counts as new)."""
-        bundled = paths.find_mod_jar()
+        bundled = paths.find_mod_jar(minecraft=self.profile.minecraft)
         if bundled is None:
             return False
         manifest = read_manifest(self.game_dir / "mods")
@@ -492,8 +563,11 @@ class Backend(QObject):
     def checkUpdates(self) -> None:  # noqa: N802
         self._update_status = "Checking Modrinth..."
         self.changed.emit()
+        pid = self.profile.id
 
         def done(updates) -> None:
+            if pid != self.profile.id:
+                return  # the profile changed while this was checking
             self.updates = updates
             needed = [u for u in updates if u.needed]
             self._update_status = f"Checked {time.strftime('%H:%M')}. " + (
@@ -505,6 +579,8 @@ class Backend(QObject):
             self.changed.emit()
 
         def failed(e: Exception) -> None:
+            if pid != self.profile.id:
+                return
             self._update_status = str(e) if isinstance(e, ModrinthError) else f"Update check failed: {e}"
             self.changed.emit()
 
@@ -524,8 +600,25 @@ class Backend(QObject):
 
     @Slot()
     def play(self) -> None:
+        self._play(None)
+
+    @Slot()
+    def joinHypixel(self) -> None:  # noqa: N802
+        """Start the Hypixel-ready profile and connect to Hypixel from the title screen. Only the connection is
+        automatic; once there, the player does everything (including typing /skyblock)."""
         if self.busy or self.game is not None:
             return
+        target = next((p for p in self.profiles if p.hypixel), None)
+        if target is None:
+            return
+        if target.id != self.profile.id:
+            self.selectProfile(target.id)
+        self._play(launch.HYPIXEL)
+
+    def _play(self, server: str | None) -> None:
+        if self.busy or self.game is not None:
+            return
+        self._server = server
         self._banner = ("", "", "")
         if not self.installer.is_installed():
             self._install(then=self._ensure_account)
@@ -685,7 +778,7 @@ class Backend(QObject):
         except Exception as e:
             log.warning(f"Couldn't save the sign-in to Credential Manager: {e}")
         try:
-            write_json_atomic(self.game_dir / "account.json", account.public())
+            write_json_atomic(self.root / "account.json", account.public())
         except OSError:
             pass
         log.info(f"Signed in as {account.name}")
@@ -734,7 +827,7 @@ class Backend(QObject):
         self.account = None
         self.account_public = {}
         self._account_note = ""
-        for f in (self.game_dir / "account.json", self._skin_file()):
+        for f in (self.root / "account.json", self._skin_file()):
             try:
                 f.unlink(missing_ok=True)
             except OSError:
@@ -750,9 +843,11 @@ class Backend(QObject):
         if not version_id:
             self.set_status("The installation is incomplete. Press Repair.", "error")
             return
+        server, self._server = self._server, None
         try:
-            options = launch.build_options(self.account, self.settings, self.game_dir)
-            command = launch.build_command(version_id, self.game_dir, options)
+            self.game_dir.mkdir(parents=True, exist_ok=True)
+            options = launch.build_options(self.account, self.settings, self.game_dir, server)
+            command = launch.build_command(version_id, self.root, options)
         except Exception as e:
             self.set_status(f"Couldn't build the game command: {e}. Try Repair.", "error")
             log.error(f"Building the command failed: {e}")
@@ -766,7 +861,7 @@ class Backend(QObject):
             log.error(f"Start failed: {e}")
             return
         self.game_started_at = stats.now()
-        self.set_status("Minecraft is starting... it opens in its own window.", "ok")
+        self.set_status(f"Minecraft is starting{' and joining ' + server if server else ''}... it opens in its own window.", "ok")
         self.launched.emit()
         if capture:
             self.watcher = GameWatcher(self.game)
@@ -774,7 +869,7 @@ class Backend(QObject):
             self.watcher.exited.connect(self._game_exited)
             self.watcher.start()
         else:
-            stats.record_session(self.game_dir, self.game_started_at, None)
+            stats.record_session(self.root, self.game_started_at, None, self.profile.id)
             QTimer.singleShot(4000, self._close_after_launch)
 
     def _close_after_launch(self) -> None:
@@ -790,7 +885,7 @@ class Backend(QObject):
     def _game_exited(self, code: int) -> None:
         log.info(f"Minecraft closed (exit code {code})")
         if self.game_started_at:
-            stats.record_session(self.game_dir, self.game_started_at, max(0.0, stats.now() - self.game_started_at))
+            stats.record_session(self.root, self.game_started_at, max(0.0, stats.now() - self.game_started_at), self.profile.id)
             self.game_started_at = 0.0
             self.refreshStats()
         self.game = None
@@ -808,7 +903,7 @@ class Backend(QObject):
         hollow = self.game_dir / "config" / "hollowclient"
         targets = {"game": self.game_dir, "mods": self.game_dir / "mods", "packs": self.game_dir / "resourcepacks",
                    "capes": hollow / "capes", "music": hollow / "music", "screenshots": self.game_dir / "screenshots",
-                   "logs": self.game_dir / "logs", "config": paths.app_dir()}
+                   "logs": self.game_dir / "logs", "config": paths.app_dir(), "root": self.root}
         if which in targets:
             self._open(targets[which])
 

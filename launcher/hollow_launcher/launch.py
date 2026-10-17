@@ -38,7 +38,12 @@ def memory_args(ram_mb: int) -> list[str]:
     return [f"-Xmx{ram_mb}M", f"-Xms{min(ram_mb, 1024)}M"]
 
 
-def build_options(account: Account, settings: LauncherSettings, game_dir: Path) -> dict[str, Any]:
+HYPIXEL = "mc.hypixel.net"
+
+
+def build_options(account: Account, settings: LauncherSettings, game_dir: Path, server: str | None = None) -> dict[str, Any]:
+    """`game_dir` is the profile's instance folder. With `server`, the game connects there straight from the
+    title screen (Minecraft's quick-play multiplayer argument); the player still types every command themselves."""
     options: dict[str, Any] = {
         "username": account.name,
         "uuid": account.uuid,
@@ -48,6 +53,8 @@ def build_options(account: Account, settings: LauncherSettings, game_dir: Path) 
         "launcherVersion": VERSION,
         "gameDirectory": str(game_dir),
     }
+    if server:
+        options["quickPlayMultiplayer"] = server
     if settings.resolution_width and settings.resolution_height:
         options["customResolution"] = True
         options["resolutionWidth"] = str(settings.resolution_width)
@@ -55,8 +62,9 @@ def build_options(account: Account, settings: LauncherSettings, game_dir: Path) 
     return options
 
 
-def build_command(version_id: str, game_dir: Path, options: dict[str, Any]) -> list[str]:
-    return strip_unfilled(mll.command.get_minecraft_command(version_id, str(game_dir), options))
+def build_command(version_id: str, root: Path, options: dict[str, Any]) -> list[str]:
+    """`root` holds the shared versions/libraries/assets; the game folder itself comes from options["gameDirectory"]."""
+    return strip_unfilled(mll.command.get_minecraft_command(version_id, str(root), options))
 
 
 def strip_unfilled(command: list[str]) -> list[str]:

@@ -42,7 +42,8 @@ def be(app, tmp_path, monkeypatch):
 
 def test_not_installed_state(be):
     assert "Not installed yet" in be.status
-    assert be.playSub.startswith("Installs first")
+    assert be.playSub.startswith("Installs Minecraft 26.2 first")
+    assert be.profileId == "hollow-26.2" and be.mcVersion == "26.2" and be.profileHypixel
     assert be.canPlay
     assert be.versions == [{"name": "Minecraft", "value": "not installed yet"}]
 
@@ -76,7 +77,7 @@ def test_settings_are_saved(be):
     be.setJvmArgs("-XX:+UseZGC")
     be.setLauncherOption("show_intro", False)
     be.setLauncherOption("not_a_setting", False)
-    saved = json.loads((be.game_dir / "launcher_settings.json").read_text())
+    saved = json.loads((be.root / "launcher_settings.json").read_text())
     assert saved["ram_mb"] == 6144 and saved["jvm_args"] == "-XX:+UseZGC" and saved["show_intro"] is False
     assert be.ramMb == 6144 and not be.showIntro
 
@@ -260,8 +261,39 @@ def test_qml_loads_without_errors(app, be, tmp_path):
         engine = create_engine(be, theme, sounds, skip_intro=True)
         assert engine.rootObjects(), "Main.qml didn't load"
         window = engine.rootObjects()[0]
-        for i in range(5):
+        for i in range(6):
             window.setProperty("page", i)
+            app.processEvents()
+        window.close()
+    finally:
+        qInstallMessageHandler(None)
+    problems = [m for m in messages if ".qml" in m and "ShaderEffect" not in m]
+    assert not problems, problems
+
+
+def test_skyblock_page_with_data_has_no_qml_errors(app, be, tmp_path):
+    """The SkyBlock page filled from a cache (as after a real fetch): every card binds without warnings."""
+    from test_skyblock_data import NOW, fake_fetch
+
+    from hollow_launcher import skyblock_data
+    from hollow_launcher.qmlui.app import create_engine
+    from hollow_launcher.qmlui.skyblock_bridge import SkyBlockBridge
+    from hollow_launcher.qmlui.sounds import Sounds
+
+    cache = be.root / "skyblock_cache"
+    skyblock_data.Dashboard(cache, fetch=fake_fetch([]), clock=lambda: NOW).build()
+    skyblock_data.Dashboard(cache, fetch=fake_fetch([]), clock=lambda: NOW + 3600).build()
+    messages = []
+    qInstallMessageHandler(lambda mode, ctx, msg: messages.append(msg))
+    try:
+        bridge = SkyBlockBridge(cache, be.skyblock_instance, network=False)
+        assert bridge.data["election"]["mayor"]["name"] == "Diaz"
+        theme = ThemeBridge(tmp_path / "theme.json", poll=False)
+        sounds = Sounds(tmp_path, enabled=False)
+        engine = create_engine(be, theme, sounds, skip_intro=True, skyblock=bridge)
+        window = engine.rootObjects()[0]
+        window.setProperty("page", 1)
+        for _ in range(20):
             app.processEvents()
         window.close()
     finally:
@@ -274,7 +306,7 @@ def test_a_rebuilt_hollow_jar_counts_as_an_update(be):
     from hollow_launcher import paths
     from hollow_launcher.installer import write_manifest
 
-    bundled = paths.find_mod_jar()
+    bundled = paths.find_mod_jar(minecraft=be.profile.minecraft)
     if bundled is None:
         pytest.skip("no mod jar built")
     mods = be.game_dir / "mods"

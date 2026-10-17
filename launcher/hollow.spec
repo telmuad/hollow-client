@@ -9,6 +9,7 @@ root = Path(SPECPATH)
 datas = [(str(root / "assets"), "assets")]
 # the Qt Quick window: QML files and the compiled nebula shader (looked up next to the hollow_launcher package)
 datas += [(str(root / "hollow_launcher" / "qml"), "hollow_launcher/qml")]
+datas += [(str(root / "hollow_launcher" / "profiles.json"), "hollow_launcher")]
 datas += collect_data_files("minecraft_launcher_lib")  # it reads its own version.txt
 jars = [j for j in (root / "bundled").glob("hollowclient-*.jar") if not j.name.endswith("-sources.jar")]
 datas += [(str(j), "bundled") for j in jars]

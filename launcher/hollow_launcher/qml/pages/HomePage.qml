@@ -1,7 +1,7 @@
 import QtQuick
 import "../components"
 
-// Home: the big PLAY button, install progress, updates and what's installed.
+// Home: the version profile, the big PLAY button (and Join Hypixel), install progress, updates and what's installed.
 Item {
     id: page
     property real appear: 1   // animated by the page switcher
@@ -9,7 +9,8 @@ Item {
     Column {
         id: head
         anchors.left: parent.left
-        anchors.right: parent.right
+        anchors.right: profiles.left
+        anchors.rightMargin: 12
         spacing: 4
         opacity: page.appear
         transform: Translate { y: 14 * (1 - page.appear) }
@@ -21,11 +22,22 @@ Item {
             font.weight: Font.Bold
         }
         Text {
-            text: "Minecraft " + backend.mcVersion + " with Fabric, Sodium and Hollow Client"
+            width: parent.width
+            text: "Minecraft " + backend.mcVersion + "  ·  " + backend.modRows.slice(0, -1).map(function(r) { return r.name }).join(", ") + " and Hollow Client"
             color: app.dim
             font.family: app.fontFamily
             font.pixelSize: 14
+            elide: Text.ElideRight
         }
+    }
+    ProfileSwitch {
+        id: profiles
+        objectName: "profileSwitch"
+        anchors.right: parent.right
+        anchors.verticalCenter: head.verticalCenter
+        width: implicitWidth
+        height: implicitHeight
+        opacity: page.appear
     }
 
     Banner {
@@ -36,13 +48,26 @@ Item {
         anchors.right: parent.right
     }
 
-    GlassPanel {
-        id: hero
+    Banner {
+        id: conflictBanner
+        objectName: "conflictBanner"
         anchors.top: banner.bottom
-        anchors.topMargin: banner.shown ? 14 : 16
+        anchors.topMargin: shown ? 10 : 0
         anchors.left: parent.left
         anchors.right: parent.right
-        height: Math.max(240, page.height - head.height - banner.height - 30 - 214)
+        text: backend.conflictText
+        kind: "warn"
+        action: ""
+        closable: false
+    }
+
+    GlassPanel {
+        id: hero
+        anchors.top: conflictBanner.bottom
+        anchors.topMargin: banner.shown || conflictBanner.shown ? 14 : 16
+        anchors.left: parent.left
+        anchors.right: parent.right
+        height: Math.max(240, page.height - Math.max(head.height, profiles.height) - banner.height - conflictBanner.height - 30 - 214)
         opacity: Math.min(1, page.appear * 1.3)
         transform: Translate { y: 22 * (1 - page.appear) }
 
@@ -82,6 +107,26 @@ Item {
                 sub: backend.playSub
                 ready: backend.canPlay
                 onFired: backend.play()
+            }
+            Row {
+                visible: backend.hasHypixelProfile
+                spacing: 12
+                HButton {
+                    objectName: "homeJoinHypixel"
+                    icon: "globe"
+                    text: "Join Hypixel"
+                    enabled: backend.canPlay
+                    onClicked: backend.joinHypixel()
+                }
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: playCol.width - 160
+                    text: backend.profileHypixel ? "Starts this profile and connects to mc.hypixel.net." : "Switches to the 26.2 profile and connects to mc.hypixel.net."
+                    color: app.faint
+                    font.family: app.fontFamily
+                    font.pixelSize: 12
+                    wrapMode: Text.WordWrap
+                }
             }
             InstallProgress {
                 width: playCol.width

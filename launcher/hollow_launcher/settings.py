@@ -26,6 +26,8 @@ class LauncherSettings:
     animated_background: bool = True
     ui_sounds: bool = True
     show_intro: bool = True
+    # the selected version profile (profiles.json id); empty = the default profile
+    profile: str = ""
 
     def sanitize(self) -> "LauncherSettings":
         self.ram_mb = clamp_ram(self.ram_mb)
@@ -36,6 +38,7 @@ class LauncherSettings:
             self.resolution_width = max(320, min(7680, self.resolution_width))
             self.resolution_height = max(240, min(4320, self.resolution_height))
         self.last_update_check = max(0.0, float(self.last_update_check))
+        self.profile = str(self.profile or "")[:64]
         return self
 
     @classmethod

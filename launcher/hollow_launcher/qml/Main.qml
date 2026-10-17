@@ -162,7 +162,7 @@ Window {
             anchors.bottomMargin: 24
 
             Repeater {
-                model: [homePage, wardrobePage, statsPage, settingsPage, logsPage]
+                model: [homePage, skyblockPage, wardrobePage, statsPage, settingsPage, logsPage]
                 Item {
                     id: slot
                     anchors.fill: parent
@@ -185,6 +185,7 @@ Window {
             }
         }
         Component { id: homePage; HomePage {} }
+        Component { id: skyblockPage; SkyBlockPage {} }
         Component { id: wardrobePage; WardrobePage {} }
         Component { id: statsPage; StatsPage {} }
         Component { id: settingsPage; SettingsPage {} }

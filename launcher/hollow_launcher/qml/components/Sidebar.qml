@@ -6,6 +6,7 @@ Item {
     width: 216
     property var pages: [
         { title: "Home", icon: "home" },
+        { title: "SkyBlock", icon: "island" },
         { title: "Wardrobe", icon: "wardrobe" },
         { title: "Stats", icon: "stats" },
         { title: "Settings", icon: "settings" },
