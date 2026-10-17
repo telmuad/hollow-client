@@ -216,6 +216,7 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		skyblockEconomy(ctx);
 		skyblockGarden(ctx);
 		skyblockDungeons(ctx);
+		skyblockSlayer(ctx);
 		check("Leaving SkyBlock puts the normal HUD layout back", ctx.computeOnClient(mc ->
 				"outside".equals(dev.telmuad.hollowclient.modules.Modules.SKYBLOCK_MODE.activeLayout())));
 		sp.getServer().runCommand("clear @a");
@@ -388,6 +389,37 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 	}
 
 	/** A1 General: status bars, pet, next events, deployables and compact damage, from the "general" scenario. */
+	private void skyblockSlayer(ClientGameTestContext ctx) {
+		setEnabled(ctx, "sb_slayer", true);
+		setEnabled(ctx, "sb_boss_highlight", true);
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.simulate(mc, "slayer"));
+		ctx.waitTicks(70); // the boss is up from 2 s until 5.8 s
+		check("The Slayer HUD shows during a quest", ctx.computeOnClient(mc -> module("sb_slayer") instanceof dev.telmuad.hollowclient.hud.HudModule h
+				&& h.visibleInGame(mc)));
+		check("Your boss is found from its Spawned by tag, with its health", ctx.computeOnClient(mc -> {
+			var b = dev.telmuad.hollowclient.skyblock.features.slayer.SlayerModules.scan(mc);
+			return b != null && b.entityId() >= 0 && b.hp().equals("1.2M") && mc.level.getEntity(b.entityId()) instanceof net.minecraft.world.entity.animal.wolf.Wolf;
+		}));
+		check("Someone else's boss is never picked", ctx.computeOnClient(mc -> {
+			var b = dev.telmuad.hollowclient.skyblock.features.slayer.SlayerModules.scan(mc);
+			return b != null && Math.abs(mc.level.getEntity(b.entityId()).getX() - (mc.player.getX() + 3)) < 0.5;
+		}));
+		check("Boss Highlight boxes your boss only", ctx.computeOnClient(mc -> dev.telmuad.hollowclient.render.EntityHighlights.boxes().size() == 1));
+		check("The fight timer runs while the boss is up", ctx.computeOnClient(mc -> ((dev.telmuad.hollowclient.skyblock.features.slayer.SlayerModules.SlayerHud)
+				module("sb_slayer")).stats().fightMs(System.currentTimeMillis()) > 0));
+		screenshot(ctx, "skyblock_slayer");
+		ctx.waitTicks(80);
+		check("Killing the boss is counted", ctx.computeOnClient(mc -> ((dev.telmuad.hollowclient.skyblock.features.slayer.SlayerModules.SlayerHud)
+				module("sb_slayer")).stats().kills() == 1));
+		check("The drop after the kill is tracked", ctx.computeOnClient(mc -> Integer.valueOf(2).equals(
+				((dev.telmuad.hollowclient.skyblock.features.slayer.SlayerModules.SlayerHud) module("sb_slayer")).drops().counts().get("Grizzly Bait"))));
+		check("The highlight clears when the boss is gone", ctx.computeOnClient(mc -> dev.telmuad.hollowclient.render.EntityHighlights.boxes().isEmpty()));
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.stopSimulation());
+		ctx.waitTicks(5);
+		setEnabled(ctx, "sb_slayer", false);
+		setEnabled(ctx, "sb_boss_highlight", false);
+	}
+
 	private void skyblockGeneral(ClientGameTestContext ctx) {
 		for (String id : new String[]{"sb_status_bars", "sb_pet", "sb_next_events", "sb_deployables", "sb_damage_numbers", "sb_vanilla_bars"}) {
 			setEnabled(ctx, id, true);

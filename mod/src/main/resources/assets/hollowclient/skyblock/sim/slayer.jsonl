@@ -6,6 +6,14 @@
 {"t": 600, "type": "chat", "text": "§5§l  SLAYER QUEST STARTED!"}
 {"t": 800, "type": "actionbar", "text": "§c1,234/1,500❤   §3+120 Combat (2,000/10,000)"}
 {"t": 2000, "type": "sidebar", "title": "§e§lSKYBLOCK", "lines": ["§710/16/26 §8m99A", " Summer 20th", " §7⏣ §cHowling Cave", "Purse: §64,500,000", "Slayer Quest", "§5Sven Packmaster IV", "§eSlay the boss!", "§ewww.hypixel.net"]}
-{"t": 4000, "type": "chat", "text": "§a§l  NICE! SLAYER BOSS SLAIN!"}
-{"t": 4100, "type": "chat", "text": "§a§l  SLAYER QUEST COMPLETE!"}
-{"t": 4300, "type": "chat", "text": "§9§lVERY RARE DROP! §7(§f2x§7) §9Grizzly Bait §b(+150% §b✯ Magic Find§b)"}
+{"t": 2000, "type": "summon", "entity": "minecraft:wolf", "dx": 3, "dy": 0, "dz": 4}
+{"t": 2050, "type": "summon", "name": "§c☠ §bSven Packmaster §a1.2M§c❤", "dx": 3, "dy": 1.9, "dz": 4}
+{"t": 2050, "type": "summon", "name": "§c02:58", "dx": 3, "dy": 1.6, "dz": 4}
+{"t": 2050, "type": "summon", "name": "§7Spawned by: §b{me}", "dx": 3, "dy": 1.3, "dz": 4}
+{"t": 2100, "type": "summon", "entity": "minecraft:wolf", "dx": -4, "dy": 0, "dz": 4}
+{"t": 2150, "type": "summon", "name": "§c☠ §bSven Packmaster §a2.0M§c❤", "dx": -4, "dy": 1.9, "dz": 4}
+{"t": 2150, "type": "summon", "name": "§7Spawned by: §bSomeoneElse", "dx": -4, "dy": 1.3, "dz": 4}
+{"t": 5800, "type": "clear_summons"}
+{"t": 6000, "type": "chat", "text": "§a§l  NICE! SLAYER BOSS SLAIN!"}
+{"t": 6100, "type": "chat", "text": "§a§l  SLAYER QUEST COMPLETE!"}
+{"t": 6300, "type": "chat", "text": "§9§lVERY RARE DROP! §7(§f2x§7) §9Grizzly Bait §b(+150% §b✯ Magic Find§b)"}

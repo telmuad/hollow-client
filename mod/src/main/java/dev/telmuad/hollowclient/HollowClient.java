@@ -75,6 +75,7 @@ public final class HollowClient implements ClientModInitializer {
 		});
 		dev.telmuad.hollowclient.config.Profiles.load();
 		dev.telmuad.hollowclient.render.WaypointFx.register();
+		dev.telmuad.hollowclient.render.EntityHighlights.register();
 		Modules.registerHooks();
 		dev.telmuad.hollowclient.skyblock.ui.SkyBlockUi.init();
 

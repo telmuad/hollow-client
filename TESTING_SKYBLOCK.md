@@ -105,3 +105,15 @@ Switch the features on in the menu first (they start off, except SkyBlock Info).
 - [ ] **Blaze Puzzle**: lowest and highest health match what you see.
 - [ ] **Spirit Leap Classes**: class letters on the heads in the leap menu.
 - [ ] **Reward Chest Value**: in a reward chest, value vs cost.
+
+## 7. Slayers (Right Shift → SkyBlock → Slayers)
+
+- [ ] **Slayer HUD**: start a quest at Maddox (or the Batphone). The HUD shows the boss and tier and the progress with
+  a percent that matches the scoreboard. When the boss spawns, its name/health tag and timer show under it, and
+  the fight time counts up.
+- [ ] After a kill: bosses, average time and (after a minute) bosses per hour. A rare drop right after the kill adds
+  to "Drops" (needs prices loaded). A drop outside slayers (dungeons, fishing) must not be added.
+- [ ] **Boss Highlight** (off by default): a soft box around your boss only, never someone else's; walls hide it.
+  If nothing is found, record a boss fight with the debug recorder: the "Spawned by" tag may sit somewhere else.
+- [ ] Fail a quest (let the timer run out): the fight time stops and no kill is counted.
+

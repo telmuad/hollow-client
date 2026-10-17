@@ -102,5 +102,7 @@
 	"key.hollowclient.sb_terminals": "Toggle Terminal Helper",
 	"key.hollowclient.sb_blaze": "Toggle Blaze Puzzle",
 	"key.hollowclient.sb_spirit_leap": "Toggle Spirit Leap Classes",
-	"key.hollowclient.sb_reward_chest": "Toggle Reward Chest Value"
+	"key.hollowclient.sb_reward_chest": "Toggle Reward Chest Value",
+	"key.hollowclient.sb_slayer": "Toggle Slayer HUD",
+	"key.hollowclient.sb_boss_highlight": "Toggle Boss Highlight"
 }

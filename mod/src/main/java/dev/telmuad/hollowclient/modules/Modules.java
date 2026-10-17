@@ -216,6 +216,8 @@ public final class Modules {
 		registry.register(new dev.telmuad.hollowclient.skyblock.features.dungeons.DungeonModules.BlazeHud());
 		registry.register(new dev.telmuad.hollowclient.skyblock.features.dungeons.DungeonModules.SpiritLeapModule());
 		registry.register(new dev.telmuad.hollowclient.skyblock.features.dungeons.DungeonModules.RewardChestHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.slayer.SlayerModules.SlayerHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.slayer.SlayerModules.BossHighlight());
 		// Client: theme, font, sounds and the global Performance Mode
 		THEME = registry.register(new ThemeModule());
 		PROFILES = registry.register(new ProfilesModule());

@@ -67,14 +67,25 @@ scenarios = {
                       "§7Rewards:", " §8+§c30 Copper", " §8+§315,000 §7Farming XP", "", "§eClick to give!"], "custom_data": {}},
             {"slot": 33, "material": "minecraft:red_terracotta", "count": 1, "name": "§cRefuse Offer", "lore": [], "custom_data": {}}]},
     ]),
-    "slayer": ("A Sven Packmaster IV quest in the Park: progress, the boss spawns, quest complete, a drop", [
+    "slayer": ("A Sven Packmaster IV quest in the Park: progress, your boss spawns (a frozen wolf with its name tags), "
+               "quest complete, a drop", [
         loc(0, "foraging_1", "The Park"), side(100, "slayer_progress"), tabl(200, "hub"), *profile,
         chat(600, "§5§l  SLAYER QUEST STARTED!"),
         bar(800, "§c1,234/1,500❤   §3+120 Combat (2,000/10,000)"),
         side(2000, "slayer_boss"),
-        chat(4000, "§a§l  NICE! SLAYER BOSS SLAIN!"),
-        chat(4100, "§a§l  SLAYER QUEST COMPLETE!"),
-        chat(4300, "§9§lVERY RARE DROP! §7(§f2x§7) §9Grizzly Bait §b(+150% §b✯ Magic Find§b)"),
+        # The boss's labels as Hypixel stacks them: name and health on top, the timer, then "Spawned by" lowest
+        {"t": 2000, "type": "summon", "entity": "minecraft:wolf", "dx": 3, "dy": 0, "dz": 4},
+        {"t": 2050, "type": "summon", "name": "§c☠ §bSven Packmaster §a1.2M§c❤", "dx": 3, "dy": 1.9, "dz": 4},
+        {"t": 2050, "type": "summon", "name": "§c02:58", "dx": 3, "dy": 1.6, "dz": 4},
+        {"t": 2050, "type": "summon", "name": "§7Spawned by: §b{me}", "dx": 3, "dy": 1.3, "dz": 4},
+        # Someone else's boss nearby, which must never be picked
+        {"t": 2100, "type": "summon", "entity": "minecraft:wolf", "dx": -4, "dy": 0, "dz": 4},
+        {"t": 2150, "type": "summon", "name": "§c☠ §bSven Packmaster §a2.0M§c❤", "dx": -4, "dy": 1.9, "dz": 4},
+        {"t": 2150, "type": "summon", "name": "§7Spawned by: §bSomeoneElse", "dx": -4, "dy": 1.3, "dz": 4},
+        {"t": 5800, "type": "clear_summons"},
+        chat(6000, "§a§l  NICE! SLAYER BOSS SLAIN!"),
+        chat(6100, "§a§l  SLAYER QUEST COMPLETE!"),
+        chat(6300, "§9§lVERY RARE DROP! §7(§f2x§7) §9Grizzly Bait §b(+150% §b✯ Magic Find§b)"),
     ]),
     "dungeon": ("Catacombs F7: cleared percent, secrets, a boss line and the score", [
         loc(0, "dungeon", "Catacombs"), side(100, "dungeon"), tabl(200, "dungeon"),

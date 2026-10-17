@@ -273,7 +273,8 @@ public final class SkyBlock {
 
 	/**
 	 * The simulator's "summon" steps: an invisible marker armor stand with a visible name tag, {@code dx/dy/dz} from
-	 * you (singleplayer only), for features that read name tags (deployables, damage numbers).
+	 * you (singleplayer only), for features that read name tags (deployables, damage numbers). With {@code entity} it
+	 * summons that mob instead, frozen and harmless (a stand-in slayer boss). {@code {me}} in a name becomes your name.
 	 */
 	private static void simWorld(com.google.gson.JsonObject e) {
 		Minecraft mc = Minecraft.getInstance();
@@ -282,16 +283,19 @@ public final class SkyBlock {
 		String type = e.get("type").getAsString();
 		if (type.equals("clear_summons")) {
 			server.execute(() -> server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(),
-					"kill @e[type=armor_stand,tag=hollow_sim]"));
+					"kill @e[tag=hollow_sim]"));
 			return;
 		}
 		double x = mc.player.getX() + (e.has("dx") ? e.get("dx").getAsDouble() : 2);
 		double y = mc.player.getY() + (e.has("dy") ? e.get("dy").getAsDouble() : 1);
 		double z = mc.player.getZ() + (e.has("dz") ? e.get("dz").getAsDouble() : 2);
-		String name = e.has("name") ? e.get("name").getAsString() : "";
+		String name = e.has("name") ? e.get("name").getAsString().replace("{me}", mc.player.getGameProfile().name()) : "";
 		String snbt = "\"" + name.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
-		String cmd = String.format(java.util.Locale.ROOT, "summon minecraft:armor_stand %.2f %.2f %.2f {CustomName:%s,CustomNameVisible:1b,"
-				+ "Invisible:1b,NoGravity:1b,Marker:1b,Tags:[\"hollow_sim\"]}", x, y, z, snbt);
+		String cmd = e.has("entity")
+				? String.format(java.util.Locale.ROOT, "summon %s %.2f %.2f %.2f {NoAI:1b,Silent:1b,Invulnerable:1b,PersistenceRequired:1b,"
+						+ "Tags:[\"hollow_sim\"]}", e.get("entity").getAsString().replaceAll("[^a-z0-9_:]", ""), x, y, z)
+				: String.format(java.util.Locale.ROOT, "summon minecraft:armor_stand %.2f %.2f %.2f {CustomName:%s,CustomNameVisible:1b,"
+						+ "Invisible:1b,NoGravity:1b,Marker:1b,Tags:[\"hollow_sim\"]}", x, y, z, snbt);
 		server.execute(() -> server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(), cmd));
 	}
 
