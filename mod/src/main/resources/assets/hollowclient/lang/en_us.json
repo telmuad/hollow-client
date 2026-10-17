@@ -88,5 +88,8 @@
 	"key.hollowclient.sb_slot_overlays": "Toggle Slot Info",
 	"key.hollowclient.sb_item_protection": "Toggle Item Protection",
 	"key.hollowclient.sb_menu_tools": "Toggle Menu Tools",
-	"key.hollowclient.sb_experiments": "Toggle Experiment Helpers"
+	"key.hollowclient.sb_experiments": "Toggle Experiment Helpers",
+	"key.hollowclient.sb_bazaar": "Toggle Bazaar Orders",
+	"key.hollowclient.sb_auctions": "Toggle Auctions",
+	"key.hollowclient.sb_profit": "Toggle Coins per Hour"
 }

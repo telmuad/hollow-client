@@ -26,6 +26,10 @@
       "description": "General area: status bars from the action bar, your pet, a power orb and a big damage number nearby, a fairy soul"
     },
     {
+      "name": "economy",
+      "description": "Bazaar orders set up and filled, an auction sold, a growing purse"
+    },
+    {
       "name": "items",
       "description": "Gives a Hyperion, a Golden Dragon pet, an Ultimate Wise book and a drill, and opens a menu with them"
     }

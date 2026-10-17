@@ -70,3 +70,13 @@ Switch the features on in the menu first (they start off, except SkyBlock Info).
 - [ ] **Experiment helpers** (Experimentation Table): Ultrasequencer numbers stay on the tiles after they hide, with
   the next one outlined; Chronomatron outlines the color to press next; Superpairs writes the items you've seen on
   covered tiles. If nothing shows, record one game (`/hollow sbrec on`) and send it.
+
+## 4. Economy (Right Shift → SkyBlock → Economy)
+
+- [ ] **Bazaar Orders**: set up a buy order and a sell offer: both appear in the HUD. When one fills you get the
+  "filled" title + toast and the HUD marks it ✔; claiming it removes it. If the HUD stays empty, record placing an
+  order (`/hollow sbrec on`) and send it (the chat format is a guess).
+- [ ] Bazaar tooltips: after a few hours the 24h sparkline appears; the flip margin looks right (buy × 0.9875 − sell).
+- [ ] **Auctions**: in the auction browser, cheap BIN listings get a green corner, overpriced ones a red corner.
+  When one of your auctions sells you get an alert and the HUD shows it with the coins to collect.
+- [ ] **Coins per Hour**: grows while you earn; `/hollow sbprofit reset` starts it over.

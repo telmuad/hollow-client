@@ -213,6 +213,7 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		ctx.waitTicks(5);
 		check("Stopping the simulator leaves SkyBlock", ctx.computeOnClient(mc -> !dev.telmuad.hollowclient.skyblock.SkyBlock.active()));
 		skyblockGeneral(ctx);
+		skyblockEconomy(ctx);
 		check("Leaving SkyBlock puts the normal HUD layout back", ctx.computeOnClient(mc ->
 				"outside".equals(dev.telmuad.hollowclient.modules.Modules.SKYBLOCK_MODE.activeLayout())));
 		sp.getServer().runCommand("clear @a");
@@ -315,6 +316,23 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		screenshot(ctx, "skyblock_ultrasequencer_helper");
 		ctx.setScreen(() -> null);
 		for (String id : new String[]{"sb_menu_tools"}) setEnabled(ctx, id, false);
+	}
+
+	/** A3 Economy: bazaar orders and the filled alert, a sold auction, coins per hour, from the "economy" scenario. */
+	private void skyblockEconomy(ClientGameTestContext ctx) {
+		for (String id : new String[]{"sb_bazaar", "sb_auctions", "sb_profit"}) setEnabled(ctx, id, true);
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.simulate(mc, "economy"));
+		ctx.waitTicks(40);
+		screenshot(ctx, "skyblock_economy_alert");
+		ctx.waitTicks(30);
+		check("Economy HUDs show on SkyBlock", ctx.computeOnClient(mc -> module("sb_bazaar") instanceof dev.telmuad.hollowclient.hud.HudModule b
+				&& b.visibleInGame(mc) && b.measure(mc, mc.font, false).h() > 0
+				&& module("sb_auctions") instanceof dev.telmuad.hollowclient.hud.HudModule a && a.measure(mc, mc.font, false).h() > 0));
+		check("The filled bazaar order was recognised", ctx.computeOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.bus().recent().stream()
+				.anyMatch(l -> l.event() instanceof dev.telmuad.hollowclient.skyblock.event.SbEvent.ChatMatched cm && cm.match().name().equals("bazaar_filled"))));
+		screenshot(ctx, "skyblock_economy_hud");
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.stopSimulation());
+		for (String id : new String[]{"sb_bazaar", "sb_auctions", "sb_profit"}) setEnabled(ctx, id, false);
 	}
 
 	/** A1 General: status bars, pet, next events, deployables and compact damage, from the "general" scenario. */

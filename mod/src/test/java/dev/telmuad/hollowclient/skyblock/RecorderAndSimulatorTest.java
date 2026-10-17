@@ -37,7 +37,7 @@ class RecorderAndSimulatorTest {
 	@Test
 	void everyBuiltInScenarioIsListedAndPlays() throws Exception {
 		List<Simulator.Scenario> list = Simulator.list(null);
-		assertEquals(List.of("hub", "garden", "slayer", "dungeon", "rift", "general", "items"), list.stream().map(Simulator.Scenario::name).toList());
+		assertEquals(List.of("hub", "garden", "slayer", "dungeon", "rift", "general", "economy", "items"), list.stream().map(Simulator.Scenario::name).toList());
 		for (Simulator.Scenario s : list) {
 			List<SbEvent> events = new ArrayList<>();
 			SkyBlockInput input = newInput(events);

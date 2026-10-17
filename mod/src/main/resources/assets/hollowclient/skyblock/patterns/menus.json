@@ -6,5 +6,7 @@
   "chronomatron_title": "Chronomatron \\((?<tier>[^)]+)\\)",
   "superpairs_title": "Superpairs \\((?<tier>[^)]+)\\)",
   "experiment_remember": "Remember the pattern!",
-  "experiment_timer": "Timer: (?<seconds>\\d+)s"
+  "experiment_timer": "Timer: (?<seconds>\\d+)s",
+  "ah_bin": "Buy it now: (?<coins>[\\d,.]+) coins",
+  "ah_bid": "(?:Top|Starting) bid: (?<coins>[\\d,.]+) coins"
 }

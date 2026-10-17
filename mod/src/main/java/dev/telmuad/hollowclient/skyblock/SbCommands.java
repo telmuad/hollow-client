@@ -67,6 +67,10 @@ final class SbCommands {
 						.then(ClientCommands.literal("sbsouls")
 								.then(ClientCommands.literal("found").executes(c -> souls(c, true)))
 								.then(ClientCommands.literal("reset").executes(c -> souls(c, false))))
+						.then(ClientCommands.literal("sbprofit").then(ClientCommands.literal("reset").executes(c -> {
+							dev.telmuad.hollowclient.skyblock.features.economy.EconomyModules.ProfitHud.reset();
+							return ok(c, "Coins per hour starts again from now.");
+						})))
 						.then(ClientCommands.literal("sbstate").executes(SbCommands::state))
 						.then(ClientCommands.literal("sbdump").executes(SbCommands::dump))));
 	}

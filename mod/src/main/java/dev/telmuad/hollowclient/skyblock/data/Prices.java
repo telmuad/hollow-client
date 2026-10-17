@@ -47,6 +47,14 @@ public final class Prices {
 	private volatile Map<String, Double> npc = Map.of();
 	private volatile Map<String, String> names = Map.of();
 	private volatile long bazaarAt, lbinAt, itemsAt;
+	private volatile java.util.function.BiConsumer<Map<String, Bazaar>, Long> bazaarListener = (b, at) -> {
+	};
+
+	/** Called (on the loading thread) with every new bazaar snapshot. */
+	public void setBazaarListener(java.util.function.BiConsumer<Map<String, Bazaar>, Long> listener) {
+		this.bazaarListener = listener == null ? (b, at) -> {
+		} : listener;
+	}
 
 	// ------------------------------------------------------------------------------------------------ lookups
 
@@ -165,6 +173,11 @@ public final class Prices {
 		if (!out.isEmpty()) {
 			bazaar = Map.copyOf(out);
 			bazaarAt = at;
+			try {
+				bazaarListener.accept(bazaar, at);
+			} catch (RuntimeException ignored) {
+				// a listener's problem never loses the prices
+			}
 		}
 	}
 

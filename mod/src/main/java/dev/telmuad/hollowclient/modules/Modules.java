@@ -202,6 +202,9 @@ public final class Modules {
 		registry.register(new dev.telmuad.hollowclient.skyblock.features.items.ItemProtectionModule());
 		registry.register(new dev.telmuad.hollowclient.skyblock.features.items.MenuToolsModule());
 		registry.register(new dev.telmuad.hollowclient.skyblock.features.items.ExperimentsModule());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.economy.EconomyModules.BazaarHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.economy.EconomyModules.AuctionsHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.economy.EconomyModules.ProfitHud());
 		// Client: theme, font, sounds and the global Performance Mode
 		THEME = registry.register(new ThemeModule());
 		PROFILES = registry.register(new ProfilesModule());

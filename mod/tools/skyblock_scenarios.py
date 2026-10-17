@@ -91,6 +91,14 @@ scenarios = {
         chat(2000, "§d§lSOUL! §eYou found a §dFairy Soul§e!"),
         bar(2500, "§c1,180/1,500❤     §a512§a❈ Defense     §b260/400✎ Mana §3200ʬ"),
     ]),
+    "economy": ("Bazaar orders set up and filled, an auction sold, a growing purse", [
+        loc(0, "hub", "Hub"), side(100, "hub"), tabl(200, "hub"), *profile,
+        chat(600, "§6[Bazaar] §r§7§7Buy Order Setup! §r§a64§r§7x §r§fEnchanted Diamond §r§7for §r§69,600 coins§r§7."),
+        chat(700, "§6[Bazaar] §r§7§7Sell Offer Setup! §r§a160§r§7x §r§aEnchanted Gold §r§7for §r§645,000 coins§r§7."),
+        chat(1500, "§6[Bazaar] §r§eYour §r§aBuy Order §r§efor §r§a64§r§7x §r§fEnchanted Diamond §r§ewas filled!"),
+        chat(2000, "§6[Auction] §b[MVP§c+§b] Player1 §ebought §fHyperion §efor §6456,000,000 coins §lCLICK"),
+        side(2500, "hub", {"Purse": "Purse: §61,500,000 §e(+265,433)"}),
+    ]),
     "items": ("Gives a Hyperion, a Golden Dragon pet, an Ultimate Wise book and a drill, and opens a menu with them", [
         loc(0, "hub", "Hub"), side(100, "hub"), tabl(200, "hub"),
         give(300, "hyperion"), give(350, "pet"), give(400, "book"), give(450, "soulbound"),
