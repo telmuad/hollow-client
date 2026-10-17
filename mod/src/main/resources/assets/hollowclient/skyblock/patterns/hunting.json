@@ -1,0 +1,6 @@
+{
+  "_comment": "Hunting (Galatea). The trap lines are quoted on the wiki's Huntrap page (2026-10-16). Shard catches, the lasso's reel prompt and tree gift progress aren't quoted there, so nothing reads them yet.",
+  "trap_placed": "You placed a Trap near a Shard location! \\((?<placed>\\d+)/(?<max>\\d+) traps placed\\)",
+  "traps_caught": "HUNT - (?<count>\\d+) of your Hunting Traps caught something!.*",
+  "trap_picked_up": "You also picked up the trap and it got sent to your Hunting Toolkit!"
+}

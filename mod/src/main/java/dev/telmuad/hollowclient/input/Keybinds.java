@@ -31,6 +31,7 @@ public final class Keybinds {
 	private static KeyMapping hubKey;
 	private static KeyMapping dumpKey;
 	private static KeyMapping lockKey;
+	private static KeyMapping shareKey;
 	private static final String[] ACTIONS = {"waypoint_add", "camera_point", "camera_play", "music_play", "music_next", "music_previous"};
 	private static final KeyMapping[] ACTION_KEYS = new KeyMapping[ACTIONS.length];
 	private static final KeyMapping[] MACRO_KEYS = new KeyMapping[dev.telmuad.hollowclient.modules.qol.ChatMacrosModule.SLOTS];
@@ -51,6 +52,8 @@ public final class Keybinds {
 		dumpKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.hollowclient.skyblock_dump",
 				InputConstants.Type.KEYSYM, InputConstants.UNKNOWN.getValue(), CATEGORY));
 		lockKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.hollowclient.skyblock_lock",
+				InputConstants.Type.KEYSYM, InputConstants.UNKNOWN.getValue(), CATEGORY));
+		shareKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.hollowclient.skyblock_share",
 				InputConstants.Type.KEYSYM, InputConstants.UNKNOWN.getValue(), CATEGORY));
 		for (int i = 0; i < ACTIONS.length; i++) {
 			ACTION_KEYS[i] = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.hollowclient." + ACTIONS[i],
@@ -125,6 +128,10 @@ public final class Keybinds {
 				dev.telmuad.hollowclient.skyblock.features.items.ItemProtectionModule.toggle(mc.player.getMainHandItem(),
 						mc.player.getInventory().getSelectedSlot());
 			}
+		}
+		while (shareKey.consumeClick()) {
+			// one press sends one party chat line (and never more than one every 3 seconds)
+			if (mc.gui.screen() == null) dev.telmuad.hollowclient.skyblock.features.chat.ChatModules.shareLocation(mc);
 		}
 		while (dumpKey.consumeClick()) {
 			if (mc.gui.screen() == null && mc.player != null) dev.telmuad.hollowclient.skyblock.ui.SkyBlockUi.dump(mc, mc.player.getMainHandItem());

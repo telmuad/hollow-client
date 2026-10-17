@@ -37,7 +37,7 @@ class RecorderAndSimulatorTest {
 	@Test
 	void everyBuiltInScenarioIsListedAndPlays() throws Exception {
 		List<Simulator.Scenario> list = Simulator.list(null);
-		assertEquals(List.of("hub", "garden", "slayer", "dungeon", "rift", "general", "economy", "items"), list.stream().map(Simulator.Scenario::name).toList());
+		assertEquals(List.of("hub", "garden", "slayer", "mining", "crystal_hollows", "fishing", "galatea", "crimson", "diana", "dungeon", "rift", "general", "economy", "items"), list.stream().map(Simulator.Scenario::name).toList());
 		for (Simulator.Scenario s : list) {
 			List<SbEvent> events = new ArrayList<>();
 			SkyBlockInput input = newInput(events);
@@ -58,6 +58,10 @@ class RecorderAndSimulatorTest {
 		assertEquals(1_251_000, hub.state().purse());
 		assertEquals(1484, hub.state().bits());
 		assertEquals(Island.GARDEN, play("garden").state().island());
+		assertEquals(Island.DWARVEN_MINES, play("mining").state().island());
+		assertEquals("Mango", play("mining").state().profileName(), "the tab list's profile");
+		assertEquals(Island.CRYSTAL_HOLLOWS, play("crystal_hollows").state().island());
+		assertEquals(Island.CRIMSON_ISLE, play("fishing").state().island());
 		assertEquals(Island.THE_PARK, play("slayer").state().island());
 		assertEquals(Island.DUNGEON, play("dungeon").state().island());
 		assertEquals(Island.THE_RIFT, play("rift").state().island());

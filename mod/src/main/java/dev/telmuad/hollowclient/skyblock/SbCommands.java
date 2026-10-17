@@ -20,7 +20,8 @@ import java.nio.file.Path;
 /**
  * {@code /hollow ...} client commands for SkyBlock Mode. They run only on this computer (nothing is sent to the
  * server): {@code sbsim} plays a simulator scenario (singleplayer), {@code sbrec} turns the debug recorder on or off,
- * {@code sbstate} shows what SkyBlock Mode currently knows, {@code sbdump} saves the held item's data.
+ * {@code sbstate} shows what SkyBlock Mode currently knows, {@code sbdump} saves the held item's data, {@code remind}
+ * adds, lists or clears your reminders.
  */
 final class SbCommands {
 	private SbCommands() {
@@ -71,8 +72,34 @@ final class SbCommands {
 							dev.telmuad.hollowclient.skyblock.features.economy.EconomyModules.ProfitHud.reset();
 							return ok(c, "Coins per hour starts again from now.");
 						})))
+						.then(ClientCommands.literal("remind")
+								.then(ClientCommands.literal("list").executes(SbCommands::reminders))
+								.then(ClientCommands.literal("clear").executes(c -> {
+									var h = dev.telmuad.hollowclient.skyblock.features.progress.ProgressModules.RemindersHud.get();
+									if (h == null) return fail(c, "Reminders aren't loaded.");
+									h.reminders().clear();
+									h.save();
+									return ok(c, "Reminders cleared.");
+								}))
+								.then(ClientCommands.argument("time", StringArgumentType.word())
+										.then(ClientCommands.argument("text", StringArgumentType.greedyString()).executes(c -> {
+											var r = dev.telmuad.hollowclient.skyblock.features.progress.ProgressModules.remind(
+													StringArgumentType.getString(c, "time"), StringArgumentType.getString(c, "text"));
+											return r == null ? fail(c, "Couldn't read the time. Try 45m, 2h30m or 1d.")
+													: ok(c, "I'll remind you in " + dev.telmuad.hollowclient.skyblock.text.SbText.duration(r.dueAt() - System.currentTimeMillis())
+													+ ": " + r.text());
+										}))))
 						.then(ClientCommands.literal("sbstate").executes(SbCommands::state))
 						.then(ClientCommands.literal("sbdump").executes(SbCommands::dump))));
+	}
+
+	private static int reminders(CommandContext<FabricClientCommandSource> c) {
+		var h = dev.telmuad.hollowclient.skyblock.features.progress.ProgressModules.RemindersHud.get();
+		var list = h == null ? java.util.List.<dev.telmuad.hollowclient.skyblock.features.progress.Progress.Reminder>of() : h.reminders().upcoming();
+		if (list.isEmpty()) return ok(c, "No reminders. Add one with /hollow remind <time> <text>, e.g. /hollow remind 2h forge.");
+		long now = System.currentTimeMillis();
+		for (var r : list) info(c, dev.telmuad.hollowclient.skyblock.text.SbText.duration(Math.max(0, r.dueAt() - now)) + "  " + r.text());
+		return 1;
 	}
 
 	private static int souls(CommandContext<FabricClientCommandSource> c, boolean found) {

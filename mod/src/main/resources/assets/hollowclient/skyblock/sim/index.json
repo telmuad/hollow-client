@@ -14,12 +14,36 @@
       "description": "A Sven Packmaster IV quest in the Park: progress, your boss spawns (a frozen wolf with its name tags), quest complete, a drop"
     },
     {
+      "name": "mining",
+      "description": "Dwarven Mines: commissions (one finishes), powder going up, the forge, a mining event, Cold, a pickaxe ability and the Sky Mall buff"
+    },
+    {
+      "name": "crystal_hollows",
+      "description": "Crystal Hollows: crystals found, Heat, and metal detector readings from six spots (you're moved around; the treasure is 3 blocks under a spot near you)"
+    },
+    {
+      "name": "fishing",
+      "description": "Lava fishing on the Crimson Isle: sea creatures near you, a Thunder and a Lord Jawbus, a double hook, two trophy fish and the sea creature cap"
+    },
+    {
+      "name": "galatea",
+      "description": "Hunting on Galatea: two Huntraps placed, then both catch something"
+    },
+    {
+      "name": "crimson",
+      "description": "Crimson Isle: a Vanquisher's name tag nearby, and the Faction Quests and Reputation widgets (an illustrative layout) for the Tab Widgets HUD"
+    },
+    {
+      "name": "diana",
+      "description": "Diana's Mythological Ritual in the Hub: two burrows of a six-burrow chain, then a Minos Inquisitor's name tag nearby"
+    },
+    {
       "name": "dungeon",
       "description": "Catacombs F7: cleared percent, secrets, a boss line and the score"
     },
     {
       "name": "rift",
-      "description": "The Rift: motes and the time left"
+      "description": "The Rift: motes going up and the time left running low (the one-minute warning)"
     },
     {
       "name": "general",

@@ -168,6 +168,8 @@ public final class ChatFx {
 	private static void checkAutoGg(String plain) {
 		AutoGgModule m = Modules.AUTO_GG;
 		if (m == null || !m.isEnabled() || m.message().isEmpty()) return;
+		// never on SkyBlock: Hypixel's SkyBlock rules allow no automatic replies ("VICTORY" ends Kuudra and dungeon runs)
+		if (dev.telmuad.hollowclient.skyblock.SkyBlock.state().onSkyBlock()) return;
 		long now = Util.getMillis();
 		if (ggAt != 0 || now - lastGgSent < m.cooldownMs()) return;
 		String lower = plain.toLowerCase(Locale.ROOT);

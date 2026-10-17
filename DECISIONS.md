@@ -357,3 +357,82 @@ Choices made while building Hollow Client, with the reason for each. Newest sect
 - **Boss Highlight** (off by default): a soft box around your boss only, drawn with the depth test, so blocks hide it. It's the same kind of fill as the block outline, nothing seen through walls.
 - **Simulator**: `summon` steps can now spawn a frozen, harmless mob (`entity`) and use `{me}` for your name, so the slayer scenario has a real boss to find.
 - **Left for now (formats unverified)**: miniboss alerts (add one with the alert editor's chat pattern once the line is recorded), Inferno Demonlord attunement and Voidgloom hit-phase helpers, the Voidgloom beacon marker, Riftstalker Twinclaws alert. None are rule problems as long as they only read the visible tags; they need recordings first.
+
+## A7 Mining
+
+- **Checked first** (wiki, 2026-10-16): Commissions in the Dwarven Mines, Crystal Hollows and Glacite Tunnels (2 slots, a 3rd after 100, a 4th from Core of the Mountain V); Dwarven Mines events every 20 minutes (2x Powder, Better Together, Mithril Gourmand, Raffle, Goblin Raid, Fallen Star, Powder Ghast); pickaxe abilities and base cooldowns (Mining Speed Boost 120 s, Pickobulus 60 s, Tunnel Vision 120 s, Maniac Miner 120 s, Gemstone Infusion 120 s, Sheer Force 120 s); powders Mithril, Gemstone and Glacite; the Metal Detector only works in the Mines of Divan and shows TREASURE with a distance. Recent changes: free HotM resets (2025), Pickobulus fixes (2026), Mining Speed Boost tool-switch fix (0.27.2). The wiki doesn't quote the tab widgets, the ability chat lines, the Cold line or the action bar format; they follow what other mods match, live in `patterns/mining.json` and `chat.json`, and are on the test list.
+- **Mining HUD** (on by default, Dwarven Mines, Crystal Hollows, Mineshafts): commissions with progress (✔ when done, with a "Commission done" alert that skips ones already done when you arrive), the mining event and time left, Cold (warning title at -75; -100 sends you back to camp) or Heat, and today's Sky Mall buff from its chat line.
+- **Powder HUD**: totals from the Powders widget, gained this session and per hour. Spending powder doesn't count against the gain.
+- **Pickaxe Ability HUD**: cooldown from "You used your … Pickaxe Ability!", corrected by "… is now available!". Perks shorten cooldowns, so the time is marked "~" until Hypixel says it's ready. The ready alert is off by default (Hypixel already says it in chat).
+- **Forge HUD**: slots from the Forges widget, kept per profile with finish times, so it counts down on any island (shown on mining islands unless "Show on every island" is on); an alert when something's done.
+- **Crystals HUD** (Crystal Hollows): crystals found or placed for the Nucleus.
+- **Metal Detector** (Crystal Hollows): a least-squares guess at the treasure from the detector's readings at four or more spots that aren't all in a line. Readings at one height can't tell above from below, so the guess goes under you (the treasure is buried). It's marked with a soft column on the floor above it, depth-tested, and the HUD says how far down and which way. A reading that fits nowhere means the treasure moved, so it starts again. It only uses the numbers the detector shows.
+- **Simulator**: a `tp` step moves you relative to where the scenario started (and stopping puts you back), so the metal detector scenario takes readings at six spots.
+- **Left for now**: fossil excavation helper (needs the fossil shapes), HotM tree tooltips (cost to next level), Glacite mineshaft corpse list from chat, mining event timers across lobbies (needs a shared service), powder ghast / fallen star alerts (chat lines unrecorded).
+
+## A8 Fishing
+
+- **Checked first** (wiki, Sea Creatures and each Legendary/Mythic creature's page, 2026-10-16): the sea creature list by island (water, lava, Backwater Bayou, Lotus Atoll, Moonglade Marsh, Torrhus Canyon, Jerry's Workshop, Spooky and Shark festivals, hotspots, Crimson Isle, the mining islands). The cap is 60 per server (30 on Galatea) and, since May 2026, 10 per player; the cap message is quoted. The 22 Legendary and Mythic catch messages are quoted from their pages into `patterns/fishing.json`. Trophy fish: 18 fish in Bronze, Silver, Gold and Diamond; the trophy fish chat line, the double hook line and the "!!!" over the bobber aren't quoted on the wiki, so they follow what other mods match and are on the test list.
+- **Fishing HUD** (on by default, shows while you fish and for two minutes after): how long the bobber has been out, "Fish on!" when the "!!!" label floats over your bobber, sea creatures near you (counted from their visible name tags; yellow at 10, the per-player cap), this session's rare catches with time since the last, and double hooks. Alerts: a rare catch (title, sound, toast; Mythic louder) and the sea creature cap message (once per 30 s). An optional bite sound is off by default and is only a sound: you still reel in yourself. Nothing reels in, recasts or clicks.
+- **Trophy Fish HUD** (Crimson Isle): this session's trophy fish by tier and the six most caught, plus a per-profile total kept from the chat line (Hollow can't read Odger's collection, so the total only counts what it has seen).
+- **Left for now**: common/rare sea creature tracking (their catch messages need fetching one by one; the rare ones matter most), Golden Fish timer, hotspot markers (particles unverified), festival shark counts, Fishing XP per hour.
+
+## A9 Foraging, Galatea, Hunting and newer content
+
+- **Checked first** (wiki, Galatea, Hunting, Huntrap, Tree Gift, Lasso, 2026-10-16): Galatea is Moonglade Marsh and Torrhus Canyon (Lunarise unreleased); Fig, Mangrove and Helix trees with Tree Gifts (rewards at 10/20/33% of the tree); Heart of the Forest; Hunting (0.23, levels 26–50 in 0.27, XP per shard in 0.27.2) with fishing nets, lassos, black holes and Huntraps (5 traps; catch times 8–24 h by rarity, shortened by trap tier and location). The Huntrap page quotes its three chat lines, so those drive the HUD. The wiki doesn't show how tree gift progress, the lasso's reel prompt or shard catches appear, so those aren't read yet (logged as left rather than guessed).
+- **Huntraps HUD** (on by default, Galatea and Torrhus Canyon unless "Show on every island"): traps out (n/5, corrected by each placement message's count), how long ago the oldest went down (yellow from 8 h, the shortest common catch time), and catches waiting with an alert. Kept per profile. Collecting stays a click on Hypixel's own chat message: Hollow never clicks it.
+- **Left for now**: tree gift progress, lasso reel cue, shard tracker, Agatha/Starlyn contests, Critter Safari (formats unrecorded).
+
+## A10 Crimson Isle and Kuudra
+
+- **Checked first** (wiki, Kuudra, Vanquisher, 2026-10-16): Kuudra tiers Basic, Hot, Burning, Fiery, Infernal (1k/3k/7k/12k reputation), phases (supplies, ballista, fuel, stomach stun from Burning, the Infernal lair at 25%); the paid chest needs the tier's Kuudra Key. Vanquishers are Lv235 since 0.27.2 and now have pity. The wiki doesn't quote Elle's lines, the supply count or the Vanquisher spawn line, so the Kuudra phase HUD is left out and the Vanquisher alert reads the visible name tag instead.
+- **Vanquisher Alert** (on by default, Crimson Isle): a title, sound and toast when a Vanquisher's name tag appears within 48 blocks, once per Vanquisher. Name tags are visible to you anyway; nothing is highlighted through walls.
+- **Reward Chest Value** now also reads Kuudra's Paid and Free chests, adding the key's lowest BIN to the cost.
+- **Tab Widgets HUD** (General, off by default): shows any tab list widgets you name (e.g. "Faction Quests, Reputation") as they are. The wiki has no list of widget names or layouts, so this shows whatever Hypixel puts there instead of parsing guessed formats; it works on every island.
+- **Left for now**: Kuudra phase/supply HUD, Kuudra HP, faction reputation tracking, Dojo, Matriarch, miniboss timers (all need recorded lines).
+
+## A11 The Rift
+
+- **Checked first** (wiki, The Rift, 2026-10-16): 8 minutes base Rift time, +2 s per orb, drained faster on entering some areas (Black Lagoon 4:00, West Village 3:00, Village Plaza 8:00, Living Cave 5:00, Colosseum 15:00 and half speed inside, Barrier Street 10:00, Mirrorverse 3:00); Hypixel warns at 10 seconds. Motes are the currency. 52 Enigma Souls. No Rift changes since 0.21 (Dec 2024).
+- **Rift HUD** (on by default, in the Rift): time left from the action bar, counted down between readings, green/yellow/red; warning titles at one minute and 20 seconds (earlier than Hypixel's 10 s); motes with this visit's gain and per hour.
+- **No Enigma Soul waypoints**: neither the wiki nor the NEU repo (its `rift_guide.json` is a task list) has their coordinates in a form Hollow can use, and copying them from other mods isn't allowed by their licenses.
+- **Left for now**: Enigma Souls, Vampire slayer helpers (Twinclaws, Mania, Ichor), Mirrorverse puzzles, Larva/Shy/Berberis helpers.
+
+## A12 Events (Diana, Hoppity, festivals, Bingo)
+
+- **Checked first** (wiki, Mythological Ritual, Chocolate Factory, 2026-10-16): Diana's ritual was reworked in 0.23.6 (Nov 2025): burrow chains are 4/6/8 long by spade (+2 with Erudite, up to 10), so the burrow line's "(n/4)" became "(n/total)" and the built-in burrow alert says "Burrow n/total". Elusive creatures: Minos Inquisitor, Sphinx, Manticore, King Minos. Chocolate Factory: menu title "Chocolate Factory"; employees Rabbit Bro…Dog add 1…7 chocolate per second per level. The wiki doesn't quote the burrow-guess particles after the rework, the creature spawn lines or the factory's cost lore.
+- **Diana HUD** (Hub, shows for 10 minutes after a burrow or an elusive creature): the burrow chain you're on, and an alert when an elusive creature's name tag shows up near you (once per creature). No burrow guessing: the spade's tracking changed with the rework and Hollow has no particle hook yet, so a guess would be a guess about a guess.
+- **Chocolate Factory Helper** (on by default, highlight only): outlines the employee upgrade with the most chocolate per second for its cost (cost read from the first "N Chocolate" line after "Cost"). It never clicks, and the Time Tower and Rabbit Barn aren't ranked.
+- **Festivals and Bingo**: the Next Events HUD (A1) already counts down the calendar's festivals; Bingo is detected as a game mode (Ⓑ) by the foundation. Nothing else is added without recorded formats.
+- **Left for now**: Diana burrow guess, Hoppity egg locator, Time Tower/Rabbit Barn ranking, Spooky candy counter, Jerry's Workshop gifts, Bingo card tracker.
+
+## A13 Progression and reminders
+
+- **Skill Progress HUD** (on by default, shows for two minutes after skill XP): the skill you're training, its progress (exact XP when the action bar shows "current/needed", else the percent), XP this session, per hour and time to the next level. The Session HUD keeps its top-three skills.
+- **Reminders**: `/hollow remind <time> <text>` (45m, 2h30m, 1d; a plain number is minutes), `/hollow remind list`, `/hollow remind clear`. They're kept in `config/hollowclient/skyblock/reminders.json` and fire (title, chime, toast) in any world, since forge and trap timers don't care where you are. The HUD lists the next three on SkyBlock. Nothing is sent to the server: these are local client commands.
+- **Booster Cookie Reminder** (off by default): a toast a few seconds after joining SkyBlock if the Cookie Buff tab widget says "Not active".
+- **Left for now**: collection and bestiary progress (need the menus recorded), skill averages, Hypixel API profile lookups (an optional API key exists, but nothing reads profiles yet).
+
+## A14 Chat and party
+
+- **Chat Cleanup** (off by default): hides SkyBlock's noisy system lines by category (ability damage, "There are blocks in the way!", not enough mana, ability cooldown, Watchdog announcements). SkyBlock Mode still reads every line first; only drawing it in chat is skipped. Anything that looks like a player's message (public, party, guild, co-op, private) is never hidden. The line formats aren't on the wiki; they're in `patterns/chatclean.json` and on the test list.
+- **Party HUD**: party members from the Hypixel Mod API's party packet, by name from the player list. Without the Mod API it stays hidden (Hollow doesn't scrape /p list output).
+- **Share location key** (unbound by default): one press sends one party chat line "x: …, y: …, z: … (area)", never more than one every 3 seconds. It's the only SkyBlock feature that sends anything, and only when you press it (plan 3's "one press = one action").
+- **No auto-replies**: nothing answers chat, party invites or trades for you. Auto GG (plan 1, off by default) had no SkyBlock check, so end-of-run lines like "VICTORY" could have made it send "gg" on its own; it now never fires while SkyBlock Mode sees you on SkyBlock.
+- **Left for now**: party finder overlay (class levels, missing classes), chat tabs/filters per channel, /p list parsing.
+
+## T/Z Finish
+
+- **License stays as it was**: no code or data from LGPL/GPL projects (Skyblocker, SkyHanni, Firmament) or Skytils was copied; their features were ideas only. So the GPL switch the plan described for that case didn't happen, and there's no `THIRD_PARTY_NOTICES.md`: `CREDITS.md` now has a "SkyBlock data" table instead (Hypixel Mod API and the NEU repo, both MIT and not bundled; the Hypixel and Elite APIs; the wiki as the source of quoted game lines).
+- **A7–A14 landed in one commit**: those areas share the module registry, the language file, the gametest class and the scenario script, so each area's changes couldn't be committed on its own without hand-splitting files. Every area was still built and gametested on its own before moving on; PROGRESS lists each area's result.
+- **Default HUD positions** were checked in the screenshots: the left column holds the island HUDs (Info, then the area HUD at the same height, since areas don't overlap), top right holds the Forge and Tab Widgets, top center the Metal Detector and Reminders, bottom center the pickaxe ability and skill progress. The right middle is left free for Hypixel's scoreboard. Everything can be moved in the HUD editor.
+
+## Skipped for Hypixel rules
+
+Anything here would reveal hidden information, act for the player or change what vanilla does. Kept as a list so it's not added later by mistake.
+
+- **Dungeons**: unexplored rooms or secrets beyond what the map item shows; auto-leap, ghost blocks, secret aura; terminal or puzzle clicking (solvers only outline slots).
+- **Slayers**: highlighting other players' bosses or minibosses through walls; any highlight is depth-tested.
+- **Mining**: gemstone or ore ESP/X-ray, frozen corpse locations through walls, locating Crystal Hollows structures (Mines of Divan, Jungle Temple, Goblin Queen's Den, …) by scanning loaded chunks before you've seen them, and auto-mining or nuker-style helpers. The metal detector guess only uses the readings the detector shows you and is marked on the floor, not through it.
+- **Fishing**: auto-reel, auto-recast, killing helpers, or any input on a bite; the bite cue is only a label and an optional sound.
+- **General**: macros, auto-clickers, auto-replies, and anything that sends more than one command per key press.

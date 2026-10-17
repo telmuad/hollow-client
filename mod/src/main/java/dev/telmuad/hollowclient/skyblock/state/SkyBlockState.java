@@ -129,6 +129,11 @@ public final class SkyBlockState {
 		return actionBar != null && clock.getAsLong() - actionBarAt < 3000 ? actionBar : null;
 	}
 
+	/** When the last action bar came in (clock time), so features can tell a new reading from an old one. */
+	public long actionBarAt() {
+		return actionBarAt;
+	}
+
 	public long sidebarAt() {
 		return sidebarAt;
 	}

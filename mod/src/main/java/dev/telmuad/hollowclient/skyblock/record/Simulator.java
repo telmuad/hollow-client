@@ -43,7 +43,7 @@ public final class Simulator {
 	private double speed = 1;
 	private Consumer<JsonObject> world;
 
-	/** Handles "summon" steps (a name tag floating near you, for HUDs that read visible name tags). */
+	/** Handles "summon", "clear_summons" and "tp" steps (things in the singleplayer world, for features that read it). */
 	public void setWorld(Consumer<JsonObject> world) {
 		this.world = world;
 	}
@@ -168,7 +168,7 @@ public final class Simulator {
 			case "give" -> {
 				if (give != null && e.has("item")) give.accept(RawItem.fromJson(e.getAsJsonObject("item")));
 			}
-			case "summon", "clear_summons" -> {
+			case "summon", "clear_summons", "tp" -> {
 				if (world != null) world.accept(e);
 			}
 			default -> {

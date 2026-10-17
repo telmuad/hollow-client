@@ -92,6 +92,12 @@ public final class SkyBlockAlerts {
 		}
 	}
 
+	/** A feature's own alert: a title, a sound and (optionally) a toast. */
+	public static void notify(String id, String title, String sub, String sound, boolean toast) {
+		AlertRule r = new AlertRule(id, id, true, toast, AlertRule.Trigger.EVENT, "", title, sub, sound, false, java.util.Set.of(), 0);
+		show(new AlertEngine.Fired(r, title, sub));
+	}
+
 	/** Shows an alert (also used by the editor's Test button). */
 	public static void show(AlertEngine.Fired f) {
 		Minecraft mc = Minecraft.getInstance();

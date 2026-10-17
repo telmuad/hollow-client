@@ -21,6 +21,7 @@ A client-side Fabric mod for Minecraft 26.2 that adds:
 - HUD elements: FPS, coordinates, CPS, keystrokes, armor durability
 - Quality-of-life features: zoom, toggle sprint, fullbright
 - A mod menu to toggle features and move HUD elements
+- **SkyBlock Mode** for Hypixel SkyBlock: display-only HUDs, alerts and helpers for every area (economy, garden, dungeons, slayers, mining, fishing, hunting, Crimson Isle, Rift, events), following Hypixel's rules
 
 All features are cosmetic or quality-of-life. Hollow Client does not include any features that give an unfair advantage.
 
@@ -57,6 +58,7 @@ hollow-client/
 - **Visual and effects**: post-processing (bloom, motion blur, chromatic aberration, vignette, film grain, color grades), sky (colors, stars, aurora, shooting stars), client-side time and weather, block outline, crosshair, fullbright, low fire, clear water, hit color; hit and kill bursts, crit sparks, trails, footprints, item physics, hand animations.
 - **Quality of life**: zoom (hold C), toggle sprint/sneak, Chat+ (timestamps, stacking, copy, search, highlights), Auto GG, chat macros, a screenshot manager, singleplayer waypoints, a music player with a visualizer, singleplayer camera paths, scoreboard/boss bar/title customizer, Discord Rich Presence, and profiles (PvP, Building, Cinematic, your own).
 - **Styles** (only you see them): built-in, imported and animated capes; hat, wings, halo, horns, aura and a pet; emotes on a radial wheel (hold B); texture pack import and switching; presets that save the whole look.
+- **SkyBlock Mode** turns on when you join Hypixel SkyBlock: it reads the scoreboard, tab list, chat, action bar, items and (with the Hypixel Mod API) the server location, and drives HUDs, alerts and menu helpers for each area. Everything is display only: no clicking, moving or replying for you, highlights are depth-tested and solvers only outline slots. Prices come from Hypixel's public data and the Elite API, item data from the NEU repository (MIT), all downloaded at runtime and cached. It ships with test tools: a debug recorder, a scenario simulator (`/hollow sbsim`) and parser fixtures; see `TESTING_SKYBLOCK.md`.
 - **Performance Mode** turns every heavy effect off at once, Auto Quality lowers effects when FPS drops, and post-processing switches itself off when an Iris shader pack is active. Works alongside Sodium.
 
 ### The launcher in more detail

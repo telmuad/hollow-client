@@ -1,0 +1,4 @@
+{
+  "_comment": "Crimson Isle. Vanquishers are Lv235 since 0.27.2 (wiki); the level isn't part of the match so older or newer levels still work. The name tag layout follows other mobs' tags ([LvN] Name health❤) and is on the test list.",
+  "vanquisher_tag": "\\[Lv\\d+\\].*?(?<![A-Za-z])Vanquisher(?![A-Za-z])"
+}

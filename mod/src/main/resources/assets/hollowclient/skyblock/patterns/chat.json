@@ -31,7 +31,10 @@
   "dungeon_blood_opened": "The BLOOD DOOR has been opened!",
   "dungeon_watcher_done": "\\[BOSS\\] The Watcher: You have proven yourself\\. You may pass\\.",
   "dungeon_run_start": "\\[NPC\\] Mort: Here, I found this map when I first entered the dungeon\\.",
-  "griffin_burrow": "You dug out a Griffin Burrow! \\((?<n>\\d)/4\\)",
+  "griffin_burrow": "You dug out a Griffin Burrow! \\((?<n>\\d+)/(?<total>\\d+)\\)",
+  "pickaxe_ability_used": "You used your (?<ability>.+?) Pickaxe Ability!",
+  "pickaxe_ability_ready": "(?<ability>Mining Speed Boost|Pickobulus|Tunnel Vision|Maniac Miner|Gemstone Infusion|Sheer Force) is now available!",
+  "sky_mall_buff": "New buff: (?<buff>.+?)\\.?",
   "player_message": "(?:\\[\\d{1,3}\\] (?:\\S )?(?:\\[(?:VIP\\+?|MVP\\+{0,2}|YOUTUBE|ADMIN|GM|MOD|HELPER|OWNER|STAFF|PIG\\+\\+\\+|INNIT|EVENTS|MCP)\\] )?|\\[(?:VIP\\+?|MVP\\+{0,2}|YOUTUBE|ADMIN|GM|MOD|HELPER|OWNER|STAFF|PIG\\+\\+\\+|INNIT|EVENTS|MCP)\\] )[A-Za-z0-9_]{1,16}(?: \\S{1,3})?: .*",
   "private_message": "(?:From|To) (?:\\[(?:VIP\\+?|MVP\\+{0,2}|YOUTUBE|ADMIN|GM|MOD|HELPER|OWNER|STAFF|PIG\\+\\+\\+|INNIT|EVENTS|MCP)\\] )?[A-Za-z0-9_]{1,16}: .*",
   "channel_message": "(?:Party|Guild|Officer|Co-op) > .*"

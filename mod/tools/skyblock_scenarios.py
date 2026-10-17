@@ -87,6 +87,54 @@ scenarios = {
         chat(6100, "§a§l  SLAYER QUEST COMPLETE!"),
         chat(6300, "§9§lVERY RARE DROP! §7(§f2x§7) §9Grizzly Bait §b(+150% §b✯ Magic Find§b)"),
     ]),
+    "mining": ("Dwarven Mines: commissions (one finishes), powder going up, the forge, a mining event, Cold, "
+               "a pickaxe ability and the Sky Mall buff", [
+        # no profile chat lines: the tab list's profile (Mango) is the one in use here
+        loc(0, "mining_3", "Dwarven Mines"), side(100, "glacite"), tabl(200, "mines_full"),
+        chat(600, "§aYou used your §r§6Mining Speed Boost §r§aPickaxe Ability!"),
+        chat(700, "§8§oNew buff: §r§fGain §r§6+100⸕ Mining Speed§r§f."),
+        {"t": 1500, "type": "tab", "lines": [l.replace("1,234,567", "1,236,067") for l in tab["mines_full"]]},
+        {"t": 2500, "type": "tab", "lines": [l.replace("1,234,567", "1,236,067").replace("§c45%", "§aDONE") for l in tab["mines_full"]]},
+    ]),
+    "crystal_hollows": ("Crystal Hollows: crystals found, Heat, and metal detector readings from six spots "
+                        "(you're moved around; the treasure is 3 blocks under a spot near you)", [
+        loc(0, "crystal_hollows", "Crystal Hollows"), side(100, "crystal_hollows"), tabl(200, "crystal_hollows"),
+        *[step for i, (dx, dz) in enumerate([(0, 0), (3, 0), (3, 4), (-2, 5), (5, 8), (1, -3)])
+          for step in ({"t": 500 + i * 450, "type": "tp", "dx": dx, "dy": 0, "dz": dz},
+                       bar(800 + i * 450, "§c1,234/1,500❤     §e§lTREASURE: §b%.1fm     §b300/400✎ Mana"
+                           % ((dx - 6.5) ** 2 + 3 ** 2 + (dz - 5.5) ** 2) ** 0.5))],
+        bar(3500, "§c1,234/1,500❤     §e§lTREASURE: §b%.1fm     §b300/400✎ Mana" % ((1 - 6.5) ** 2 + 9 + (-3 - 5.5) ** 2) ** 0.5),
+    ]),
+    "fishing": ("Lava fishing on the Crimson Isle: sea creatures near you, a Thunder and a Lord Jawbus, a double hook, "
+                "two trophy fish and the sea creature cap", [
+        loc(0, "crimson_isle", "Crimson Isle"), side(100, "hub"), tabl(200, "hub"),
+        {"t": 400, "type": "summon", "name": "§8[§7Lv200§8] §cLava Leech§r §a80,000§f/§a80,000§c❤", "dx": 4, "dy": 1, "dz": 6},
+        {"t": 450, "type": "summon", "name": "§8[§7Lv400§8] §cThunder§r §a35M§f/§a35M§c❤", "dx": -3, "dy": 1, "dz": 7},
+        {"t": 500, "type": "summon", "name": "§8[§7Lv600§8] §c§lLord Jawbus§r §a100M§f/§a100M§c❤", "dx": 0, "dy": 2, "dz": 9},
+        chat(600, "§bYou hear a massive rumble as Thunder emerges."),
+        chat(900, "§a§lIt's a Double Hook! Woot woot!"),
+        chat(1200, "§c§lYou have angered a legendary creature... Lord Jawbus has arrived."),
+        chat(1600, "§6§lTROPHY FISH! §bYou caught a §9Blobfish §f§lBRONZE§b."),
+        chat(1800, "§6§lTROPHY FISH! §bYou caught a §6Lavahorse §6§lGOLD§b."),
+        chat(2200, "§cThere is not enough space for another Sea Creature! Kill some to make space for new ones!"),
+    ]),
+    "galatea": ("Hunting on Galatea: two Huntraps placed, then both catch something", [
+        loc(0, "foraging_2", "Galatea"), side(100, "hub"), tabl(200, "hub"),
+        chat(500, "§aYou placed a Trap near a Shard location! §7(1/5 traps placed)"),
+        chat(900, "§aYou placed a Trap near a Shard location! §7(2/5 traps placed)"),
+        chat(1500, "§6§lHUNT §e- §a2 §eof your Hunting Traps caught something! §b[Click here to collect them.]"),
+    ]),
+    "crimson": ("Crimson Isle: a Vanquisher's name tag nearby, and the Faction Quests and Reputation widgets (an illustrative "
+                "layout) for the Tab Widgets HUD", [
+        loc(0, "crimson_isle", "Crimson Isle"), side(100, "hub"), tabl(200, "crimson"),
+        {"t": 600, "type": "summon", "name": "§8[§7Lv235§8] §cVanquisher§r §a1,000,000§f/§a1,000,000§c❤", "dx": 5, "dy": 1.5, "dz": 8},
+    ]),
+    "diana": ("Diana's Mythological Ritual in the Hub: two burrows of a six-burrow chain, then a Minos Inquisitor's name tag nearby", [
+        loc(0, "hub", "Hub"), side(100, "hub"), tabl(200, "hub"),
+        chat(500, "§eYou dug out a Griffin Burrow! §7(1/6)"),
+        chat(1000, "§eYou dug out a Griffin Burrow! §7(2/6)"),
+        {"t": 1400, "type": "summon", "name": "§8[§7Lv750§8] §2Empyrean §cMinos Inquisitor§r §a40M§f/§a40M§c❤", "dx": 4, "dy": 1.5, "dz": 7},
+    ]),
     "dungeon": ("Catacombs F7: cleared percent, secrets, a boss line and the score", [
         loc(0, "dungeon", "Catacombs"), side(100, "dungeon"), tabl(200, "dungeon"),
         chat(300, "§eStarting in 1 second."),
@@ -96,10 +144,12 @@ scenarios = {
         chat(2000, "§4[BOSS] Necron§r§c: §r§cFinally, I heard so much about you."),
         chat(3000, "§e  Team Score: §a300 §e(§6§lS+§e)"),
     ]),
-    "rift": ("The Rift: motes and the time left", [
+    "rift": ("The Rift: motes going up and the time left running low (the one-minute warning)", [
         loc(0, "rift", "The Rift"), side(100, "rift"),
         bar(500, "§a5m 20sф Left    §c600/600❤"),
         bar(1500, "§a5m 19sф Left    §c600/600❤"),
+        side(2000, "rift", {"Motes": "Motes: §d12,400"}),
+        bar(2500, "§a55sф Left    §c600/600❤"),
     ]),
     "general": ("General area: status bars from the action bar, your pet, a power orb and a big damage number nearby, a fairy soul", [
         loc(0, "hub", "Hub"), side(100, "hub"), tabl(200, "pet_xp"), *profile,

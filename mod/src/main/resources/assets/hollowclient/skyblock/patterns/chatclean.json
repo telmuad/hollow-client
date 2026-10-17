@@ -1,0 +1,8 @@
+{
+  "_comment": "Chat Cleanup: SkyBlock's own system lines that can be hidden (each category is a switch, all off unless you turn Chat Cleanup on). Other players' messages are never hidden. These lines aren't quoted on the wiki; they follow what other mods match and are on the test list.",
+  "ability_damage": "Your (?<ability>.+?) hit (?<n>[\\d,]+) enem(?:y|ies) for (?<damage>[\\d,.]+) damage\\.",
+  "blocks_in_way": "There are blocks in the way!",
+  "no_mana": "You do(?:n't| not) have enough mana to do this!?",
+  "cooldown": "This ability is (?:on cooldown|currently on cooldown) for \\d+s?\\.?",
+  "watchdog": "\\[WATCHDOG ANNOUNCEMENT\\]|Watchdog has banned [\\d,]+ players in the last 7 days\\.|Staff have banned an additional [\\d,]+ in the last 7 days\\.|Blacklisted modifications are a bannable offense!"
+}

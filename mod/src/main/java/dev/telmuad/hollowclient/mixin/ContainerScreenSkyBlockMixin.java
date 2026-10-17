@@ -44,6 +44,7 @@ abstract class ContainerScreenSkyBlockMixin {
 			}
 			for (Slot slot : self.getMenu().slots) if (slot.isActive()) dev.telmuad.hollowclient.skyblock.features.dungeons.DungeonModules.TerminalsModule.overlay(self, g, slot);
 			for (Slot slot : self.getMenu().slots) if (slot.isActive()) dev.telmuad.hollowclient.skyblock.features.items.ExperimentsModule.overlay(self, g, slot);
+			for (Slot slot : self.getMenu().slots) if (slot.isActive()) dev.telmuad.hollowclient.skyblock.features.events.EventModules.ChocolateFactoryModule.overlay(self, g, slot);
 		} catch (RuntimeException e) {
 			dev.telmuad.hollowclient.HollowClient.LOG.warn("Slot overlay failed", e);
 		}

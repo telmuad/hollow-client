@@ -218,6 +218,25 @@ public final class Modules {
 		registry.register(new dev.telmuad.hollowclient.skyblock.features.dungeons.DungeonModules.RewardChestHud());
 		registry.register(new dev.telmuad.hollowclient.skyblock.features.slayer.SlayerModules.SlayerHud());
 		registry.register(new dev.telmuad.hollowclient.skyblock.features.slayer.SlayerModules.BossHighlight());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.mining.MiningModules.MiningHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.mining.MiningModules.PowderHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.mining.MiningModules.AbilityHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.mining.MiningModules.ForgeHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.mining.MiningModules.CrystalsHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.mining.MiningModules.MetalDetectorHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.fishing.FishingModules.FishingHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.fishing.FishingModules.TrophyFishHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.hunting.HuntingModules.HuntrapHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.crimson.CrimsonModules.VanquisherAlert());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.crimson.CrimsonModules.TabWidgetHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.rift.RiftModules.RiftHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.events.EventModules.DianaHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.events.EventModules.ChocolateFactoryModule());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.progress.ProgressModules.SkillHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.progress.ProgressModules.RemindersHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.progress.ProgressModules.CookieReminder());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.chat.ChatModules.ChatCleanup());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.chat.ChatModules.PartyHud());
 		// Client: theme, font, sounds and the global Performance Mode
 		THEME = registry.register(new ThemeModule());
 		PROFILES = registry.register(new ProfilesModule());

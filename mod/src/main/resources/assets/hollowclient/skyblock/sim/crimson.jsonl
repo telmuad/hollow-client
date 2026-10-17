@@ -1,0 +1,4 @@
+{"t": 0, "type": "location", "serverName": "mini42AB", "serverType": "SKYBLOCK", "lobbyName": "", "mode": "crimson_isle", "map": "Crimson Isle"}
+{"t": 100, "type": "sidebar", "title": "§e§lSKYBLOCK", "lines": ["§710/16/26 §8m42AB", "§7 🎂", " Early Autumn 13th", "§7 4:20pm §e☀", " §7⏣ §bVillage", "§7 👾", "Purse: §61,234,567 §e(+5)", "Bits: §b1,234", "§7 🌠", "§ewww.hypixel.net"]}
+{"t": 200, "type": "tab", "lines": ["§b§lArea: §cCrimson Isle", "§b§lProfile: §aMango", "", "§6§lFaction Quests:", " §cKill 10 Flaming Spiders", " §aFish 3 Lava Leeches §a✔", "", "§5§lReputation:", " §cBarbarian 3,200"]}
+{"t": 600, "type": "summon", "name": "§8[§7Lv235§8] §cVanquisher§r §a1,000,000§f/§a1,000,000§c❤", "dx": 5, "dy": 1.5, "dz": 8}

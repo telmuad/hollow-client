@@ -1,0 +1,8 @@
+{
+  "_comment": "Events. Diana's elusive mythological creatures (wiki, Mythological Ritual, reworked in 0.23.6): their name tags are read like other mobs' ([LvN] Name). Chocolate Factory: the menu title is quoted on the wiki; the cost lore isn't, so the cost is the first 'N Chocolate' line after a 'Cost' line (check with the debug recorder).",
+  "elusive_tag": "\\[Lv\\d+\\].*?(?<![A-Za-z])(?<name>Minos Inquisitor|Sphinx|Manticore|King Minos)(?![A-Za-z])",
+  "cf_title": "Chocolate Factory",
+  "cf_employee": "(?<name>Rabbit (?:Bro|Cousin|Sis|Daddy|Granny|Uncle|Dog))\\b.*",
+  "cf_cost_header": "Cost:?",
+  "cf_cost": "(?<amount>[\\d,]+) Chocolate"
+}

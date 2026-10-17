@@ -1,0 +1,16 @@
+{"t": 0, "type": "location", "serverName": "mini42AB", "serverType": "SKYBLOCK", "lobbyName": "", "mode": "crystal_hollows", "map": "Crystal Hollows"}
+{"t": 100, "type": "sidebar", "title": "§e§lSKYBLOCK", "lines": ["§710/16/26 §8m30F", " Late Autumn 3rd", " §7⏣ §6Magma Fields", "Purse: §62,000,000", " ", "Heat: §c♨ 45", " ", "§ewww.hypixel.net"]}
+{"t": 200, "type": "tab", "lines": ["§b§lArea: §bCrystal Hollows", "§b§lProfile: §aMango", "", "§d§lCrystals:", " Jade: §aFound", " Amber: §cNot Found", " Amethyst: §ePlaced", " Sapphire: §cNot Found", " Topaz: §aFound"]}
+{"t": 500, "type": "tp", "dx": 0, "dy": 0, "dz": 0}
+{"t": 800, "type": "actionbar", "text": "§c1,234/1,500❤     §e§lTREASURE: §b9.0m     §b300/400✎ Mana"}
+{"t": 950, "type": "tp", "dx": 3, "dy": 0, "dz": 0}
+{"t": 1250, "type": "actionbar", "text": "§c1,234/1,500❤     §e§lTREASURE: §b7.2m     §b300/400✎ Mana"}
+{"t": 1400, "type": "tp", "dx": 3, "dy": 0, "dz": 4}
+{"t": 1700, "type": "actionbar", "text": "§c1,234/1,500❤     §e§lTREASURE: §b4.8m     §b300/400✎ Mana"}
+{"t": 1850, "type": "tp", "dx": -2, "dy": 0, "dz": 5}
+{"t": 2150, "type": "actionbar", "text": "§c1,234/1,500❤     §e§lTREASURE: §b9.0m     §b300/400✎ Mana"}
+{"t": 2300, "type": "tp", "dx": 5, "dy": 0, "dz": 8}
+{"t": 2600, "type": "actionbar", "text": "§c1,234/1,500❤     §e§lTREASURE: §b4.2m     §b300/400✎ Mana"}
+{"t": 2750, "type": "tp", "dx": 1, "dy": 0, "dz": -3}
+{"t": 3050, "type": "actionbar", "text": "§c1,234/1,500❤     §e§lTREASURE: §b10.6m     §b300/400✎ Mana"}
+{"t": 3500, "type": "actionbar", "text": "§c1,234/1,500❤     §e§lTREASURE: §b10.6m     §b300/400✎ Mana"}

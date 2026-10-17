@@ -1,0 +1,10 @@
+{
+  "_comment": "Mining: tab widgets (Powders, Forges, Crystals, Event), scoreboard lines (Cold, Heat) and the metal detector's action bar reading. The wiki lists the content but not these exact formats; they follow what other mods match and are on the test list.",
+  "powder": "(?<type>Mithril|Gemstone|Glacite)(?: Powder)?: (?<amount>[\\d,]+)",
+  "forge_slot": "(?<slot>\\d)\\) (?<item>.+?)(?:: (?<time>.+))?",
+  "forge_ready": "(?i)ready!?",
+  "cold": "Cold: (?<cold>-?\\d+)❄",
+  "heat": "Heat: (?:♨ ?)?(?<heat>\\d+)",
+  "crystal": "(?<name>Jade|Amber|Amethyst|Sapphire|Topaz|Jasper|Ruby|Opal|Aquamarine|Citrine|Peridot|Onyx)(?: Crystal)?: (?<state>.+)",
+  "treasure": "TREASURE: (?<dist>[\\d.]+)m"
+}

@@ -217,6 +217,13 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		skyblockGarden(ctx);
 		skyblockDungeons(ctx);
 		skyblockSlayer(ctx);
+		skyblockMining(ctx);
+		skyblockFishing(ctx);
+		skyblockHuntingAndCrimson(ctx);
+		skyblockRift(ctx);
+		skyblockEvents(ctx);
+		skyblockProgress(ctx);
+		skyblockChat(ctx);
 		check("Leaving SkyBlock puts the normal HUD layout back", ctx.computeOnClient(mc ->
 				"outside".equals(dev.telmuad.hollowclient.modules.Modules.SKYBLOCK_MODE.activeLayout())));
 		sp.getServer().runCommand("clear @a");
@@ -418,6 +425,215 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		ctx.waitTicks(5);
 		setEnabled(ctx, "sb_slayer", false);
 		setEnabled(ctx, "sb_boss_highlight", false);
+	}
+
+	private static final String[] MINING_HUDS = {"sb_mining", "sb_powder", "sb_pickaxe_ability", "sb_forge", "sb_crystals", "sb_metal_detector"};
+
+	private void skyblockMining(ClientGameTestContext ctx) {
+		for (String id : MINING_HUDS) setEnabled(ctx, id, true);
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.simulate(mc, "mining"));
+		ctx.waitTicks(70);
+		check("Commissions are read from the tab list, one turns done", ctx.computeOnClient(mc -> {
+			var c = dev.telmuad.hollowclient.skyblock.features.mining.Mining.commissions(dev.telmuad.hollowclient.skyblock.SkyBlock.state().tab());
+			return c.size() == 3 && c.get(0).done() && !c.get(2).done();
+		}));
+		check("Powder gained this session is counted", ctx.computeOnClient(mc -> ((dev.telmuad.hollowclient.skyblock.features.mining.MiningModules.PowderHud)
+				module("sb_powder")).gain(dev.telmuad.hollowclient.skyblock.features.mining.Mining.Powder.MITHRIL).gained() == 1500));
+		check("The pickaxe ability cooldown starts from its chat line", ctx.computeOnClient(mc -> {
+			var a = ((dev.telmuad.hollowclient.skyblock.features.mining.MiningModules.AbilityHud) module("sb_pickaxe_ability")).ability();
+			return a.name().equals("Mining Speed Boost") && a.left(System.currentTimeMillis()) > 100_000;
+		}));
+		check("Forge slots are read from the tab list", ctx.computeOnClient(mc -> ((dev.telmuad.hollowclient.skyblock.features.mining.MiningModules.ForgeHud)
+				module("sb_forge")).slots().size() == 3));
+		check("Cold is read from the scoreboard", ctx.computeOnClient(mc -> dev.telmuad.hollowclient.skyblock.features.mining.Mining.cold(
+				dev.telmuad.hollowclient.skyblock.SkyBlock.state().sidebar()) == -78));
+		check("Mining, Powder, Ability and Forge HUDs show in the Dwarven Mines", ctx.computeOnClient(mc -> java.util.stream.Stream.of(
+				"sb_mining", "sb_powder", "sb_pickaxe_ability", "sb_forge").allMatch(id -> ((dev.telmuad.hollowclient.hud.HudModule) module(id)).visibleInGame(mc))));
+		screenshot(ctx, "skyblock_mining");
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.stopSimulation());
+		ctx.waitTicks(5);
+
+		double[] origin = ctx.computeOnClient(mc -> new double[]{mc.player.getX(), mc.player.getY(), mc.player.getZ()});
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.simulate(mc, "crystal_hollows"));
+		ctx.waitTicks(80);
+		check("The Crystals HUD shows in the Crystal Hollows", ctx.computeOnClient(mc -> ((dev.telmuad.hollowclient.hud.HudModule) module("sb_crystals"))
+				.visibleInGame(mc)));
+		check("The metal detector guess lands on the treasure from six readings", ctx.computeOnClient(mc -> {
+			var g = ((dev.telmuad.hollowclient.skyblock.features.mining.MiningModules.MetalDetectorHud) module("sb_metal_detector")).detector().guess();
+			if (g == null) return false;
+			LOG.info("Metal detector guess {} {} {} (error {}), treasure at {} {} {}", g.x(), g.y(), g.z(), g.error(), origin[0] + 6.5, origin[1] - 3, origin[2] + 5.5);
+			return Math.abs(g.x() - (origin[0] + 6.5)) < 1 && Math.abs(g.z() - (origin[2] + 5.5)) < 1 && Math.abs(g.y() - (origin[1] - 3)) < 1.5;
+		}));
+		check("The guess is marked on the floor", ctx.computeOnClient(mc -> dev.telmuad.hollowclient.render.EntityHighlights.boxes().size() == 1));
+		screenshot(ctx, "skyblock_crystal_hollows");
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.stopSimulation());
+		ctx.waitTicks(10);
+		check("Stopping the simulator puts you back where it started", ctx.computeOnClient(mc -> Math.abs(mc.player.getX() - origin[0]) < 0.1
+				&& Math.abs(mc.player.getZ() - origin[2]) < 0.1));
+		for (String id : MINING_HUDS) setEnabled(ctx, id, false);
+		ctx.waitTicks(2);
+		check("The marker goes away with the module", ctx.computeOnClient(mc -> dev.telmuad.hollowclient.render.EntityHighlights.boxes().isEmpty()));
+	}
+
+	private void skyblockFishing(ClientGameTestContext ctx) {
+		setEnabled(ctx, "sb_fishing", true);
+		setEnabled(ctx, "sb_trophy_fish", true);
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.simulate(mc, "fishing"));
+		ctx.waitTicks(60);
+		var fishing = (dev.telmuad.hollowclient.skyblock.features.fishing.FishingModules.FishingHud) ctx.computeOnClient(mc -> module("sb_fishing"));
+		check("Sea creatures near you are counted from their name tags", ctx.computeOnClient(mc -> fishing.nearby() == 3));
+		check("Rare catches are read from the wiki's catch messages", ctx.computeOnClient(mc -> {
+			var c = fishing.catches().counts();
+			return Integer.valueOf(1).equals(c.get("Thunder")) && Integer.valueOf(1).equals(c.get("Lord Jawbus"));
+		}));
+		check("The Fishing HUD shows after a catch", ctx.computeOnClient(fishing::visibleInGame));
+		check("Trophy fish are counted by tier", ctx.computeOnClient(mc -> {
+			var t = ((dev.telmuad.hollowclient.skyblock.features.fishing.FishingModules.TrophyFishHud) module("sb_trophy_fish")).session();
+			return t.total() == 2 && t.total(dev.telmuad.hollowclient.skyblock.features.fishing.Fishing.Tier.GOLD) == 1;
+		}));
+		screenshot(ctx, "skyblock_fishing");
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.stopSimulation());
+		ctx.waitTicks(5);
+		setEnabled(ctx, "sb_fishing", false);
+		setEnabled(ctx, "sb_trophy_fish", false);
+	}
+
+	private void skyblockHuntingAndCrimson(ClientGameTestContext ctx) {
+		for (String id : new String[]{"sb_huntraps", "sb_vanquisher", "sb_tab_widgets"}) setEnabled(ctx, id, true);
+		ctx.runOnClient(mc -> ((dev.telmuad.hollowclient.skyblock.features.crimson.CrimsonModules.TabWidgetHud) module("sb_tab_widgets"))
+				.setWidgets("Faction Quests, Reputation"));
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.simulate(mc, "galatea"));
+		ctx.waitTicks(40);
+		check("Huntraps are counted from their chat lines, with catches", ctx.computeOnClient(mc -> {
+			var h = (dev.telmuad.hollowclient.skyblock.features.hunting.HuntingModules.HuntrapHud) module("sb_huntraps");
+			return h.traps().count() == 2 && h.traps().caught() == 2 && h.visibleInGame(mc);
+		}));
+		screenshot(ctx, "skyblock_huntraps");
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.stopSimulation());
+		ctx.waitTicks(5);
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.simulate(mc, "crimson"));
+		ctx.waitTicks(40);
+		check("A Vanquisher's name tag nearby raises one alert", ctx.computeOnClient(mc ->
+				((dev.telmuad.hollowclient.skyblock.features.crimson.CrimsonModules.VanquisherAlert) module("sb_vanquisher")).alerts() == 1));
+		check("The Tab Widgets HUD shows the named widgets", ctx.computeOnClient(mc -> ((dev.telmuad.hollowclient.hud.HudModule) module("sb_tab_widgets"))
+				.visibleInGame(mc) && dev.telmuad.hollowclient.skyblock.features.crimson.CrimsonModules.TabWidgetHud.widgetLines(
+				dev.telmuad.hollowclient.skyblock.SkyBlock.state().tab(), java.util.List.of("Faction Quests", "Reputation")).size() == 5));
+		screenshot(ctx, "skyblock_crimson");
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.stopSimulation());
+		ctx.waitTicks(5);
+		for (String id : new String[]{"sb_huntraps", "sb_vanquisher", "sb_tab_widgets"}) setEnabled(ctx, id, false);
+	}
+
+	private void skyblockRift(ClientGameTestContext ctx) {
+		setEnabled(ctx, "sb_rift", true);
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.simulate(mc, "rift"));
+		ctx.waitTicks(70);
+		var rift = (dev.telmuad.hollowclient.skyblock.features.rift.RiftModules.RiftHud) ctx.computeOnClient(mc -> module("sb_rift"));
+		check("The Rift HUD counts down from the action bar's time left", ctx.computeOnClient(mc -> {
+			long left = rift.timeLeft(System.currentTimeMillis());
+			return left > 40_000 && left <= 55_000 && rift.visibleInGame(mc);
+		}));
+		check("Motes gained in the Rift are counted", ctx.computeOnClient(mc -> rift.motes().gained() == 55));
+		screenshot(ctx, "skyblock_rift");
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.stopSimulation());
+		ctx.waitTicks(5);
+		setEnabled(ctx, "sb_rift", false);
+	}
+
+	private void skyblockEvents(ClientGameTestContext ctx) {
+		setEnabled(ctx, "sb_diana", true);
+		setEnabled(ctx, "sb_chocolate_factory", true);
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.simulate(mc, "diana"));
+		ctx.waitTicks(50);
+		check("Diana: the burrow chain and an elusive creature's name tag", ctx.computeOnClient(mc -> {
+			var d = (dev.telmuad.hollowclient.skyblock.features.events.EventModules.DianaHud) module("sb_diana");
+			return d.burrow() == 2 && d.elusives() == 1 && d.visibleInGame(mc);
+		}));
+		screenshot(ctx, "skyblock_diana");
+		net.minecraft.world.SimpleContainer factory = new net.minecraft.world.SimpleContainer(54);
+		ctx.setScreen(() -> {
+			var mc = net.minecraft.client.Minecraft.getInstance();
+			var menu = new net.minecraft.world.inventory.ChestMenu(net.minecraft.world.inventory.MenuType.GENERIC_9x6, 97, mc.player.getInventory(), factory, 6);
+			return new net.minecraft.client.gui.screens.inventory.ContainerScreen(menu, mc.player.getInventory(),
+					net.minecraft.network.chat.Component.literal("Chocolate Factory"));
+		});
+		ctx.runOnClient(mc -> {
+			String[][] rabbits = {{"Rabbit Bro", "1,200"}, {"Rabbit Cousin", "2,000"}, {"Rabbit Sis", "9,000"}};
+			for (int i = 0; i < rabbits.length; i++) {
+				var st = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.PLAYER_HEAD);
+				st.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, net.minecraft.network.chat.Component.literal("§a" + rabbits[i][0]));
+				st.set(net.minecraft.core.component.DataComponents.LORE, new net.minecraft.world.item.component.ItemLore(java.util.List.of(
+						net.minecraft.network.chat.Component.literal("§7Cost"), net.minecraft.network.chat.Component.literal("§6" + rabbits[i][1] + " Chocolate"))));
+				factory.setItem(28 + i, st);
+			}
+		});
+		ctx.waitTicks(5);
+		check("Chocolate Factory: the best value employee upgrade is outlined", ctx.computeOnClient(mc -> {
+			var best = ((dev.telmuad.hollowclient.skyblock.features.events.EventModules.ChocolateFactoryModule) module("sb_chocolate_factory")).best();
+			return best != null && best.slot() == 29;
+		}));
+		screenshot(ctx, "skyblock_chocolate_factory");
+		ctx.setScreen(() -> null);
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.stopSimulation());
+		ctx.waitTicks(5);
+		setEnabled(ctx, "sb_diana", false);
+		setEnabled(ctx, "sb_chocolate_factory", false);
+	}
+
+	private void skyblockProgress(ClientGameTestContext ctx) {
+		setEnabled(ctx, "sb_skill_progress", true);
+		setEnabled(ctx, "sb_reminders", true);
+		ctx.runOnClient(mc -> {
+			var h = dev.telmuad.hollowclient.skyblock.features.progress.ProgressModules.RemindersHud.get();
+			h.reminders().clear();
+			dev.telmuad.hollowclient.skyblock.features.progress.ProgressModules.remind("1s", "Test reminder");
+			dev.telmuad.hollowclient.skyblock.features.progress.ProgressModules.remind("2h", "Pick up Huntraps");
+		});
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.simulate(mc, "garden"));
+		ctx.waitTicks(60);
+		check("Skill Progress follows the action bar's skill XP", ctx.computeOnClient(mc -> {
+			var s = ((dev.telmuad.hollowclient.skyblock.features.progress.ProgressModules.SkillHud) module("sb_skill_progress")).skills();
+			var l = s.level("Farming");
+			return s.last().equals("Farming") && l != null && l.exact() && ((dev.telmuad.hollowclient.hud.HudModule) module("sb_skill_progress")).visibleInGame(mc);
+		}));
+		check("A due reminder fires and the later one stays listed", ctx.computeOnClient(mc -> {
+			var list = dev.telmuad.hollowclient.skyblock.features.progress.ProgressModules.RemindersHud.get().reminders().upcoming();
+			return list.size() == 1 && list.getFirst().text().equals("Pick up Huntraps");
+		}));
+		screenshot(ctx, "skyblock_progress");
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.stopSimulation());
+		ctx.runOnClient(mc -> {
+			var h = dev.telmuad.hollowclient.skyblock.features.progress.ProgressModules.RemindersHud.get();
+			h.reminders().clear();
+			h.save();
+		});
+		ctx.waitTicks(5);
+		setEnabled(ctx, "sb_skill_progress", false);
+		setEnabled(ctx, "sb_reminders", false);
+	}
+
+	private void skyblockChat(ClientGameTestContext ctx) {
+		setEnabled(ctx, "sb_chat_cleanup", true);
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.simulate(mc, "hub"));
+		ctx.waitTicks(20);
+		int before = ctx.computeOnClient(mc -> ((dev.telmuad.hollowclient.skyblock.features.chat.ChatModules.ChatCleanup) module("sb_chat_cleanup")).hidden());
+		ctx.runOnClient(mc -> {
+			var server = mc.getSingleplayerServer();
+			server.execute(() -> {
+				var src = server.createCommandSourceStack().withSuppressedOutput();
+				server.getCommands().performPrefixedCommand(src, "tellraw @a {\"text\":\"There are blocks in the way!\",\"color\":\"red\"}");
+				server.getCommands().performPrefixedCommand(src, "tellraw @a {\"text\":\"Your Implosion hit 3 enemies for 1,234 damage.\",\"color\":\"gray\"}");
+				server.getCommands().performPrefixedCommand(src, "tellraw @a {\"text\":\"[MVP+] Someone: There are blocks in the way!\"}");
+			});
+		});
+		ctx.waitTicks(10);
+		check("Chat Cleanup hides SkyBlock's noisy lines but never a player's", ctx.computeOnClient(mc ->
+				((dev.telmuad.hollowclient.skyblock.features.chat.ChatModules.ChatCleanup) module("sb_chat_cleanup")).hidden() - before == 2));
+		check("The share-location line is built from your position", ctx.computeOnClient(mc ->
+				dev.telmuad.hollowclient.skyblock.features.chat.ChatModules.shareMessage("Village", 1.5, 70, -2.5).equals("x: 1, y: 70, z: -3 (Village)")));
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.stopSimulation());
+		ctx.waitTicks(5);
+		setEnabled(ctx, "sb_chat_cleanup", false);
 	}
 
 	private void skyblockGeneral(ClientGameTestContext ctx) {

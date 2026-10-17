@@ -10,7 +10,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MessageSignature;
 import org.spongepowered.asm.mixin.Mixin;
 
-/** Chat+ / Auto GG / SkyBlock Mode: every incoming chat line passes through Hollow before vanilla shows it. */
+/** Chat+ / Auto GG / SkyBlock Mode (and its Chat Cleanup): every incoming chat line passes through Hollow before vanilla shows it. */
 @Mixin(ChatComponent.class)
 abstract class ChatComponentAddMixin {
 	@WrapMethod(method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;Lnet/minecraft/client/multiplayer/chat/GuiMessageSource;Lnet/minecraft/client/multiplayer/chat/GuiMessageTag;)V")
@@ -19,6 +19,8 @@ abstract class ChatComponentAddMixin {
 		if (source != GuiMessageSource.SYSTEM_CLIENT) {
 			try {
 				dev.telmuad.hollowclient.skyblock.SkyBlock.onChat(content);
+				// Chat Cleanup: the line was read above; it just isn't drawn
+				if (dev.telmuad.hollowclient.skyblock.features.chat.ChatModules.ChatCleanup.hide(content)) return;
 			} catch (RuntimeException e) {
 				dev.telmuad.hollowclient.HollowClient.LOG.error("SkyBlock Mode couldn't read a chat line", e);
 			}

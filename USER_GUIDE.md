@@ -120,6 +120,9 @@ The launcher's messages and the game's live output, colored (errors red, warning
 | **F2** | Screenshot (Hollow adds a sound and a notification; see Screenshots below) |
 | **Ctrl+F** in chat | Search the chat |
 | **Right-click** a chat line | Copy it |
+| **H** (on SkyBlock) | Open the SkyBlock Hub (alerts, setup checker, feature health, compatibility) |
+
+SkyBlock also has unbound keys you can set: **lock / unlock item** (item protection), **share my location in party chat** and **save hovered item (debug)**.
 
 Every Hollow feature can also have its own key, and so can these actions (none is set by default): add a waypoint, add a camera point, play/stop the camera path, music play/pause, next and previous song, and five chat macros. Set them in **Options → Controls → Key Binds → Hollow Client**, or with the key button in a feature's settings.
 
@@ -194,6 +197,31 @@ By default only "Hollow Client" and whether you're in the menus, in singleplayer
 
 ### Fair play
 Everything in Hollow is visual or quality of life. Nothing shows things through walls, there is no radar, no extra camera control on servers (waypoints and camera paths are singleplayer only), and nothing changes what your game sends to a server.
+
+### SkyBlock Mode
+When you join Hypixel SkyBlock, Hollow switches to **SkyBlock Mode**: a badge toast shows, your HUD swaps to its SkyBlock layout (your normal layout comes back when you leave), and the SkyBlock features for the island you're on turn on. They're in the menu under **SkyBlock**, grouped by area (General, Items, Economy, Garden, Dungeons, Slayers, Mining, Fishing, Hunting, Crimson Isle, Rift, Events, Progression, Chat). SkyBlock HUDs are placed with the normal HUD editor.
+
+**First time:**
+1. Press **H** on SkyBlock and open the **Setup checker**. It tells you exactly what's missing, for example the Hypixel Mod API or a tab list widget.
+2. Turn on the tab list widgets it lists. On Hypixel: **SkyBlock Menu (`/sbmenu`) → Settings**, then the tab list (player list) widget settings, for each island. The Mining features need the Commissions, Powders, Forges and Crystals widgets; the Garden needs Visitors.
+3. Prices (item values, bazaar, auction) load from Hypixel's public data on their own; the setup checker says when they're ready.
+
+**What it can do** (everything is display only):
+- **Everywhere:** status bars, pet, upcoming events, item values and tooltips, slot labels, item protection (locked items can't be dropped, sold or salvaged), menu search, alerts (rare drops, slayer bosses, your own chat alerts), session and skill progress, reminders (`/hollow remind 2h30m check the forge`, `/hollow remind list`, `/hollow remind clear`), a Tab Widgets HUD that shows any tab widget you name.
+- **Economy:** bazaar orders, auctions, coins per hour, bazaar sparklines in tooltips.
+- **Garden:** visitors and their offer cost, pests, Jacob's contests, composter.
+- **Dungeons:** score estimate, the map item, terminal and Blaze helpers (outlines only), Spirit Leap classes, reward chest value.
+- **Slayers:** quest progress, your boss's health and fight time, bosses per hour, drop value, a soft box around your boss (walls hide it).
+- **Mining:** commissions, powder per hour, pickaxe ability cooldown, forge timers that keep counting between sessions, Cold/Heat, Crystal Hollows crystals, and a metal detector helper for the Mines of Divan (walk to four or five spots holding the detector).
+- **Fishing:** bobber time and "Fish on!", sea creatures near you, rare catch alerts, trophy fish.
+- **Hunting, Crimson Isle, Rift, Events:** Huntraps, Vanquisher alert, Kuudra chest value, Rift time and motes, Diana's burrow chain and Inquisitor alert, the Chocolate Factory's best-value upgrade.
+- **Chat:** Chat Cleanup (hides SkyBlock's noisy lines, never players' messages, off by default), Party HUD, share location (one press, one party chat line).
+
+**What it won't do:** Hollow follows Hypixel's rules for SkyBlock. It never clicks, moves or replies for you, solvers only outline slots, nothing shows through walls, and the only things it sends are what you trigger yourself with one key press (share location, chat macros). Auto GG never fires on SkyBlock. The full list of what was left out on purpose is in `DECISIONS.md` under "Skipped for Hypixel rules".
+
+**If a feature shows nothing:** Hypixel's exact messages aren't all documented, so a few formats are best guesses. Open **H → Feature health** to see which features have their data right now. To help fix one, record a few minutes with `/hollow sbrec on` (and `/hollow sbrec off`): the file lands in `hollow-debug` in the game folder. Other players' chat is never saved. `TESTING_SKYBLOCK.md` lists what to check, area by area.
+
+**Other SkyBlock mods:** if Skyblocker, SkyHanni or Firmament is installed too, Hollow's **Compatibility** screen (in the Hub) offers to switch off its overlapping features.
 
 ---
 

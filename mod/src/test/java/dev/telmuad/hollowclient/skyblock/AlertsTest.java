@@ -40,7 +40,7 @@ class AlertsTest {
 		s.builtin("rare_drop", "Rare drop", "rare_drop", "§6§l{kind}!", "{item} {mf}", "PLING", true, 500);
 		s.builtin("pet_drop", "Pet drop", "pet_drop", "§d§lPET DROP!", "{item} {mf}", "LEVEL_UP", true, 500);
 		s.builtin("visitor", "Garden visitor", "visitor_arrived", "§aVisitor", "{name}", "CHIME", false, 1000, "garden");
-		s.builtin("burrow", "Griffin burrow", "pattern:griffin_burrow", "Burrow {n}/4", "", "DING", false, 0);
+		s.builtin("burrow", "Griffin burrow", "pattern:griffin_burrow", "Burrow {n}/{total}", "", "DING", false, 0);
 		return s;
 	}
 
@@ -68,8 +68,8 @@ class AlertsTest {
 		now[0] += 1500;
 		in.chat("§aJerry §ehas arrived on your Garden!");
 		assertEquals(List.of("Liam", "Jerry"), fired.stream().map(AlertEngine.Fired::subtitle).toList());
-		in.chat("§eYou dug out a Griffin Burrow! §7(2/4)");
-		assertEquals("Burrow 2/4", fired.getLast().title());
+		in.chat("§eYou dug out a Griffin Burrow! §7(3/6)");
+		assertEquals("Burrow 3/6", fired.getLast().title());
 	}
 
 	@Test

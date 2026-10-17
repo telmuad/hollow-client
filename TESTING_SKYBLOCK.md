@@ -19,6 +19,8 @@ and use `/hollow sbdump`. Other players' chat is never recorded and names are re
 4. **Tab list widgets:** if it says something is missing, find Hypixel's tab widget settings and turn it on.
    - [ ] Confirm where those settings are (the checker says: SkyBlock Menu → Settings → player list / tab widgets).
      If the path is different, note the real one.
+   - [ ] Some widgets are only checked on their island: Visitors in the Garden; Commissions, Powders and Forges in
+     the Dwarven Mines; Commissions, Powders and Crystals in the Crystal Hollows. Run the checker there too.
 5. `/hollow sbstate` prints what SkyBlock Mode knows: island, area, profile, purse, bits.
 
 ## 1. Foundation
@@ -116,4 +118,82 @@ Switch the features on in the menu first (they start off, except SkyBlock Info).
 - [ ] **Boss Highlight** (off by default): a soft box around your boss only, never someone else's; walls hide it.
   If nothing is found, record a boss fight with the debug recorder: the "Spawned by" tag may sit somewhere else.
 - [ ] Fail a quest (let the timer run out): the fight time stops and no kill is counted.
+
+## 8. Mining (Right Shift → SkyBlock → Mining)
+
+Enable the **Commissions**, **Powders**, **Forges** and **Crystals** widgets in `/tablist` first (the setup checker
+lists them).
+
+- [ ] **Mining HUD** in the Dwarven Mines: commissions match the tab list; finishing one shows "Commission done" once
+  (arriving with one already done doesn't). A mining event shows with its time left.
+- [ ] Glacite Tunnels: Cold matches the scoreboard; a warning title at -75. Crystal Hollows Magma Fields: Heat shows.
+- [ ] **Sky Mall**: the next morning's buff line shows on the HUD.
+- [ ] **Powder HUD**: totals match; mining adds to "+gained" and after a minute shows per hour. Spending powder in the
+  HotM tree doesn't lower the gain.
+- [ ] **Pickaxe Ability**: using Mining Speed Boost starts a "~2m" countdown; it switches to "ready" when Hypixel says
+  "is now available!".
+- [ ] **Forge HUD**: put something in the Forge; the HUD shows it with the time left, keeps counting after a relog, and
+  "Forge … is done" pops up when it finishes.
+- [ ] **Crystals HUD** in the Crystal Hollows: matches the Crystals widget.
+- [ ] **Metal Detector** in the Mines of Divan: hold the detector and walk to four or five spots a few blocks apart.
+  The HUD says "Walk around a little" until then, then gives a guess with a ± and a soft column on the floor. Dig
+  there; note how far off it was. If the HUD never shows, record the action bar with the debug recorder (the
+  TREASURE format may differ).
+
+## 9. Fishing (Right Shift → SkyBlock → Fishing)
+
+- [ ] **Fishing HUD**: cast anywhere. The HUD shows how long the bobber has been out; when "!!!" shows over the
+  bobber, "Fish on!" appears (you still reel in). If it never shows, record a cast with the debug recorder.
+- [ ] "Sea creatures near you" goes up as you catch them and down as they die; it turns yellow at 10.
+- [ ] Catch a Legendary or Mythic sea creature: a title, sound and toast, and it's listed with "×1 (… ago)". Note any
+  that don't trigger (the message may differ from the wiki).
+- [ ] Hit the sea creature cap: one "Sea creature cap" title, not repeated for 30 seconds.
+- [ ] A double hook adds to "Double hooks" (if not, record the line).
+- [ ] **Trophy Fish HUD** on the Crimson Isle: each trophy fish adds to this session's counts with the right tier.
+
+## 10. Hunting (Right Shift → SkyBlock → Hunting)
+
+- [ ] **Huntraps HUD** on Galatea: place a Huntrap; the HUD shows "Huntraps 1/5" and how long ago it went down. Place
+  more; the count follows Hypixel's "(n/5 traps placed)".
+- [ ] When Hypixel says "HUNT - n of your Hunting Traps caught something!", an alert pops up and the HUD says how many
+  are waiting. Picking a trap up lowers both counts. Relog: the traps are still listed.
+
+## 11. Crimson Isle and Kuudra (Right Shift → SkyBlock → Crimson Isle)
+
+- [ ] **Vanquisher Alert**: when a Vanquisher spawns near you, one title, sound and toast (not repeated for the same
+  one). If nothing happens, record its name tag with the debug recorder.
+- [ ] **Reward Chest Value** in a Kuudra Paid Chest: value against cost, with the key's price included (needs the key
+  on the auction house). Free Chest: value only.
+- [ ] **Tab Widgets HUD** (General, off by default): type "Faction Quests, Reputation" (or any widget titles from
+  your tab list) in its settings; those widgets show on screen as they are.
+
+## 12. The Rift (Right Shift → SkyBlock → Rift)
+
+- [ ] **Rift HUD**: the time left matches the action bar and counts down smoothly; it turns yellow under a minute and
+  red under 20 seconds, with a warning title at each.
+- [ ] Motes: picking up orbs or selling to the Motes Grubber adds to "+gained"; after a minute, per hour shows.
+
+## 13. Events (Right Shift → SkyBlock → Events)
+
+- [ ] **Diana HUD** (during the Mythological Ritual, in the Hub): digging a burrow shows "Burrow n/total" with your
+  spade's chain length. A Minos Inquisitor, Sphinx, Manticore or King Minos near you gives one alert each.
+- [ ] **Chocolate Factory Helper**: open /cf. One rabbit employee has a green outline: the one with the most chocolate
+  per second for its cost. Check it against the costs shown (if no outline, record the menu: the cost line may differ).
+
+## 14. Progression (Right Shift → SkyBlock → Progression)
+
+- [ ] **Skill Progress HUD**: farm, mine or fight; the HUD shows the skill, its percent, XP gained and (after a minute)
+  per hour and time to the next level.
+- [ ] **Reminders**: `/hollow remind 1m test`; after a minute a "Reminder" title and toast show. `/hollow remind list`
+  and `/hollow remind clear` work. A reminder set before quitting fires after you come back if its time has passed.
+- [ ] **Booster Cookie Reminder** (off by default): with no cookie active, joining SkyBlock shows a toast.
+
+## 15. Chat and party (Right Shift → SkyBlock → Chat)
+
+- [ ] **Chat Cleanup** (off by default): with it on, ability damage lines, "There are blocks in the way!", mana and
+  cooldown lines and Watchdog announcements stop showing; each category has its own switch. A friend typing the same
+  words in chat still shows.
+- [ ] **Party HUD** (needs the Hypixel Mod API): join a party; the HUD lists the others by name.
+- [ ] **Share location**: bind "SkyBlock: share my location in party chat" in Controls; one press sends one
+  "x: …, y: …, z: … (area)" line to party chat; pressing again within 3 seconds sends nothing.
 

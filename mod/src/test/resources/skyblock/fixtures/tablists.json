@@ -72,5 +72,51 @@
     "§e§lPet:",
     " §7[Lvl 87] §5Ender Dragon",
     " §e1.2M§6/§e3.4M XP §6(35.3%)"
+  ],
+  "mines_full": [
+    "         §e§lInfo",
+    "§b§lArea: §bDwarven Mines",
+    " Server: §8mini12CD",
+    "§b§lProfile: §aMango",
+    "",
+    "§b§lCommissions:",
+    " §fRoyal Mines Mithril: §c45%",
+    " §fGoblin Slayer: §aDONE",
+    " §fTitanium Miner: §e80.5%",
+    "",
+    "§9§lPowders:",
+    " Mithril: §21,234,567",
+    " Gemstone: §d845,210",
+    " Glacite: §b230,000",
+    "",
+    "§6§lForges:",
+    " 1) §aRefined Diamond: §eReady!",
+    " 2) §9Gemstone Mixture: §e3h 10m",
+    " 3) §7EMPTY",
+    "",
+    "§e§lEvent: §b2X POWDER",
+    " Ends In: §e12m 30s"
+  ],
+  "crystal_hollows": [
+    "§b§lArea: §bCrystal Hollows",
+    "§b§lProfile: §aMango",
+    "",
+    "§d§lCrystals:",
+    " Jade: §aFound",
+    " Amber: §cNot Found",
+    " Amethyst: §ePlaced",
+    " Sapphire: §cNot Found",
+    " Topaz: §aFound"
+  ],
+  "crimson": [
+    "§b§lArea: §cCrimson Isle",
+    "§b§lProfile: §aMango",
+    "",
+    "§6§lFaction Quests:",
+    " §cKill 10 Flaming Spiders",
+    " §aFish 3 Lava Leeches §a✔",
+    "",
+    "§5§lReputation:",
+    " §cBarbarian 3,200"
   ]
 }

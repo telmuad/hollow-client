@@ -39,5 +39,13 @@
   "bedwars": {
     "title": "§e§lBED WARS",
     "lines": ["§710/16/26 §8m10", " ", "Red: §a✓", "§ewww.hypixel.net"]
+  },
+  "glacite": {
+    "title": "§e§lSKYBLOCK",
+    "lines": ["§710/16/26 §8m12CD", " Late Autumn 3rd", " §7⏣ §bGlacite Tunnels", "Purse: §62,000,000", " ", "Cold: §b-78❄", " ", "§ewww.hypixel.net"]
+  },
+  "crystal_hollows": {
+    "title": "§e§lSKYBLOCK",
+    "lines": ["§710/16/26 §8m30F", " Late Autumn 3rd", " §7⏣ §6Magma Fields", "Purse: §62,000,000", " ", "Heat: §c♨ 45", " ", "§ewww.hypixel.net"]
   }
 }

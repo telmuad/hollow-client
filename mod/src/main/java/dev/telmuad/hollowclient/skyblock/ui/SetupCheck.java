@@ -28,6 +28,23 @@ public final class SetupCheck {
 		TAB_WIDGETS.put("Pet", "the Pet HUD");
 	}
 
+	/** Widgets only checked on one island (Hypixel's widget settings are per island too). */
+	public static final Map<Island, Map<String, String>> ISLAND_WIDGETS = new java.util.EnumMap<>(Island.class);
+
+	static {
+		ISLAND_WIDGETS.put(Island.GARDEN, Map.of("Visitors", "the Garden HUD's visitor list"));
+		Map<String, String> mines = new LinkedHashMap<>();
+		mines.put("Commissions", "the Mining HUD");
+		mines.put("Powders", "the Powder HUD");
+		mines.put("Forges", "the Forge HUD");
+		ISLAND_WIDGETS.put(Island.DWARVEN_MINES, mines);
+		Map<String, String> hollows = new LinkedHashMap<>();
+		hollows.put("Commissions", "the Mining HUD");
+		hollows.put("Powders", "the Powder HUD");
+		hollows.put("Crystals", "the Crystals HUD");
+		ISLAND_WIDGETS.put(Island.CRYSTAL_HOLLOWS, hollows);
+	}
+
 	/** The SkyBlock overlapping mods Hollow knows, by mod id. */
 	public static final Map<String, String> OTHER_MODS = Map.of("skyblocker", "Skyblocker", "skyhanni", "SkyHanni", "firmament", "Firmament");
 
@@ -58,7 +75,9 @@ public final class SetupCheck {
 		if (on) {
 			List<String> missing = new ArrayList<>();
 			TabListParser.TabInfo tab = s.tab();
-			for (Map.Entry<String, String> w : TAB_WIDGETS.entrySet()) {
+			Map<String, String> wanted = new LinkedHashMap<>(TAB_WIDGETS);
+			wanted.putAll(ISLAND_WIDGETS.getOrDefault(s.island(), Map.of()));
+			for (Map.Entry<String, String> w : wanted.entrySet()) {
 				boolean present = !tab.widget(w.getKey()).isEmpty() || !tab.value(w.getKey()).isEmpty()
 						|| (w.getKey().equals("Area") && !tab.area().isEmpty());
 				if (!present) missing.add(w.getKey() + " (" + w.getValue() + ")");

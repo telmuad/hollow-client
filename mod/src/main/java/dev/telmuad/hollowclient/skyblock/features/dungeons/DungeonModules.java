@@ -327,7 +327,8 @@ public final class DungeonModules {
 	/** Reward chests after a run: what's inside is worth vs what opening costs. */
 	public static final class RewardChestHud extends SkyBlockHudModule {
 		public RewardChestHud() {
-			super("sb_reward_chest", "Reward Chest Value", "In a dungeon reward chest: the value of what's inside against the cost to open it.", "Dungeons", true,
+			super("sb_reward_chest", "Reward Chest Value", "In a dungeon or Kuudra reward chest: the value of what's inside against the cost to open it "
+					+ "(coins, and a Kuudra key at its lowest BIN).", "Dungeons", true,
 					at(Anchor.CENTER, 0, Anchor.START, 10));
 		}
 
@@ -358,8 +359,14 @@ public final class DungeonModules {
 				if (p.matches("reward_open", name) != null) {
 					ItemLore lore = st.get(DataComponents.LORE);
 					if (lore != null) for (Component c : lore.lines()) {
-						Matcher m = p.find("reward_cost", SbText.clean(c.getString()));
-						if (m != null) cost = SbText.longOr(m.group("coins"), 0);
+						String line = SbText.clean(c.getString());
+						Matcher m = p.find("reward_cost", line);
+						if (m != null) cost += SbText.longOr(m.group("coins"), 0);
+						Matcher k = p.find("reward_key", line);
+						if (k != null) {
+							String id = SkyBlock.data().prices().idForName(k.group("key"));
+							if (id != null) cost += (long) SkyBlock.data().prices().lowestBin(id).orElse(0);
+						}
 					}
 					continue;
 				}

@@ -253,12 +253,20 @@ public final class SkyBlock {
 		}
 		reader.setPaused(true);
 		simulating = true;
+		simOrigin = mc.player == null ? null : mc.player.position();
 		input.left();
 		return null;
 	}
 
 	public static void stopSimulation() {
 		simWorld(clearSummons());
+		if (simMoved) {
+			// back to where the scenario started
+			com.google.gson.JsonObject back = new com.google.gson.JsonObject();
+			back.addProperty("type", "tp");
+			simWorld(back);
+			simMoved = false;
+		}
 		simulator.stop();
 		simulating = false;
 		reader.setPaused(false);
@@ -275,12 +283,21 @@ public final class SkyBlock {
 	 * The simulator's "summon" steps: an invisible marker armor stand with a visible name tag, {@code dx/dy/dz} from
 	 * you (singleplayer only), for features that read name tags (deployables, damage numbers). With {@code entity} it
 	 * summons that mob instead, frozen and harmless (a stand-in slayer boss). {@code {me}} in a name becomes your name.
+	 * A "tp" step moves you to {@code dx/dy/dz} from where the scenario started.
 	 */
 	private static void simWorld(com.google.gson.JsonObject e) {
 		Minecraft mc = Minecraft.getInstance();
 		MinecraftServer server = mc.getSingleplayerServer();
 		if (server == null || mc.player == null) return;
 		String type = e.get("type").getAsString();
+		if (type.equals("tp")) {
+			// moves you to dx/dy/dz from where the scenario started (for readings taken at different spots)
+			net.minecraft.world.phys.Vec3 o = simOrigin != null ? simOrigin : mc.player.position();
+			String cmd = String.format(java.util.Locale.ROOT, "tp @p %.2f %.2f %.2f", o.x + num(e, "dx"), o.y + num(e, "dy"), o.z + num(e, "dz"));
+			server.execute(() -> server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(), cmd));
+			simMoved = true;
+			return;
+		}
 		if (type.equals("clear_summons")) {
 			server.execute(() -> server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(),
 					"kill @e[tag=hollow_sim]"));
@@ -297,6 +314,13 @@ public final class SkyBlock {
 				: String.format(java.util.Locale.ROOT, "summon minecraft:armor_stand %.2f %.2f %.2f {CustomName:%s,CustomNameVisible:1b,"
 						+ "Invisible:1b,NoGravity:1b,Marker:1b,Tags:[\"hollow_sim\"]}", x, y, z, snbt);
 		server.execute(() -> server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(), cmd));
+	}
+
+	private static net.minecraft.world.phys.Vec3 simOrigin;
+	private static boolean simMoved;
+
+	private static double num(com.google.gson.JsonObject e, String key) {
+		return e.has(key) ? e.get(key).getAsDouble() : 0;
 	}
 
 	/** True from starting a scenario until it's stopped (its data stays on screen after the last step). */
