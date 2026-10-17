@@ -205,6 +205,11 @@ public final class Modules {
 		registry.register(new dev.telmuad.hollowclient.skyblock.features.economy.EconomyModules.BazaarHud());
 		registry.register(new dev.telmuad.hollowclient.skyblock.features.economy.EconomyModules.AuctionsHud());
 		registry.register(new dev.telmuad.hollowclient.skyblock.features.economy.EconomyModules.ProfitHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.garden.GardenModules.GardenHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.garden.GardenModules.VisitorHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.garden.GardenModules.JacobHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.garden.GardenModules.FarmingHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.garden.GardenModules.ComposterHud());
 		// Client: theme, font, sounds and the global Performance Mode
 		THEME = registry.register(new ThemeModule());
 		PROFILES = registry.register(new ProfilesModule());

@@ -8,5 +8,10 @@
   "experiment_remember": "Remember the pattern!",
   "experiment_timer": "Timer: (?<seconds>\\d+)s",
   "ah_bin": "Buy it now: (?<coins>[\\d,.]+) coins",
-  "ah_bid": "(?:Top|Starting) bid: (?<coins>[\\d,.]+) coins"
+  "ah_bid": "(?:Top|Starting) bid: (?<coins>[\\d,.]+) coins",
+  "visitor_accept": "Accept Offer",
+  "visitor_items_header": "Items Required:",
+  "visitor_rewards_header": "Rewards:",
+  "visitor_item": "(?<name>[A-Z][^\\d]*?)(?: x(?<count>[\\d,]+))?",
+  "visitor_copper": "\\+?(?<amount>[\\d,]+) Copper"
 }

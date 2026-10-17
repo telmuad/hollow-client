@@ -63,6 +63,7 @@ public final class SkyBlockAlerts {
 		s.builtin("slayer_done", "Slayer quest complete", "slayer_quest_complete", "§a§lQUEST COMPLETE", "{boss}", "DING", false, 3000);
 		s.builtin("visitor", "Garden visitor", "visitor_arrived", "§aVisitor", "{name}", "CHIME", false, 1000, "garden");
 		s.builtin("skill_level", "Skill level up", "skill_level_up", "§3§l{skill} {level}", "", "LEVEL_UP", false, 1000);
+		s.builtin("pests", "Pests spawned", "pattern:pest_spawn", "§c§lPESTS", "Plot {plot}", "ANVIL", false, 3000, "garden");
 		s.builtin("bazaar_filled", "Bazaar order filled", "pattern:bazaar_filled", "§6{kind} filled", "{amount}x {item}", "DING", true, 500);
 		s.builtin("auction_sold", "Auction sold", "pattern:auction_sold", "§6Auction sold", "{item} for {coins} coins", "LEVEL_UP", true, 500);
 	}

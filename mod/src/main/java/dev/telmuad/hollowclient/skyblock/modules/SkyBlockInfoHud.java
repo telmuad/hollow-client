@@ -33,7 +33,8 @@ public final class SkyBlockInfoHud extends SkyBlockHudModule {
 		if (showPlace.on()) {
 			String island = sample ? "Hub" : s.island() == Island.UNKNOWN ? "SkyBlock" : s.island().displayName();
 			String area = sample ? "Village" : s.area();
-			out.add(new Line((s.sidebar().rift() && !sample ? "ф " : "⏣ ") + island + (area.isEmpty() || area.equals(island) ? "" : " · " + area), 0));
+			boolean sameAsIsland = area.isEmpty() || area.equals(island) || (!sample && Island.fromName(area) == s.island());
+			out.add(new Line((s.sidebar().rift() && !sample ? "ф " : "⏣ ") + island + (sameAsIsland ? "" : " · " + area), 0));
 		}
 		if (showDate.on()) {
 			String date = sample ? "Early Autumn 13th" : s.skyDate();

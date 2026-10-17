@@ -25,6 +25,7 @@ public final class SetupCheck {
 	static {
 		TAB_WIDGETS.put("Area", "the island when the Hypixel Mod API isn't installed");
 		TAB_WIDGETS.put("Profile", "your profile name and game mode (Ironman, Stranded, Bingo)");
+		TAB_WIDGETS.put("Pet", "the Pet HUD");
 	}
 
 	/** The SkyBlock overlapping mods Hollow knows, by mod id. */

@@ -104,6 +104,22 @@ public final class Prices {
 		return v == null ? OptionalDouble.empty() : OptionalDouble.of(v);
 	}
 
+	private volatile Map<String, String> idsByName;
+
+	/** An item id from its display name ("Enchanted Wheat" -> "ENCHANTED_WHEAT"), from Hypixel's item list; null if unknown. */
+	public String idForName(String name) {
+		Map<String, String> m = idsByName;
+		if (m == null || m.size() != names.size()) {
+			Map<String, String> out = new HashMap<>();
+			names.forEach((id, n) -> out.putIfAbsent(dev.telmuad.hollowclient.skyblock.text.SbText.clean(n).toLowerCase(java.util.Locale.ROOT), id));
+			idsByName = m = out;
+		}
+		String id = m.get(dev.telmuad.hollowclient.skyblock.text.SbText.clean(name).toLowerCase(java.util.Locale.ROOT));
+		if (id != null) return id;
+		String guess = dev.telmuad.hollowclient.skyblock.text.SbText.clean(name).toUpperCase(java.util.Locale.ROOT).replace(' ', '_');
+		return bazaar.containsKey(guess) ? guess : null;
+	}
+
 	/** The item's name from Hypixel's item list, or null. */
 	public String name(String id) {
 		return names.get(id);

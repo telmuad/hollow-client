@@ -60,6 +60,12 @@ scenarios = {
         chat(1500, "§aLiam §ehas arrived on your Garden!"),
         bar(2000, "§c900/900❤   §3+48 Farming (12,048/50,000)   §b80/80✎ Mana"),
         chat(2600, "§fFarmer Jon §ehas arrived on your Garden!"),
+        chat(3000, "§6§lYUCK! §e3 §6ൠ Pests §7have spawned in §aPlot §7- §b7§7!"),
+        {"t": 3500, "type": "container", "title": "§8Liam", "items": [
+            {"slot": 29, "material": "minecraft:lime_terracotta", "count": 1, "name": "§aAccept Offer",
+             "lore": ["§7Items Required:", " §aEnchanted Wheat §8x10", " §9Enchanted Hay Bale §8x2", "",
+                      "§7Rewards:", " §8+§c30 Copper", " §8+§315,000 §7Farming XP", "", "§eClick to give!"], "custom_data": {}},
+            {"slot": 33, "material": "minecraft:red_terracotta", "count": 1, "name": "§cRefuse Offer", "lore": [], "custom_data": {}}]},
     ]),
     "slayer": ("A Sven Packmaster IV quest in the Park: progress, the boss spawns, quest complete, a drop", [
         loc(0, "foraging_1", "The Park"), side(100, "slayer_progress"), tabl(200, "hub"), *profile,

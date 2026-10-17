@@ -327,3 +327,13 @@ Choices made while building Hollow Client, with the reason for each. Newest sect
 - **Auctions**: listings in any menu with a "Buy it now" price get a green corner when they're at most 90% of the lowest BIN and a red one at 110% or more; your sold auctions (with an "auction sold" alert) and the coins still to collect.
 - **Coins per Hour**: from your purse since you joined SkyBlock (`/hollow sbprofit reset` to start over). It's honest about what it measures: bank deposits and purchases count too.
 - **Not built (for now)**: per-activity profit trackers (they'd need item gains, not just the purse; each activity's area adds its own tracker) and the minion helper (needs minion menus recorded).
+
+## A4 Garden & farming
+
+- **Checked first** (wiki): up to 5 visitors at once, a new one every 15 minutes (12 after 50 unique visitors, 10 after 100; Finnegan's perk −25%); pests from Garden level 5, base cooldown 5 minutes, up to 8, and their exact spawn lines ("GROSS! A Pest has appeared in Plot - X!", "EWW! 2 Pests have spawned...", "YUCK! n Pests...", the offline line). The wiki doesn't quote the visitor menu's lore or the tab list's pest/composter widgets, so those patterns are guesses on the test list.
+- **Garden HUD** (on by default, Garden only): Garden level and copper, visitors from the tab list's Visitors widget (with "full" at 5), pests by plot from chat, corrected by the tab list's pest lines when they're shown. A built-in "pests spawned" alert (Garden only).
+- **Visitor Offer**: while a visitor's menu is open, the items they want (from the "Accept Offer" lore) with their bazaar cost and the coins per copper. Item names map to ids through Hypixel's item list.
+- **Jacob's Contests**: the next contests and crops from the Elite API (the same keyless source as the launcher), cached for days since it covers the whole SkyBlock year. A live medal-bracket estimate isn't built: no keyless source gives live standings.
+- **Farming HUD**: blocks per second (crop blocks you break, from Fabric's client block-break event), the held tool's own counter (`mined_crops`/`farmed_cultivating` in its custom data) and its rate per hour, and yaw/pitch (display only).
+- **Composter**: shows the tab list's Composter widget as Hypixel words it (no guessing at its format), red when it says inactive or empty.
+- **Not built (for now)**: the plot map overlay and plot borders (needs plot geometry), crop milestones and farming fortune breakdown (need menus recorded), repellent timers (no reliable signal yet).

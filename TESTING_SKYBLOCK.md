@@ -80,3 +80,15 @@ Switch the features on in the menu first (they start off, except SkyBlock Info).
 - [ ] **Auctions**: in the auction browser, cheap BIN listings get a green corner, overpriced ones a red corner.
   When one of your auctions sells you get an alert and the HUD shows it with the coins to collect.
 - [ ] **Coins per Hour**: grows while you earn; `/hollow sbprofit reset` starts it over.
+
+## 5. Garden (Right Shift → SkyBlock → Garden)
+
+- [ ] **Garden HUD** on the Garden: level and copper right; visitors match the tab list ("full" at 5); when pests
+  spawn the count and plot appear and the "PESTS" title plays; after killing them it goes back to none (needs the
+  tab list's pest widget). Record a pest spawn if the plot is wrong.
+- [ ] **Visitor Offer**: talk to a visitor: the HUD lists what they want, the bazaar cost and coins per copper. If it
+  doesn't show, record opening a visitor (the menu format is a guess).
+- [ ] **Jacob's Contests**: times and crops match the in-game Jacob's calendar.
+- [ ] **Farming HUD**: blocks/s while farming (about 20 at max speed), your tool's counter going up with a rate per
+  hour, yaw/pitch.
+- [ ] **Composter**: shows the Composter widget (turn it on in the tab widget settings if missing).

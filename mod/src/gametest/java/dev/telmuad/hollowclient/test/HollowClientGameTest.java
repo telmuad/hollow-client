@@ -214,6 +214,7 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		check("Stopping the simulator leaves SkyBlock", ctx.computeOnClient(mc -> !dev.telmuad.hollowclient.skyblock.SkyBlock.active()));
 		skyblockGeneral(ctx);
 		skyblockEconomy(ctx);
+		skyblockGarden(ctx);
 		check("Leaving SkyBlock puts the normal HUD layout back", ctx.computeOnClient(mc ->
 				"outside".equals(dev.telmuad.hollowclient.modules.Modules.SKYBLOCK_MODE.activeLayout())));
 		sp.getServer().runCommand("clear @a");
@@ -316,6 +317,28 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		screenshot(ctx, "skyblock_ultrasequencer_helper");
 		ctx.setScreen(() -> null);
 		for (String id : new String[]{"sb_menu_tools"}) setEnabled(ctx, id, false);
+	}
+
+	/** A4 Garden: visitors, pests, a visitor's offer with its bazaar cost, Jacob's contests, from the "garden" scenario. */
+	private void skyblockGarden(ClientGameTestContext ctx) {
+		ctx.runOnClient(mc -> {
+			var prices = dev.telmuad.hollowclient.skyblock.SkyBlock.data().prices();
+			prices.loadItems(com.google.gson.JsonParser.parseString("{\"items\":[{\"id\":\"ENCHANTED_WHEAT\",\"name\":\"Enchanted Wheat\"},"
+					+ "{\"id\":\"ENCHANTED_HAY_BALE\",\"name\":\"Enchanted Hay Bale\"}]}").getAsJsonObject(), 1);
+			prices.loadBazaar(com.google.gson.JsonParser.parseString("{\"products\":{\"ENCHANTED_WHEAT\":{\"quick_status\":{\"buyPrice\":160,"
+					+ "\"sellPrice\":150,\"buyMovingWeek\":9000,\"sellMovingWeek\":9000}},\"ENCHANTED_HAY_BALE\":{\"quick_status\":{\"buyPrice\":25600,"
+					+ "\"sellPrice\":25000,\"buyMovingWeek\":9000,\"sellMovingWeek\":9000}}}}").getAsJsonObject(), 2);
+		});
+		for (String id : new String[]{"sb_jacob", "sb_garden", "sb_visitor_offer"}) setEnabled(ctx, id, true); // the HUD tests switched them off
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.simulate(mc, "garden"));
+		ctx.waitTicks(80);
+		check("Garden HUD lists the 3 visitors", ctx.computeOnClient(mc -> dev.telmuad.hollowclient.skyblock.features.garden.Garden.visitors(
+				dev.telmuad.hollowclient.skyblock.SkyBlock.state().tab()).size() == 3));
+		check("The visitor's offer shows its bazaar cost", ctx.computeOnClient(mc -> module("sb_visitor_offer") instanceof dev.telmuad.hollowclient.hud.HudModule v
+				&& v.visibleInGame(mc) && v.measure(mc, mc.font, false).h() > 0));
+		screenshot(ctx, "skyblock_garden_hud");
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.stopSimulation());
+		setEnabled(ctx, "sb_jacob", false);
 	}
 
 	/** A3 Economy: bazaar orders and the filled alert, a sold auction, coins per hour, from the "economy" scenario. */

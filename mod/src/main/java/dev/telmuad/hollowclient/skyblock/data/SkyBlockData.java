@@ -16,6 +16,7 @@ public final class SkyBlockData {
 	private final Http http;
 	private final Prices prices = new Prices();
 	private final Election election = new Election();
+	private final Contests contests = new Contests();
 	private final NeuRepo neu;
 	private final LongSupplier clock;
 	private final AtomicBoolean busy = new AtomicBoolean();
@@ -50,10 +51,15 @@ public final class SkyBlockData {
 		return election;
 	}
 
+	public Contests contests() {
+		return contests;
+	}
+
 	/** At startup: whatever was downloaded before, without touching the network. */
 	public void loadCached() {
 		prices.loadCached(http);
 		election.loadCached(http);
+		contests.loadCached(http);
 		neu.open();
 	}
 
@@ -71,6 +77,7 @@ public final class SkyBlockData {
 			try {
 				prices.refresh(http, force);
 				election.refresh(http, force);
+				contests.refresh(http, force);
 				neu.updateIfDue(Http.javaFetcher("application/vnd.github.sha"), Http::download, false);
 			} catch (RuntimeException e) {
 				errors.accept(e);
