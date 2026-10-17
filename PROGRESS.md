@@ -4,8 +4,9 @@ This file is the source of truth for where the build is. A new session should re
 
 ## Resume here
 
-**Plan 3 (26.2 port, rebrand, SkyBlock Mode)** — the full request is in `plans/HOLLOW_SKYBLOCK.md`. Current step: the
-first unticked item below. Plans 1 and 2 (Minecraft 1.21.11) are finished and frozen on the `legacy/1.21.11` branch
+**Plan 3 (26.2 port, rebrand, SkyBlock Mode)** — the full request is in `plans/HOLLOW_SKYBLOCK.md`. Every milestone is
+done (summary under "Plan 3 final summary"). Next: your first sessions on Hypixel with `TESTING_SKYBLOCK.md`; recordings
+from them become fixtures and fix any guessed formats. Plans 1 and 2 (Minecraft 1.21.11) are finished and frozen on the `legacy/1.21.11` branch
 (tag `legacy-1.21.11`); their log is further down.
 
 ## Plan 3 milestones
@@ -67,12 +68,25 @@ first unticked item below. Plans 1 and 2 (Minecraft 1.21.11) are finished and fr
   - [x] A12 Events & calendar: Diana HUD (burrow chain n/total after the 0.23.6 rework, elusive creature alert from name tags), Chocolate Factory Helper (outlines the best value employee upgrade); burrow pattern and alert fixed for longer chains; EventsTest + gametest section with two screenshots. Left: burrow guess, egg locator, Time Tower/Barn ranking, festival counters, Bingo card
   - [x] A13 Progression & stats: Skill Progress HUD (progress, XP/h, time to level), Reminders (/hollow remind, kept between sessions, fire anywhere), Booster Cookie Reminder (off by default); ProgressTest + gametest section with a screenshot. Left: collections, bestiary, skill averages, API profile lookups
   - [x] A14 Chat & party: Chat Cleanup (hides SkyBlock noise by category, never players' messages), Party HUD (Mod API), share-location key (one press, one line, 3 s cooldown); ChatTest + gametest section. Left: party finder overlay, chat tabs, /p list parsing
-- [ ] **T/Z. Finish**: TESTING_SKYBLOCK.md, USER_GUIDE, README, LICENSE/THIRD_PARTY_NOTICES, final summary
+- [x] **T/Z. Finish**: TESTING_SKYBLOCK.md (15 sections, setup checker first), USER_GUIDE (SkyBlock Mode, keys, reminders, recorder), README (SkyBlock Mode), CREDITS "SkyBlock data" (no LICENSE/THIRD_PARTY_NOTICES change: nothing was copied, see DECISIONS T/Z), final summary below; legacy 1.21.11 branch still builds
 
 ### Plan 3 notes
 
 - L1–L2: the launcher's session-totals file format (`session_stats.json`) is fixed in DECISIONS; the mod writes it in the F/A milestones.
 - Reference sources for porting: decompiled 26.2 game code via `gradlew genSources` (Loom cache), Fabric API sources from maven.fabricmc.net, NeoForge primers for 26.1 and 26.2.
+
+### Plan 3 final summary (2026-10-17)
+
+**Done:** everything in the plan: P0 legacy freeze, P1–P3 port to 26.2 (OpenGL, Sodium, Vulkan), R1 rebrand, L1–L2 launcher profiles / Join Hypixel / SkyBlock page, F1–F6 SkyBlock foundation and test tools, A1–A14 feature areas, T/Z docs. Tests at the end: 214 mod unit tests and 122 launcher tests pass; the client gametest passes 123 checks on OpenGL, with Sodium 0.9.2 and on Vulkan, with screenshots of every SkyBlock HUD and helper reviewed.
+
+**Test first on Hypixel** (in this order; `TESTING_SKYBLOCK.md` has the full checklist):
+1. H → Setup checker, then turn on the tab widgets it lists (Commissions, Powders, Forges, Crystals in the mines; Visitors in the Garden).
+2. Anything built on formats the wiki doesn't quote, so they're best guesses kept in `patterns/*.json`: the bazaar/auction lines, terminal and experiment titles, reward chests (dungeon and Kuudra), the Slayer "Spawned by" tag, the mining tab widgets, Cold/Heat lines, the metal detector's TREASURE reading, the pickaxe ability lines, the trophy fish and double hook lines, the bobber's "!!!", the Chocolate Factory's cost lore, the Chat Cleanup lines. If one shows nothing, `/hollow sbrec on` while it happens and the recording becomes a fixture.
+3. Things verified against the wiki but worth a look: the 22 rare sea creature catch messages, the Huntrap lines, Diana's longer burrow chains after the rework.
+
+**Skipped for Hypixel rules:** see DECISIONS → "Skipped for Hypixel rules" (no ESP/X-ray, no structure finding, no auto-reel/clicks/replies, no ghost blocks or auto-leap, unexplored dungeon rooms stay hidden). Auto GG now never fires on SkyBlock.
+
+**Left for later** (each area's line above has its own list): room puzzles and secret waypoints, Livid/starred mob helpers, Kuudra phases, burrow guessing, egg locator, fossil helper, lasso/tree gift cues, Enigma Souls, party finder overlay, collections/bestiary. Most need a recorded session first.
 
 ## Plan 1 and 2 log (Minecraft 1.21.11, finished)
 
