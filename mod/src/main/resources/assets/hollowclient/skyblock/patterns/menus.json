@@ -1,5 +1,5 @@
 {
-  "_comment": "Menu (container) titles and buttons, cleaned. Item protection blocks moving a locked item in menus that would sell, salvage, auction or trade it; NPC shops are recognised by their sell/buyback button. Check the titles with the debug recorder if a menu isn't protected. The experiment titles and indicator names come from what other mods match, not the wiki (it doesn't show them); confirm with the recorder.",
+  "_comment": "Menu (container) titles and buttons, cleaned. Item protection blocks moving a locked item in menus that would sell, salvage, auction or trade it; NPC shops are recognised by their sell/buyback button. Check the titles with the debug recorder if a menu isn't protected. The experiment titles and indicator names come from what other mods match, not the wiki (it doesn't show them); confirm with the recorder. Terminal titles, Spirit Leap and reward chests follow what other mods match (the wiki doesn't quote them).",
   "protected_title": "(?:Salvage Items?|Salvage Dungeon Items|Create (?:BIN )?Auction|Auction Item|You {3,}.+|Trade.*|Sell .*|.* Sell)",
   "shop_button": "(?:Sell Item|Buyback|Click to sell!?)",
   "ultrasequencer_title": "Ultrasequencer \\((?<tier>[^)]+)\\)",
@@ -13,5 +13,14 @@
   "visitor_items_header": "Items Required:",
   "visitor_rewards_header": "Rewards:",
   "visitor_item": "(?<name>[A-Z][^\\d]*?)(?: x(?<count>[\\d,]+))?",
-  "visitor_copper": "\\+?(?<amount>[\\d,]+) Copper"
+  "visitor_copper": "\\+?(?<amount>[\\d,]+) Copper",
+  "terminal_order": "Click in order!",
+  "terminal_color": "Select all the (?<color>[A-Z ]+) items!",
+  "terminal_name": "What starts with: '(?<letter>\\S)'\\?",
+  "terminal_panes": "Correct all the panes!",
+  "terminal_rubix": "Change all to same color!",
+  "spirit_leap": "(?:Spirit Leap|Infinileap)",
+  "reward_chest": "(?<chest>Wood|Gold|Diamond|Emerald|Obsidian|Bedrock) Chest",
+  "reward_open": "Open Reward Chest",
+  "reward_cost": "(?<coins>[\\d,]+) Coins"
 }

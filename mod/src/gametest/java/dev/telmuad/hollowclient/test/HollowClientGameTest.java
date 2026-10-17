@@ -215,6 +215,7 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		skyblockGeneral(ctx);
 		skyblockEconomy(ctx);
 		skyblockGarden(ctx);
+		skyblockDungeons(ctx);
 		check("Leaving SkyBlock puts the normal HUD layout back", ctx.computeOnClient(mc ->
 				"outside".equals(dev.telmuad.hollowclient.modules.Modules.SKYBLOCK_MODE.activeLayout())));
 		sp.getServer().runCommand("clear @a");
@@ -317,6 +318,34 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		screenshot(ctx, "skyblock_ultrasequencer_helper");
 		ctx.setScreen(() -> null);
 		for (String id : new String[]{"sb_menu_tools"}) setEnabled(ctx, id, false);
+	}
+
+	/** A5 Dungeons: the Dungeon HUD from the "dungeon" scenario, and the terminal helper on a client-side menu. */
+	private void skyblockDungeons(ClientGameTestContext ctx) {
+		setEnabled(ctx, "sb_dungeon", true);
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.simulate(mc, "dungeon"));
+		ctx.waitTicks(70);
+		check("Dungeon HUD shows the score in a run", ctx.computeOnClient(mc -> module("sb_dungeon") instanceof dev.telmuad.hollowclient.hud.HudModule h
+				&& h.visibleInGame(mc) && h.measure(mc, mc.font, false).h() > 20));
+		screenshot(ctx, "skyblock_dungeon_hud");
+		net.minecraft.world.SimpleContainer board = new net.minecraft.world.SimpleContainer(36);
+		ctx.setScreen(() -> {
+			var mc = net.minecraft.client.Minecraft.getInstance();
+			var menu = new net.minecraft.world.inventory.ChestMenu(net.minecraft.world.inventory.MenuType.GENERIC_9x4, 98, mc.player.getInventory(), board, 4);
+			return new net.minecraft.client.gui.screens.inventory.ContainerScreen(menu, mc.player.getInventory(),
+					net.minecraft.network.chat.Component.literal("Click in order!"));
+		});
+		ctx.runOnClient(mc -> {
+			int[] slots = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21};
+			int[] numbers = {4, 9, 1, 7, 2, 10, 5, 3, 8, 6};
+			for (int i = 0; i < slots.length; i++) {
+				board.setItem(slots[i], new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.STAINED_GLASS_PANE.red(), numbers[i]));
+			}
+		});
+		ctx.waitTicks(5);
+		screenshot(ctx, "skyblock_terminal_helper");
+		ctx.setScreen(() -> null);
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.stopSimulation());
 	}
 
 	/** A4 Garden: visitors, pests, a visitor's offer with its bazaar cost, Jacob's contests, from the "garden" scenario. */

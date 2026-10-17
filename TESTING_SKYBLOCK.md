@@ -92,3 +92,16 @@ Switch the features on in the menu first (they start off, except SkyBlock Info).
 - [ ] **Farming HUD**: blocks/s while farming (about 20 at max speed), your tool's counter going up with a rate per
   hour, yaw/pitch.
 - [ ] **Composter**: shows the Composter widget (turn it on in the tab widget settings if missing).
+
+## 6. Dungeons (Right Shift → SkyBlock → Dungeons)
+
+- [ ] **Dungeon HUD** in a run: floor right; secrets/crypts/deaths match the tab list; puzzles count down; keys show
+  after someone picks one up and go away when the door opens; split times appear (blood open, Watcher, boss, end);
+  the "S reached" / "S+ reached" titles come near the end score Hypixel gives. Note the HUD's score next to the
+  real one after a few runs so the estimate can be tuned.
+- [ ] **Dungeon Map**: the map from your hotbar on the HUD with the markers it has.
+- [ ] **Terminal Helper** (F7/M7): each terminal outlines the right slots; "same color" writes click counts. If a
+  terminal shows nothing, record opening it (the title may differ).
+- [ ] **Blaze Puzzle**: lowest and highest health match what you see.
+- [ ] **Spirit Leap Classes**: class letters on the heads in the leap menu.
+- [ ] **Reward Chest Value**: in a reward chest, value vs cost.

@@ -210,6 +210,12 @@ public final class Modules {
 		registry.register(new dev.telmuad.hollowclient.skyblock.features.garden.GardenModules.JacobHud());
 		registry.register(new dev.telmuad.hollowclient.skyblock.features.garden.GardenModules.FarmingHud());
 		registry.register(new dev.telmuad.hollowclient.skyblock.features.garden.GardenModules.ComposterHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.dungeons.DungeonModules.DungeonHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.dungeons.DungeonModules.DungeonMapHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.dungeons.DungeonModules.TerminalsModule());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.dungeons.DungeonModules.BlazeHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.dungeons.DungeonModules.SpiritLeapModule());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.dungeons.DungeonModules.RewardChestHud());
 		// Client: theme, font, sounds and the global Performance Mode
 		THEME = registry.register(new ThemeModule());
 		PROFILES = registry.register(new ProfilesModule());

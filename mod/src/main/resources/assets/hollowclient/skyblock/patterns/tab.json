@@ -16,5 +16,7 @@
   "visitors": "Visitors: \\((?<count>\\d+)\\)",
   "garden_level": "Garden Level: (?<level>[IVXLC]+|\\d+)",
   "commission": "(?<name>[A-Z][^:]{2,40}): (?<progress>\\d+(?:\\.\\d+)?%|DONE)",
-  "player_entry": "(?:\\[\\d+\\] )?(?:\\[[A-Z+]+\\] )?(?<name>[A-Za-z0-9_]{1,16})(?: \\S{1,3})?"
+  "player_entry": "(?:\\[\\d+\\] )?(?:\\[[A-Z+]+\\] )?(?<name>[A-Za-z0-9_]{1,16})(?: \\S{1,3})?",
+  "dungeon_puzzle": "(?<name>[A-Z][A-Za-z' ]+): \\[(?<state>[✔✖✦])\\]",
+  "party_member": "\\[(?<class>[MABHT])\\] (?<name>[A-Za-z0-9_]{1,16})\\b.*"
 }

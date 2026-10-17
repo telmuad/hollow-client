@@ -48,6 +48,12 @@
     " Opened Rooms: §5 12",
     " Completed Rooms: §d10",
     " Secrets Found: §b45%",
+    " Crypts: §a3",
+    " Deaths: §c(1)",
+    "§b§lPuzzles: §f(3)",
+    " §7Three Weirdos: §a[✔]",
+    " §7Creeper Beams: §c[✖]",
+    " §7Ice Fill: §6[✦]",
     "§b§lProfile: §aKiwi Ⓑ"
   ],
   "mines": [

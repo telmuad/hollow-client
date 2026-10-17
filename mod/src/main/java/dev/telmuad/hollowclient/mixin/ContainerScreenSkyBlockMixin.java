@@ -40,7 +40,9 @@ abstract class ContainerScreenSkyBlockMixin {
 				SlotOverlaysModule.label(g, slot);
 				ItemProtectionModule.lockIcon(g, slot);
 				dev.telmuad.hollowclient.skyblock.features.economy.EconomyModules.AuctionsHud.tag(g, slot);
+				dev.telmuad.hollowclient.skyblock.features.dungeons.DungeonModules.SpiritLeapModule.overlay(self, g, slot);
 			}
+			for (Slot slot : self.getMenu().slots) if (slot.isActive()) dev.telmuad.hollowclient.skyblock.features.dungeons.DungeonModules.TerminalsModule.overlay(self, g, slot);
 			for (Slot slot : self.getMenu().slots) if (slot.isActive()) dev.telmuad.hollowclient.skyblock.features.items.ExperimentsModule.overlay(self, g, slot);
 		} catch (RuntimeException e) {
 			dev.telmuad.hollowclient.HollowClient.LOG.warn("Slot overlay failed", e);

@@ -79,6 +79,8 @@ scenarios = {
     "dungeon": ("Catacombs F7: cleared percent, secrets, a boss line and the score", [
         loc(0, "dungeon", "Catacombs"), side(100, "dungeon"), tabl(200, "dungeon"),
         chat(300, "§eStarting in 1 second."),
+        chat(600, "§ePlayerTwo §ehas obtained §8Wither Key§e!"),
+        chat(1200, "§cThe §c§lBLOOD DOOR§c has been opened!"),
         bar(800, "§c2,000/2,000❤   §73/7 Secrets   §b500/500✎ Mana"),
         chat(2000, "§4[BOSS] Necron§r§c: §r§cFinally, I heard so much about you."),
         chat(3000, "§e  Team Score: §a300 §e(§6§lS+§e)"),
