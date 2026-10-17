@@ -197,6 +197,11 @@ public final class Modules {
 		registry.register(new dev.telmuad.hollowclient.skyblock.features.general.DamageNumbersModule());
 		registry.register(new dev.telmuad.hollowclient.skyblock.features.general.ClutterModule());
 		FAIRY_SOULS = registry.register(new dev.telmuad.hollowclient.skyblock.features.general.FairySoulsModule());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.items.ItemTooltipsModule());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.items.SlotOverlaysModule());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.items.ItemProtectionModule());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.items.MenuToolsModule());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.items.ExperimentsModule());
 		// Client: theme, font, sounds and the global Performance Mode
 		THEME = registry.register(new ThemeModule());
 		PROFILES = registry.register(new ProfilesModule());

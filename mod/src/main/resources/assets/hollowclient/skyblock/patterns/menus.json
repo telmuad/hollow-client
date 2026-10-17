@@ -1,0 +1,10 @@
+{
+  "_comment": "Menu (container) titles and buttons, cleaned. Item protection blocks moving a locked item in menus that would sell, salvage, auction or trade it; NPC shops are recognised by their sell/buyback button. Check the titles with the debug recorder if a menu isn't protected. The experiment titles and indicator names come from what other mods match, not the wiki (it doesn't show them); confirm with the recorder.",
+  "protected_title": "(?:Salvage Items?|Salvage Dungeon Items|Create (?:BIN )?Auction|Auction Item|You {3,}.+|Trade.*|Sell .*|.* Sell)",
+  "shop_button": "(?:Sell Item|Buyback|Click to sell!?)",
+  "ultrasequencer_title": "Ultrasequencer \\((?<tier>[^)]+)\\)",
+  "chronomatron_title": "Chronomatron \\((?<tier>[^)]+)\\)",
+  "superpairs_title": "Superpairs \\((?<tier>[^)]+)\\)",
+  "experiment_remember": "Remember the pattern!",
+  "experiment_timer": "Timer: (?<seconds>\\d+)s"
+}

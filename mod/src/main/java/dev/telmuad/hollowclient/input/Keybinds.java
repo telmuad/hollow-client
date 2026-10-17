@@ -30,6 +30,7 @@ public final class Keybinds {
 	private static KeyMapping emoteKey;
 	private static KeyMapping hubKey;
 	private static KeyMapping dumpKey;
+	private static KeyMapping lockKey;
 	private static final String[] ACTIONS = {"waypoint_add", "camera_point", "camera_play", "music_play", "music_next", "music_previous"};
 	private static final KeyMapping[] ACTION_KEYS = new KeyMapping[ACTIONS.length];
 	private static final KeyMapping[] MACRO_KEYS = new KeyMapping[dev.telmuad.hollowclient.modules.qol.ChatMacrosModule.SLOTS];
@@ -48,6 +49,8 @@ public final class Keybinds {
 		hubKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.hollowclient.skyblock_hub",
 				InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_H, CATEGORY));
 		dumpKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.hollowclient.skyblock_dump",
+				InputConstants.Type.KEYSYM, InputConstants.UNKNOWN.getValue(), CATEGORY));
+		lockKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.hollowclient.skyblock_lock",
 				InputConstants.Type.KEYSYM, InputConstants.UNKNOWN.getValue(), CATEGORY));
 		for (int i = 0; i < ACTIONS.length; i++) {
 			ACTION_KEYS[i] = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.hollowclient." + ACTIONS[i],
@@ -77,6 +80,11 @@ public final class Keybinds {
 	/** Opens the SkyBlock Hub (H by default). */
 	public static KeyMapping hubKey() {
 		return hubKey;
+	}
+
+	/** Locks or unlocks the hovered (or held) item for item protection (unbound by default). */
+	public static KeyMapping lockKey() {
+		return lockKey;
 	}
 
 	/** Saves the hovered (or held) item's SkyBlock data for parser fixes (unbound by default). */
@@ -111,6 +119,12 @@ public final class Keybinds {
 		}
 		while (hubKey.consumeClick()) {
 			if (mc.gui.screen() == null && mc.player != null) mc.gui.setScreen(new dev.telmuad.hollowclient.skyblock.ui.SkyBlockHubScreen(null));
+		}
+		while (lockKey.consumeClick()) {
+			if (mc.gui.screen() == null && mc.player != null) {
+				dev.telmuad.hollowclient.skyblock.features.items.ItemProtectionModule.toggle(mc.player.getMainHandItem(),
+						mc.player.getInventory().getSelectedSlot());
+			}
 		}
 		while (dumpKey.consumeClick()) {
 			if (mc.gui.screen() == null && mc.player != null) dev.telmuad.hollowclient.skyblock.ui.SkyBlockUi.dump(mc, mc.player.getMainHandItem());

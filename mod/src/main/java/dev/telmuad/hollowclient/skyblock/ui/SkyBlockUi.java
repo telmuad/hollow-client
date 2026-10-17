@@ -30,10 +30,13 @@ public final class SkyBlockUi {
 		dev.telmuad.hollowclient.skyblock.features.general.VanillaBarsModule.registerHooks();
 		ScreenEvents.AFTER_INIT.register((client, screen, w, h) -> {
 			if (!(screen instanceof AbstractContainerScreen<?> container)) return;
+			dev.telmuad.hollowclient.skyblock.features.items.MenuToolsModule.onScreen(container);
 			ScreenKeyboardEvents.afterKeyPress(screen).register((s, event) -> {
-				if (Keybinds.dumpKey() == null || !Keybinds.dumpKey().matches(event)) return;
 				var slot = container.hoveredSlot;
-				if (slot != null && slot.hasItem()) dump(client, slot.getItem());
+				if (Keybinds.dumpKey() != null && Keybinds.dumpKey().matches(event) && slot != null && slot.hasItem()) dump(client, slot.getItem());
+				if (Keybinds.lockKey() != null && Keybinds.lockKey().matches(event) && slot != null && slot.hasItem()) {
+					dev.telmuad.hollowclient.skyblock.features.items.ItemProtectionModule.toggle(slot);
+				}
 			});
 		});
 		SkyBlock.bus().on(SbEvent.JoinedSkyBlock.class, e -> noteOverlaps());

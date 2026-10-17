@@ -72,7 +72,21 @@
 	"key.hollowclient.music_previous": "Music: previous song",
 	"key.hollowclient.skyblock_hub": "SkyBlock Hub",
 	"key.hollowclient.skyblock_dump": "SkyBlock: save hovered item (debug)",
+	"key.hollowclient.skyblock_lock": "SkyBlock: lock / unlock item",
 	"key.hollowclient.skyblock_mode": "Toggle SkyBlock Mode",
 	"key.hollowclient.sb_info": "Toggle SkyBlock Info",
-	"key.hollowclient.sb_session": "Toggle SkyBlock Session"
+	"key.hollowclient.sb_session": "Toggle SkyBlock Session",
+	"key.hollowclient.sb_status_bars": "Toggle Status Bars",
+	"key.hollowclient.sb_vanilla_bars": "Toggle Hide Vanilla Bars",
+	"key.hollowclient.sb_pet": "Toggle Pet HUD",
+	"key.hollowclient.sb_next_events": "Toggle Next Events",
+	"key.hollowclient.sb_deployables": "Toggle Deployables",
+	"key.hollowclient.sb_damage_numbers": "Toggle Compact Damage",
+	"key.hollowclient.sb_clutter": "Toggle Clutter Hider",
+	"key.hollowclient.sb_fairy_souls": "Toggle Fairy Souls",
+	"key.hollowclient.sb_tooltips": "Toggle Price Tooltips",
+	"key.hollowclient.sb_slot_overlays": "Toggle Slot Info",
+	"key.hollowclient.sb_item_protection": "Toggle Item Protection",
+	"key.hollowclient.sb_menu_tools": "Toggle Menu Tools",
+	"key.hollowclient.sb_experiments": "Toggle Experiment Helpers"
 }

@@ -53,3 +53,20 @@ Switch the features on in the menu first (they start off, except SkyBlock Info).
 - [ ] **Clutter Hider**: in the Hub other players disappear, NPCs stay, party members stay; lightning is gone.
 - [ ] **Fairy Souls**: beams lead to souls; after you click one ("SOUL! You found a Fairy Soul!") its beam goes away.
   `/hollow sbsouls found` marks every soul on the island as found (if you got them before Hollow).
+
+## 3. Items, inventory & GUI (Right Shift → SkyBlock → Items)
+
+- [ ] **Price tooltips**: hover a bazaar item (bazaar buy/sell), an auction item (lowest BIN), a pet (lowest BIN for its
+  rarity and level), a craftable item (craft cost). Hold Shift on an upgraded weapon: the breakdown adds up to
+  "Estimated value". Donated items say "Donated to the Museum".
+- [ ] **Slot info**: rarity backgrounds in your inventory, chests and menus; pet levels on pets, ✪ on starred items,
+  short names on enchanted books (e.g. UWV), roman tiers on minions.
+- [ ] **Item protection**: set the lock key (Controls → Hollow Client → "SkyBlock: lock / unlock item"), lock a
+  weapon (gold padlock appears). Try: Q in hand, Q in the inventory, dropping it outside the inventory, selling it to
+  an NPC, salvaging it, putting it up for auction. All should be blocked with a red message. Unlock and it works again.
+  - [ ] If a sell/salvage menu isn't protected, record opening it (`/hollow sbrec on`) so its title can be added.
+- [ ] **Menu tools**: the search box under a chest dims non-matching items; the buttons above your inventory run
+  /pets, /storage, /wardrobe, /ah, /bz, /craft (change the list in the module settings).
+- [ ] **Experiment helpers** (Experimentation Table): Ultrasequencer numbers stay on the tiles after they hide, with
+  the next one outlined; Chronomatron outlines the color to press next; Superpairs writes the items you've seen on
+  covered tiles. If nothing shows, record one game (`/hollow sbrec on`) and send it.

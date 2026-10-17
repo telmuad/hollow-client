@@ -208,6 +208,7 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 			return false;
 		}));
 		screenshot(ctx, "skyblock_items_given");
+		skyblockItems(ctx);
 		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.stopSimulation());
 		ctx.waitTicks(5);
 		check("Stopping the simulator leaves SkyBlock", ctx.computeOnClient(mc -> !dev.telmuad.hollowclient.skyblock.SkyBlock.active()));
@@ -215,6 +216,105 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		check("Leaving SkyBlock puts the normal HUD layout back", ctx.computeOnClient(mc ->
 				"outside".equals(dev.telmuad.hollowclient.modules.Modules.SKYBLOCK_MODE.activeLayout())));
 		sp.getServer().runCommand("clear @a");
+	}
+
+	/** A2 Items: price tooltips, slot info, search, quick-nav and item protection, on the items the scenario gave. */
+	private void skyblockItems(ClientGameTestContext ctx) {
+		ctx.runOnClient(mc -> {
+			var prices = dev.telmuad.hollowclient.skyblock.SkyBlock.data().prices();
+			prices.loadBazaar(com.google.gson.JsonParser.parseString("{\"products\":{\"ENCHANTMENT_ULTIMATE_WISE_5\":{\"quick_status\":"
+					+ "{\"buyPrice\":2100000,\"sellPrice\":1900000,\"buyMovingWeek\":100,\"sellMovingWeek\":90}},\"HOT_POTATO_BOOK\":{\"quick_status\":"
+					+ "{\"buyPrice\":80000,\"sellPrice\":75000,\"buyMovingWeek\":9000,\"sellMovingWeek\":9000}},\"RECOMBOBULATOR_3000\":{\"quick_status\":"
+					+ "{\"buyPrice\":7000000,\"sellPrice\":6500000,\"buyMovingWeek\":900,\"sellMovingWeek\":900}}}}").getAsJsonObject(), 1);
+			prices.loadLowestBin(com.google.gson.JsonParser.parseString("{\"items\":{\"HYPERION\":[{\"variantKey\":\"\",\"variedBy\":{},"
+					+ "\"lowest\":456900000}],\"TITANIUM_DRILL_4\":[{\"variantKey\":\"\",\"variedBy\":{},\"lowest\":120000000}],"
+					+ "\"PET\":[{\"variantKey\":\"x\",\"variedBy\":{\"rarity\":\"LEGENDARY\",\"pet\":\"GOLDEN_DRAGON\",\"petLevel\":{\"min\":100,\"max\":100}},"
+					+ "\"lowest\":600000000}]}}").getAsJsonObject(), 1);
+		});
+		for (String id : new String[]{"sb_tooltips", "sb_slot_overlays", "sb_item_protection", "sb_menu_tools"}) setEnabled(ctx, id, true);
+		int hyperionSlot = ctx.computeOnClient(mc -> {
+			for (int i = 0; i < 9; i++) {
+				var it = dev.telmuad.hollowclient.skyblock.features.items.ItemCache.of(mc.player.getInventory().getItem(i));
+				if (it != null && "HYPERION".equals(it.id())) return i;
+			}
+			return -1;
+		});
+		check("The Hyperion is in the hotbar (" + hyperionSlot + ")", hyperionSlot >= 0);
+		check("Price tooltips: Lowest BIN and an estimated value on the Hyperion", ctx.computeOnClient(mc -> {
+			var stack = mc.player.getInventory().getItem(Math.max(0, hyperionSlot));
+			String text = String.join(" | ", stack.getTooltipLines(net.minecraft.world.item.Item.TooltipContext.of(mc.level), mc.player,
+					net.minecraft.world.item.TooltipFlag.NORMAL).stream().map(net.minecraft.network.chat.Component::getString).toList());
+			return text.contains("Lowest BIN: 456.9M") && text.contains("Estimated value");
+		}));
+		// item protection: lock it, then the drop key keeps it in hand
+		ctx.runOnClient(mc -> {
+			mc.player.getInventory().setSelectedSlot(Math.max(0, hyperionSlot));
+			dev.telmuad.hollowclient.skyblock.features.items.ItemProtectionModule.toggle(mc.player.getMainHandItem(), Math.max(0, hyperionSlot));
+		});
+		ctx.waitTicks(2);
+		boolean dropped = ctx.computeOnClient(mc -> mc.player.drop(false));
+		ctx.waitTicks(5);
+		check("Item protection: a locked item isn't dropped", !dropped && ctx.computeOnClient(mc ->
+				"HYPERION".equals(dev.telmuad.hollowclient.skyblock.features.items.ItemCache.of(mc.player.getMainHandItem()) == null ? ""
+						: dev.telmuad.hollowclient.skyblock.features.items.ItemCache.of(mc.player.getMainHandItem()).id())));
+		// the inventory with slot info, the lock, quick-nav buttons and the search box; then hover the Hyperion
+		ctx.setScreen(() -> new net.minecraft.client.gui.screens.inventory.InventoryScreen(net.minecraft.client.Minecraft.getInstance().player));
+		ctx.waitTicks(10);
+		check("Menu tools add the search box and quick-nav buttons", ctx.computeOnClient(mc -> {
+			var w = net.fabricmc.fabric.api.client.screen.v1.Screens.getWidgets(mc.gui.screen());
+			return w.stream().anyMatch(x -> x instanceof net.minecraft.client.gui.components.EditBox)
+					&& w.stream().anyMatch(x -> x instanceof net.minecraft.client.gui.components.Button b && b.getMessage().getString().equals("pets"));
+		}));
+		double[] at = ctx.computeOnClient(mc -> {
+			var screen = (net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>) mc.gui.screen();
+			for (var slot : screen.getMenu().slots) {
+				if (slot.container == mc.player.getInventory() && slot.getContainerSlot() == Math.max(0, hyperionSlot)) {
+					return new double[]{screen.leftPos + slot.x + 8, screen.topPos + slot.y + 8};
+				}
+			}
+			return new double[]{0, 0};
+		});
+		double scale = ctx.computeOnClient(mc -> mc.getWindow().getGuiScale());
+		ctx.getInput().setCursorPos(at[0] * scale, at[1] * scale);
+		ctx.waitTicks(5);
+		screenshot(ctx, "skyblock_inventory_tooltip");
+		ctx.runOnClient(mc -> {
+			for (var x : net.fabricmc.fabric.api.client.screen.v1.Screens.getWidgets(mc.gui.screen())) {
+				if (x instanceof net.minecraft.client.gui.components.EditBox box) box.setValue("dragon");
+			}
+		});
+		ctx.getInput().setCursorPos(2, 2);
+		ctx.waitTicks(5);
+		screenshot(ctx, "skyblock_inventory_search");
+		ctx.setScreen(() -> null);
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.features.items.ItemProtectionModule.toggle(mc.player.getMainHandItem(), Math.max(0, hyperionSlot)));
+		// Ultrasequencer on a client-side menu: numbers show, then hide; the helper keeps them on the tiles
+		net.minecraft.world.SimpleContainer board = new net.minecraft.world.SimpleContainer(54);
+		ctx.setScreen(() -> {
+			var mc = net.minecraft.client.Minecraft.getInstance();
+			var menu = new net.minecraft.world.inventory.ChestMenu(net.minecraft.world.inventory.MenuType.GENERIC_9x6, 99, mc.player.getInventory(), board, 6);
+			return new net.minecraft.client.gui.screens.inventory.ContainerScreen(menu, mc.player.getInventory(),
+					net.minecraft.network.chat.Component.literal("Ultrasequencer (Supreme)"));
+		});
+		ctx.runOnClient(mc -> {
+			board.setItem(12, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DYE.white(), 1));
+			board.setItem(20, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DYE.lightBlue(), 2));
+			board.setItem(31, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DYE.blue(), 3));
+			var glow = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.GLOWSTONE);
+			glow.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, net.minecraft.network.chat.Component.literal("Remember the pattern!"));
+			board.setItem(49, glow);
+		});
+		ctx.waitTicks(5);
+		ctx.runOnClient(mc -> {
+			for (int i : new int[]{12, 20, 31}) board.setItem(i, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.STAINED_GLASS_PANE.gray()));
+			var clock = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.CLOCK);
+			clock.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, net.minecraft.network.chat.Component.literal("Timer: 10s"));
+			board.setItem(49, clock);
+		});
+		ctx.waitTicks(5);
+		screenshot(ctx, "skyblock_ultrasequencer_helper");
+		ctx.setScreen(() -> null);
+		for (String id : new String[]{"sb_menu_tools"}) setEnabled(ctx, id, false);
 	}
 
 	/** A1 General: status bars, pet, next events, deployables and compact damage, from the "general" scenario. */
