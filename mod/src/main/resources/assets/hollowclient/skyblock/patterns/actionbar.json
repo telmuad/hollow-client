@@ -1,0 +1,11 @@
+{
+  "_comment": "Parts of the action bar (the line above the hotbar), found anywhere in the cleaned text.",
+  "health": "(?<health>[\\d,]+)/(?<max>[\\d,]+)❤",
+  "defense": "(?<defense>[\\d,]+)❈ Defense",
+  "mana": "(?<mana>[\\d,]+)/(?<max>[\\d,]+)✎(?: Mana)?",
+  "overflow_mana": "(?<overflow>[\\d,]+)ʬ",
+  "skill": "\\+(?<gain>[\\d,.]+) (?<skill>[A-Z][a-z]+) \\((?<progress>[^)]+)\\)",
+  "rift_time": "(?<time>(?:\\d+m\\s*)?\\d+s)ф Left",
+  "secrets": "(?<found>\\d+)/(?<total>\\d+) Secrets",
+  "drill_fuel": "(?<fuel>[\\d,]+)/(?<max>[\\d,.]+k?) Drill Fuel"
+}

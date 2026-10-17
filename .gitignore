@@ -47,3 +47,6 @@ token*.txt
 # OS
 *.DS_Store
 Thumbs.db
+
+# SkyBlock Mode debug recordings and item dumps (never commit)
+hollow-debug/

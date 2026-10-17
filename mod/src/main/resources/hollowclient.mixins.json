@@ -24,6 +24,7 @@
 		"GuiMixin",
 		"GuiScoreboardMixin",
 		"GuiSetScreenMixin",
+		"HudMessagesMixin",
 		"ItemEntityRendererMixin",
 		"ItemInHandRendererMixin",
 		"KeyboardInputMixin",

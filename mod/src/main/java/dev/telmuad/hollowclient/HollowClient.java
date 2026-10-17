@@ -74,6 +74,7 @@ public final class HollowClient implements ClientModInitializer {
 		dev.telmuad.hollowclient.config.Profiles.load();
 		dev.telmuad.hollowclient.render.WaypointFx.register();
 		Modules.registerHooks();
+		dev.telmuad.hollowclient.skyblock.SkyBlock.init();
 
 		LOG.info("Hollow Client ready: {} modules", modules.all().size());
 	}
@@ -90,6 +91,11 @@ public final class HollowClient implements ClientModInitializer {
 		dev.telmuad.hollowclient.camera.CameraPaths.tick(mc);
 		dev.telmuad.hollowclient.music.MusicPlayer.tick(mc);
 		dev.telmuad.hollowclient.discord.DiscordPresence.tick(mc);
+		try {
+			dev.telmuad.hollowclient.skyblock.SkyBlock.tick(mc);
+		} catch (RuntimeException e) {
+			LOG.error("SkyBlock Mode failed to tick", e);
+		}
 		for (Module m : modules.all()) {
 			try {
 				m.onTick();

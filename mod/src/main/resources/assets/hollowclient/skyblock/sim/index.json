@@ -1,0 +1,29 @@
+{
+  "_comment": "Built-in SkyBlock simulator scenarios (/hollow sbsim <name>). Generated from the unit-test fixtures.",
+  "scenarios": [
+    {
+      "name": "hub",
+      "description": "Joins SkyBlock in the Hub: scoreboard, tab list, profile, purse changes, a rare drop and skill XP"
+    },
+    {
+      "name": "garden",
+      "description": "The Garden: copper, three visitors, Farming XP"
+    },
+    {
+      "name": "slayer",
+      "description": "A Sven Packmaster IV quest in the Park: progress, the boss spawns, quest complete, a drop"
+    },
+    {
+      "name": "dungeon",
+      "description": "Catacombs F7: cleared percent, secrets, a boss line and the score"
+    },
+    {
+      "name": "rift",
+      "description": "The Rift: motes and the time left"
+    },
+    {
+      "name": "items",
+      "description": "Gives a Hyperion, a Golden Dragon pet, an Ultimate Wise book and a drill, and opens a menu with them"
+    }
+  ]
+}

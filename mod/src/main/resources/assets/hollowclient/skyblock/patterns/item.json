@@ -1,0 +1,6 @@
+{
+  "_comment": "Item lore and names (cleaned). The SkyBlock item id, reforge, enchantments, stars and so on come from the item's custom data, not from text.",
+  "rarity_line": "(?:\\S )?(?<rarity>VERY SPECIAL|ULTIMATE|UNCOMMON|COMMON|RARE|EPIC|LEGENDARY|MYTHIC|DIVINE|SPECIAL|ADMIN)(?<dungeon> DUNGEON)?(?: (?<type>[A-Z][A-Z ]*?))?(?: \\S)?",
+  "soulbound": "\\* (?:Co-op )?Soulbound \\*",
+  "pet_name": "\\[Lvl (?<level>\\d+)\\] (?<name>.+)"
+}

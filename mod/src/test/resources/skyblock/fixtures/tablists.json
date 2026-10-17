@@ -1,0 +1,60 @@
+{
+  "_comment": "Tab list entries in display order (columns of 20), as Hypixel's widgets show them. Player names are placeholders.",
+  "hub": [
+    "     §a§lPlayers §f(24)",
+    "§8[§9287§8] §b[MVP§c+§b] PlayerOne §7♲",
+    "§8[§a120§8] §aPlayer_Two",
+    "§8[§e40§8] §7PlayerThree",
+    "",
+    "         §e§lInfo",
+    "§b§lArea: §7Hub",
+    " Server: §8mini42AB",
+    " Gems: §a1,234",
+    " Fairy Souls: §d240§7/§d253",
+    "",
+    "     §e§lAccount Info",
+    "§b§lProfile: §aApple ♲",
+    " SB Level: §8[§b287§8] §b45§3/§b100 XP",
+    " Bank: §61.23B",
+    " Interest: §e23h 4m",
+    "",
+    "§b§lSkills: §aFarming 60: §c§lMAX",
+    " Speed: §f✦400",
+    " Strength: §c❁1,234",
+    "",
+    "§e§lPet:",
+    " §7[Lvl 100] §6Golden Dragon",
+    " §6MAX LEVEL"
+  ],
+  "garden": [
+    "     §a§lPlayers §f(1)",
+    "§8[§9287§8] §b[MVP§c+§b] PlayerOne",
+    "         §e§lInfo",
+    "§b§lArea: §aThe Garden",
+    " Server: §8mini80X",
+    "§b§lGarden Level: §2XV",
+    " Copper: §c3,210",
+    "§b§lVisitors: §f(3)",
+    " §aJerry",
+    " §9Liam",
+    " §fFarmer Jon",
+    "§b§lProfile: §aBanana §b(Co-op)",
+    "§b§lJacob's Contest:",
+    " §e◆ Wheat §e1m 20s"
+  ],
+  "dungeon": [
+    "     §a§lParty §f(5)",
+    "§b§lDungeon: §cCatacombs",
+    " Opened Rooms: §5 12",
+    " Completed Rooms: §d10",
+    " Secrets Found: §b45%",
+    "§b§lProfile: §aKiwi Ⓑ"
+  ],
+  "mines": [
+    "§b§lArea: §bDwarven Mines",
+    "§b§lCommissions:",
+    " §fRoyal Mines Mithril: §c45%",
+    " §fGoblin Slayer: §aDONE",
+    "§b§lProfile: §aMango ☀"
+  ]
+}

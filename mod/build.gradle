@@ -20,6 +20,18 @@ repositories {
 			includeGroup 'maven.modrinth'
 		}
 	}
+	// The Hypixel Mod API (MIT). Compile-only: players get it as its own mod from Modrinth (the launcher installs it).
+	exclusiveContent {
+		forRepository {
+			maven {
+				name = 'Hypixel'
+				url = 'https://repo.hypixel.net/repository/Hypixel/'
+			}
+		}
+		filter {
+			includeGroup 'net.hypixel'
+		}
+	}
 }
 
 loom {
@@ -56,6 +68,9 @@ dependencies {
 	// MP3 decoding for the music player (JavaMP3, MIT license; bundled inside the mod jar)
 	implementation "fr.delthas:javamp3:1.0.1"
 	include "fr.delthas:javamp3:1.0.1"
+
+	// SkyBlock Mode reads the island from the Hypixel Mod API when that mod is installed (it's optional).
+	compileOnly "net.hypixel:mod-api:${project.hypixel_mod_api_version}"
 
 	// `gradlew runClient -PwithSodium` runs the dev client with Sodium to check compatibility.
 	// Sodium is never bundled in the jar; the launcher downloads it from Modrinth.

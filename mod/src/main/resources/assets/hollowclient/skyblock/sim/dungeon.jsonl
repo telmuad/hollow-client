@@ -1,0 +1,7 @@
+{"t": 0, "type": "location", "serverName": "mini42AB", "serverType": "SKYBLOCK", "lobbyName": "", "mode": "dungeon", "map": "Catacombs"}
+{"t": 100, "type": "sidebar", "title": "§e§lSKYBLOCK", "lines": ["§710/16/26 §8m55C §8🔫", " Early Spring 4th", " §7⏣ §cThe Catacombs §7(F7)", " ", "Keys: §c■ §c✖ §8§l| §8■ §a1x", "Time Elapsed: §a05m 20s", "Cleared: §c45% §8(123)", " ", "§e[M] §6PlayerOne §a5,000§c❤", "§ewww.hypixel.net"]}
+{"t": 200, "type": "tab", "lines": ["     §a§lParty §f(5)", "§b§lDungeon: §cCatacombs", " Opened Rooms: §5 12", " Completed Rooms: §d10", " Secrets Found: §b45%", "§b§lProfile: §aKiwi Ⓑ"]}
+{"t": 300, "type": "chat", "text": "§eStarting in 1 second."}
+{"t": 800, "type": "actionbar", "text": "§c2,000/2,000❤   §73/7 Secrets   §b500/500✎ Mana"}
+{"t": 2000, "type": "chat", "text": "§4[BOSS] Necron§r§c: §r§cFinally, I heard so much about you."}
+{"t": 3000, "type": "chat", "text": "§e  Team Score: §a300 §e(§6§lS+§e)"}

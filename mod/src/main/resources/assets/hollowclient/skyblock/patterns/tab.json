@@ -1,0 +1,18 @@
+{
+  "_comment": "Tab list entries (the fake players Hypixel uses as widgets), matched against cleaned text. 'key_value' splits 'Name: value' lines; the rest read single widgets.",
+  "players_header": "Players \\((?<count>\\d+)\\)",
+  "column_header": "(?:Info|Account Info|Server Info|Profile Info|Skills|Stats|Pet|Party|Dungeon Stats)",
+  "key_value": "(?<key>[A-Za-z][A-Za-z0-9 '’.&\\-]{0,30}?):(?:\\s+(?<value>.*))?",
+  "area": "(?:Area|Dungeon): (?<area>.+)",
+  "server": "Server: (?<server>\\S+)",
+  "profile": "Profile: (?<name>[A-Za-z]+)(?: (?<symbol>[♲☀Ⓑ]))?(?: \\((?<kind>Co-op|Island)\\))?.*",
+  "sb_level": "SB Level: \\[(?<level>\\d+)\\](?: (?<xp>\\d+)/100 XP)?",
+  "bank": "Bank: (?<amount>[\\d,.]+[kMB]?)(?: / (?<personal>[\\d,.]+[kMB]?))?",
+  "interest": "Interest: (?<time>.+)",
+  "skill": "Skills?: (?<skill>[A-Za-z]+) (?<level>\\d+|[IVXLC]+): (?<progress>MAX|[\\d.]+%)",
+  "pet": "\\[Lvl (?<level>\\d+)\\] (?<name>.+)",
+  "visitors": "Visitors: \\((?<count>\\d+)\\)",
+  "garden_level": "Garden Level: (?<level>[IVXLC]+|\\d+)",
+  "commission": "(?<name>[A-Z][^:]{2,40}): (?<progress>\\d+(?:\\.\\d+)?%|DONE)",
+  "player_entry": "(?:\\[\\d+\\] )?(?:\\[[A-Z+]+\\] )?(?<name>[A-Za-z0-9_]{1,16})(?: \\S{1,3})?"
+}

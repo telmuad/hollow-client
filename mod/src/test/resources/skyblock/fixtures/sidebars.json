@@ -1,0 +1,43 @@
+{
+  "_comment": "Scoreboard sidebars as Hypixel sends them (team prefix + suffix per line, top to bottom), including the emoji Hypixel adds so each line is unique. Server ids and numbers are made up.",
+  "hub": {
+    "title": "§e§lSKYBLOCK",
+    "lines": ["§710/16/26 §8m42AB", "§7 🎂", " Early Autumn 13th", "§7 4:20pm §e☀", " §7⏣ §bVillage", "§7 👾", "Purse: §61,234,567 §e(+5)", "Bits: §b1,234", "§7 🌠", "§ewww.hypixel.net"]
+  },
+  "piggy_coop": {
+    "title": "§e§lSKYBLOCK §b§lCO-OP",
+    "lines": ["§710/16/26 §8m7C", " ", " Late Winter 2nd", "§7 11:50pm §b☽", " §7⏣ §aYour Island", " ", "Piggy: §6512,004", "Bits: §b80 §3(+20)", " ", "§ewww.hypixel.net"]
+  },
+  "guest": {
+    "title": "§e§lSKYBLOCK GUEST",
+    "lines": ["§710/16/26 §8m12D", " Spring 1st", " §7⏣ §aYour Island", "Purse: §6100", "§ewww.hypixel.net"]
+  },
+  "slayer_progress": {
+    "title": "§e§lSKYBLOCK",
+    "lines": ["§710/16/26 §8m99A", " Summer 20th", "§7 2:00pm §e☀", " §7⏣ §cHowling Cave", "Purse: §64,500,000", "Bits: §b0", " ", "Slayer Quest", "§5Sven Packmaster IV", " §7(§e1,234§7/§c2,000§7) Combat XP", "§ewww.hypixel.net"]
+  },
+  "slayer_boss": {
+    "title": "§e§lSKYBLOCK",
+    "lines": ["§710/16/26 §8m99A", " Summer 20th", " §7⏣ §cHowling Cave", "Purse: §64,500,000", "Slayer Quest", "§5Sven Packmaster IV", "§eSlay the boss!", "§ewww.hypixel.net"]
+  },
+  "dungeon": {
+    "title": "§e§lSKYBLOCK",
+    "lines": ["§710/16/26 §8m55C §8🔫", " Early Spring 4th", " §7⏣ §cThe Catacombs §7(F7)", " ", "Keys: §c■ §c✖ §8§l| §8■ §a1x", "Time Elapsed: §a05m 20s", "Cleared: §c45% §8(123)", " ", "§e[M] §6PlayerOne §a5,000§c❤", "§ewww.hypixel.net"]
+  },
+  "rift": {
+    "title": "§e§lSKYBLOCK",
+    "lines": ["§710/16/26 §8m3F", " Late Summer 30th", "§7 6:10am §e☀", " §7ф §aWyld Woods", " ", "Motes: §d12,345", " ", "§ewww.hypixel.net"]
+  },
+  "kuudra": {
+    "title": "§e§lSKYBLOCK",
+    "lines": ["§710/16/26 §8m2K", " §7⏣ §cKuudra's Hollow §7(T5)", "Purse: §61,000", "§ewww.hypixel.net"]
+  },
+  "garden": {
+    "title": "§e§lSKYBLOCK",
+    "lines": ["§710/16/26 §8m80X", " Early Autumn 13th", " §7⏣ §aThe Garden", " ", "Purse: §69,999", "Copper: §c3,210", "Bits: §b5", "§ewww.hypixel.net"]
+  },
+  "bedwars": {
+    "title": "§e§lBED WARS",
+    "lines": ["§710/16/26 §8m10", " ", "Red: §a✓", "§ewww.hypixel.net"]
+  }
+}

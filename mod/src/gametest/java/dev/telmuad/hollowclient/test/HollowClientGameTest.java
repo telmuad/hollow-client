@@ -117,9 +117,61 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 			styles(ctx, sp);
 			featuresA(ctx, sp);
 			featuresB(ctx, sp);
+			skyblock(ctx, sp);
 			fpsBenchmark(ctx, sp);
 		}
 		if (!failures.isEmpty()) throw new AssertionError("Hollow Client checks failed: " + failures);
+	}
+
+	// ------------------------------------------------------------------------------------------------ SkyBlock Mode
+
+	private void skyblock(ClientGameTestContext ctx, TestSingleplayerContext sp) {
+		var sb = dev.telmuad.hollowclient.skyblock.SkyBlock.class;
+		check("The /hollow client command is registered", ctx.computeOnClient(mc -> {
+			var d = net.fabricmc.fabric.api.client.command.v2.ClientCommands.getActiveDispatcher();
+			return d != null && d.getRoot().getChild("hollow") != null;
+		}));
+		check("Not on SkyBlock in singleplayer", ctx.computeOnClient(mc -> !dev.telmuad.hollowclient.skyblock.SkyBlock.active()));
+
+		// a server action bar and chat line reach SkyBlock Mode (as Hypixel's would)
+		java.util.concurrent.atomic.AtomicInteger drops = new java.util.concurrent.atomic.AtomicInteger();
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.bus().on(
+				dev.telmuad.hollowclient.skyblock.event.SbEvent.RareDrop.class, e -> drops.incrementAndGet()));
+		sp.getServer().runCommand("title @a actionbar {\"text\":\"1,234/1,500❤     512❈ Defense\",\"color\":\"red\"}");
+		sp.getServer().runCommand("tellraw @a {\"text\":\"RARE DROP! Test Shard (+12% ✯ Magic Find)\",\"color\":\"gold\",\"bold\":true}");
+		ctx.waitTicks(10);
+		check("The server's action bar is read (health 1234)", ctx.computeOnClient(mc -> {
+			var ab = dev.telmuad.hollowclient.skyblock.SkyBlock.state().actionBar();
+			return ab != null && ab.health() == 1234 && ab.defense() == 512;
+		}));
+		check("A server chat line becomes a RareDrop event", drops.get() == 1);
+
+		// the simulator plays the Hub scenario end to end
+		String problem = ctx.computeOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.simulate(mc, "hub"));
+		check("The simulator starts in singleplayer (" + problem + ")", problem == null);
+		ctx.waitTicks(110);
+		check("Hub scenario: on SkyBlock in the Hub as Apple with 1,251,000 coins", ctx.computeOnClient(mc -> {
+			var st = dev.telmuad.hollowclient.skyblock.SkyBlock.state();
+			return st.onSkyBlock() && st.island() == dev.telmuad.hollowclient.skyblock.state.Island.HUB
+					&& "Apple".equals(st.profileName()) && st.purse() == 1_251_000;
+		}));
+		check("Hub scenario: the session counts the rare drop", ctx.computeOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.session().rareDrops() == 1));
+
+		// the items scenario gives real items with SkyBlock data
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.simulate(mc, "items"));
+		ctx.waitTicks(60);
+		check("Items scenario: a Hyperion with its SkyBlock id is in the inventory", ctx.computeOnClient(mc -> {
+			for (int i = 0; i < mc.player.getInventory().getContainerSize(); i++) {
+				var stack = mc.player.getInventory().getItem(i);
+				if (!stack.isEmpty() && "HYPERION".equals(dev.telmuad.hollowclient.skyblock.mc.GameReader.raw(i, stack).parse().id())) return true;
+			}
+			return false;
+		}));
+		screenshot(ctx, "skyblock_items_given");
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.stopSimulation());
+		ctx.waitTicks(5);
+		check("Stopping the simulator leaves SkyBlock", ctx.computeOnClient(mc -> !dev.telmuad.hollowclient.skyblock.SkyBlock.active()));
+		sp.getServer().runCommand("clear @a");
 	}
 
 	// ------------------------------------------------------------------------------------------------ helpers

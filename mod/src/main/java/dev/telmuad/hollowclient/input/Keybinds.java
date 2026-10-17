@@ -128,9 +128,9 @@ public final class Keybinds {
 					on = m.isEnabled();
 				}
 				if (mc.player != null) {
-					mc.gui.hud.setOverlayMessage(Component.literal(label + ": ")
+					dev.telmuad.hollowclient.skyblock.SkyBlock.showOverlay(mc, Component.literal(label + ": ")
 							.append(on ? Component.literal("ON").withStyle(ChatFormatting.GREEN)
-									: Component.literal("OFF").withStyle(ChatFormatting.RED)), false);
+									: Component.literal("OFF").withStyle(ChatFormatting.RED)));
 				}
 			}
 		}

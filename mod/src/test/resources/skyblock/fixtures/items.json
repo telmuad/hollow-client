@@ -1,0 +1,48 @@
+{
+  "_comment": "SkyBlock items: name, lore and custom_data (Hypixel's ExtraAttributes) as JSON. uuids are made up.",
+  "hyperion": {
+    "material": "minecraft:iron_sword",
+    "name": "§dHeroic Hyperion §6✪✪✪✪✪§c➊",
+    "lore": ["§7Gear Score: §d1234", "§7Damage: §c+360", "", "§d§l§ka§r §d§lMYTHIC DUNGEON SWORD §d§l§ka"],
+    "custom_data": {
+      "id": "HYPERION",
+      "uuid": "0b1c2d3e-0000-4000-8000-000000000001",
+      "modifier": "heroic",
+      "upgrade_level": 6,
+      "hot_potato_count": 15,
+      "rarity_upgrades": 1,
+      "enchantments": {"ultimate_wise": 5, "sharpness": 6, "giant_killer": 6},
+      "gems": {"COMBAT_0": "PERFECT", "unlocked_slots": ["COMBAT_0"]},
+      "timestamp": 1700000000000,
+      "donated_museum": 1
+    }
+  },
+  "pet": {
+    "material": "minecraft:player_head",
+    "name": "§7[Lvl 100] §6Golden Dragon",
+    "lore": ["§8Combat Pet", "", "§6§lLEGENDARY"],
+    "custom_data": {
+      "id": "PET",
+      "uuid": "0b1c2d3e-0000-4000-8000-000000000002",
+      "petInfo": "{\"type\":\"GOLDEN_DRAGON\",\"active\":true,\"exp\":2.5E8,\"tier\":\"LEGENDARY\",\"hideInfo\":false,\"heldItem\":\"DWARF_TURTLE_SHELMET\",\"candyUsed\":0}"
+    }
+  },
+  "book": {
+    "material": "minecraft:enchanted_book",
+    "name": "§fEnchanted Book",
+    "lore": ["§9Ultimate Wise V", "", "§f§lCOMMON"],
+    "custom_data": {"id": "ENCHANTED_BOOK", "enchantments": {"ultimate_wise": 5}}
+  },
+  "soulbound": {
+    "material": "minecraft:diamond_pickaxe",
+    "name": "§6Titanium Drill",
+    "lore": ["§8§l* §8Co-op Soulbound §8§l*", "§6§lLEGENDARY DRILL"],
+    "custom_data": {"id": "TITANIUM_DRILL_4", "drill_fuel": 3000}
+  },
+  "menu_glass": {
+    "material": "minecraft:black_stained_glass_pane",
+    "name": " ",
+    "lore": [],
+    "custom_data": {}
+  }
+}

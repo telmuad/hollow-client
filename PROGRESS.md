@@ -39,7 +39,17 @@ first unticked item below. Plans 1 and 2 (Minecraft 1.21.11) are finished and fr
   - [x] `build_all.bat` end to end: both jars built and bundled, launcher packaged, packaged self-test OK
   - [x] Real install into the real `%APPDATA%\.hollowclient` (2026-10-16, started outside the app container): the 1.x install migrated into `instances/legacy-1.21.11` (mods, config, saves, options, logs, packs; shared files stayed); 26.2 profile installed with `java-runtime-epsilon` (25), Fabric 0.19.5, Fabric API 0.161.0+26.2, Sodium 0.9.2, Hypixel Mod API 1.0.2, Hollow 2.0.0; legacy profile recognised as installed with `java-runtime-delta` (21) and Hollow 1.1.0
   - [x] First play of a profile copies your Hollow config, `options.txt` and server list from the other profile (only when it has no Hollow config yet)
-- [ ] **F1–F6. SkyBlock foundation**: detection (Mod API + fallback), SkyBlock Mode, data layer (sources → parsers → state + events, patterns in JSON), items + prices (NEU repo, Hypixel API, Elite API), menu category + HUD + Hub (H), alerts + editor, setup checker, compatibility, debug recorder, simulator, feature health
+- [ ] **F1–F6. SkyBlock foundation**
+  - [x] Data layer (`skyblock/`): game text → `SkyBlockInput` → parsers (`SidebarParser`, `TabListParser`, `ActionBarParser`, `ChatParser`, `ItemParser`) → `SkyBlockState` + typed `SbEvent`s on an `EventBus`; patterns in `assets/hollowclient/skyblock/patterns/*.json` (overridable from `config/hollowclient/skyblock/patterns/`)
+  - [x] Game adapter (`skyblock/mc/GameReader`): sidebar, tab list, open containers, item custom data → JSON; chat and action bar/titles via mixins (`ChatComponentAddMixin`, new `HudMessagesMixin`); Hollow's own overlay messages excluded
+  - [x] Detection: Hypixel Mod API location (+ party) packets when the mod is installed (compile-only dependency, loaded by reflection), else scoreboard title / tab "Area:" / Rift, dungeon and Kuudra lines; profile name, id and game mode (♲ ☀ Ⓑ); per-profile store
+  - [x] Debug recorder (`/hollow sbrec on|off`, JSONL in `hollow-debug/`, other players' chat never recorded, names anonymised), item dump (`/hollow sbdump`), simulator (`/hollow sbsim <scenario>|list|stop`, singleplayer only; scenarios hub, garden, slayer, dungeon, rift, items generated from the test fixtures by `mod/tools/skyblock_scenarios.py`; recordings replay too), `/hollow sbstate`
+  - [x] Session totals (`SessionStats`) saved as `session_stats.json` per profile for the launcher's SkyBlock page
+  - [x] Data: `Http` disk cache with TTLs and stale-on-outage, `Prices` (bazaar, Elite lowest BIN incl. pets by rarity/level, NPC prices and names), `NeuRepo` (MIT zip, daily commit check, read in place), refreshed in the background only while on SkyBlock
+  - [x] Tests: 42 JUnit (parsers with fixtures, input router, recorder privacy, every scenario, prices, cache, NEU repo); gametest 70/70 incl. 9 SkyBlock checks (server action bar and chat read, simulator end to end, items with SkyBlock data in singleplayer)
+  - [ ] Menu: SkyBlock category with area sub-tabs; SkyBlock module base classes (island gating, health)
+  - [ ] SkyBlock Mode on join: badge toast, SkyBlock HUD layout, modules per island; SkyBlock HUD elements
+  - [ ] Hub screen (H), alerts engine + editor, setup checker, compatibility screen, feature health, hover-dump key, optional API key
 - [ ] **A1–A14. SkyBlock features** (see the plan, section 6): general/HUD, items/GUI, economy, garden, dungeons, slayers, mining, fishing, foraging/hunting, Crimson Isle/Kuudra, Rift, events, progression, chat/party
 - [ ] **T/Z. Finish**: TESTING_SKYBLOCK.md, USER_GUIDE, README, LICENSE/THIRD_PARTY_NOTICES, final summary
 

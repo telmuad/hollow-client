@@ -1,0 +1,9 @@
+{"t": 0, "type": "location", "serverName": "mini42AB", "serverType": "SKYBLOCK", "lobbyName": "", "mode": "garden", "map": "Garden"}
+{"t": 100, "type": "sidebar", "title": "§e§lSKYBLOCK", "lines": ["§710/16/26 §8m80X", " Early Autumn 13th", " §7⏣ §aThe Garden", " ", "Purse: §69,999", "Copper: §c3,210", "Bits: §b5", "§ewww.hypixel.net"]}
+{"t": 200, "type": "tab", "lines": ["     §a§lPlayers §f(1)", "§8[§9287§8] §b[MVP§c+§b] PlayerOne", "         §e§lInfo", "§b§lArea: §aThe Garden", " Server: §8mini80X", "§b§lGarden Level: §2XV", " Copper: §c3,210", "§b§lVisitors: §f(3)", " §aJerry", " §9Liam", " §fFarmer Jon", "§b§lProfile: §aBanana §b(Co-op)", "§b§lJacob's Contest:", " §e◆ Wheat §e1m 20s"]}
+{"t": 400, "type": "chat", "text": "§aYou are playing on profile: §eApple"}
+{"t": 450, "type": "chat", "text": "§8Profile ID: 0b1c2d3e-0000-4000-8000-0000000000aa"}
+{"t": 800, "type": "actionbar", "text": "§c900/900❤   §3+48 Farming (12,000/50,000)   §b80/80✎ Mana"}
+{"t": 1500, "type": "chat", "text": "§aLiam §ehas arrived on your Garden!"}
+{"t": 2000, "type": "actionbar", "text": "§c900/900❤   §3+48 Farming (12,048/50,000)   §b80/80✎ Mana"}
+{"t": 2600, "type": "chat", "text": "§fFarmer Jon §ehas arrived on your Garden!"}

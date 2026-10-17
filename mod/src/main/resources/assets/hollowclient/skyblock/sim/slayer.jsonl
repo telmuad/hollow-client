@@ -1,0 +1,11 @@
+{"t": 0, "type": "location", "serverName": "mini42AB", "serverType": "SKYBLOCK", "lobbyName": "", "mode": "foraging_1", "map": "The Park"}
+{"t": 100, "type": "sidebar", "title": "§e§lSKYBLOCK", "lines": ["§710/16/26 §8m99A", " Summer 20th", "§7 2:00pm §e☀", " §7⏣ §cHowling Cave", "Purse: §64,500,000", "Bits: §b0", " ", "Slayer Quest", "§5Sven Packmaster IV", " §7(§e1,234§7/§c2,000§7) Combat XP", "§ewww.hypixel.net"]}
+{"t": 200, "type": "tab", "lines": ["     §a§lPlayers §f(24)", "§8[§9287§8] §b[MVP§c+§b] PlayerOne §7♲", "§8[§a120§8] §aPlayer_Two", "§8[§e40§8] §7PlayerThree", "", "         §e§lInfo", "§b§lArea: §7Hub", " Server: §8mini42AB", " Gems: §a1,234", " Fairy Souls: §d240§7/§d253", "", "     §e§lAccount Info", "§b§lProfile: §aApple ♲", " SB Level: §8[§b287§8] §b45§3/§b100 XP", " Bank: §61.23B", " Interest: §e23h 4m", "", "§b§lSkills: §aFarming 60: §c§lMAX", " Speed: §f✦400", " Strength: §c❁1,234", "", "§e§lPet:", " §7[Lvl 100] §6Golden Dragon", " §6MAX LEVEL"]}
+{"t": 400, "type": "chat", "text": "§aYou are playing on profile: §eApple"}
+{"t": 450, "type": "chat", "text": "§8Profile ID: 0b1c2d3e-0000-4000-8000-0000000000aa"}
+{"t": 600, "type": "chat", "text": "§5§l  SLAYER QUEST STARTED!"}
+{"t": 800, "type": "actionbar", "text": "§c1,234/1,500❤   §3+120 Combat (2,000/10,000)"}
+{"t": 2000, "type": "sidebar", "title": "§e§lSKYBLOCK", "lines": ["§710/16/26 §8m99A", " Summer 20th", " §7⏣ §cHowling Cave", "Purse: §64,500,000", "Slayer Quest", "§5Sven Packmaster IV", "§eSlay the boss!", "§ewww.hypixel.net"]}
+{"t": 4000, "type": "chat", "text": "§a§l  NICE! SLAYER BOSS SLAIN!"}
+{"t": 4100, "type": "chat", "text": "§a§l  SLAYER QUEST COMPLETE!"}
+{"t": 4300, "type": "chat", "text": "§9§lVERY RARE DROP! §7(§f2x§7) §9Grizzly Bait §b(+150% §b✯ Magic Find§b)"}

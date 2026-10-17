@@ -3,7 +3,7 @@
 	"id": "hollowclient",
 	"version": "${version}",
 	"name": "Hollow Client",
-	"description": "A personal client-side mod: HUD elements, a HUD editor, zoom, toggle sprint, fullbright, custom crosshair and client-side styles (capes, cosmetics, texture packs). Cosmetic and quality-of-life only.",
+	"description": "A personal client-side mod: HUD elements, a HUD editor, zoom, toggle sprint, fullbright, custom crosshair, client-side styles and a display-only SkyBlock Mode for Hypixel SkyBlock. Cosmetic, informational and quality-of-life only.",
 	"authors": [
 		"telmuad"
 	],
@@ -30,6 +30,9 @@
 		"minecraft": "~26.2",
 		"java": ">=25",
 		"fabric-api": "*"
+	},
+	"recommends": {
+		"hypixel-mod-api": ">=1.0"
 	},
 	"suggests": {
 		"sodium": "*"
