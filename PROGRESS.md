@@ -36,7 +36,9 @@ first unticked item below. Plans 1 and 2 (Minecraft 1.21.11) are finished and fr
   - [x] Duplicate-feature note for Skyblocker/SkyHanni/Firmament (by mod id); theme sync across instances; stats per profile
   - [x] `build_all.bat` builds the legacy jar from the `build/legacy` worktree and bundles both; `hollow.spec` bundles `profiles.json`; self-test checks a jar per profile
   - [x] pytest 121 (new: profiles, migration, conflicts, theme sync, quick play, backend profile switching, calendar, election, contests, bazaar, cache/outages, SkyBlock page QML); screenshots of Home and SkyBlock reviewed
-  - [ ] Real install of both profiles into the real `%APPDATA%\.hollowclient` (WMI launch) incl. migration of the current install — done with the packaged build at the end of L (see notes)
+  - [x] `build_all.bat` end to end: both jars built and bundled, launcher packaged, packaged self-test OK
+  - [x] Real install into the real `%APPDATA%\.hollowclient` (2026-10-16, started outside the app container): the 1.x install migrated into `instances/legacy-1.21.11` (mods, config, saves, options, logs, packs; shared files stayed); 26.2 profile installed with `java-runtime-epsilon` (25), Fabric 0.19.5, Fabric API 0.161.0+26.2, Sodium 0.9.2, Hypixel Mod API 1.0.2, Hollow 2.0.0; legacy profile recognised as installed with `java-runtime-delta` (21) and Hollow 1.1.0
+  - [x] First play of a profile copies your Hollow config, `options.txt` and server list from the other profile (only when it has no Hollow config yet)
 - [ ] **F1–F6. SkyBlock foundation**: detection (Mod API + fallback), SkyBlock Mode, data layer (sources → parsers → state + events, patterns in JSON), items + prices (NEU repo, Hypixel API, Elite API), menu category + HUD + Hub (H), alerts + editor, setup checker, compatibility, debug recorder, simulator, feature health
 - [ ] **A1–A14. SkyBlock features** (see the plan, section 6): general/HUD, items/GUI, economy, garden, dungeons, slayers, mining, fishing, foraging/hunting, Crimson Isle/Kuudra, Rift, events, progression, chat/party
 - [ ] **T/Z. Finish**: TESTING_SKYBLOCK.md, USER_GUIDE, README, LICENSE/THIRD_PARTY_NOTICES, final summary

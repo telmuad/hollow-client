@@ -64,7 +64,7 @@ Start **`HollowClient.exe`**. A short intro plays (click or press any key to ski
 - **Hollow 26.2 — SkyBlock ready** (the default): Minecraft 26.2 with Fabric API, Sodium, the Hypixel Mod API and Hollow Client 2.x. This is the one for Hypixel SkyBlock.
 - **Hollow 1.21.11 — Legacy**: the older Hollow Client 1.1 on Minecraft 1.21.11, with Fabric API and Sodium. It gets no new features.
 
-Each profile has its own game folder (`%APPDATA%\.hollowclient\instances\<profile>`) with its own mods, settings, worlds, screenshots and texture packs. Minecraft itself, its libraries and Mojang's Java (Java 25 for 26.2, Java 21 for 1.21.11) are downloaded once and shared. The theme is kept the same in both.
+Each profile has its own game folder (`%APPDATA%\.hollowclient\instances\<profile>`) with its own mods, settings, worlds, screenshots and texture packs. The first time you play a profile, it starts with your Hollow settings, Minecraft options and server list from the other profile; after that the two are separate. Minecraft itself, its libraries and Mojang's Java (Java 25 for 26.2, Java 21 for 1.21.11) are downloaded once and shared. The theme is kept the same in both.
 
 **Coming from launcher 1.x?** The first time launcher 2 starts, it moves your old game folder's files (mods, config, saves, options, screenshots, texture packs, ...) into `instances\legacy-1.21.11`, so your 1.21.11 setup keeps working as the Legacy profile. Nothing is deleted; `migration.txt` in `%APPDATA%\.hollowclient` lists what moved.
 

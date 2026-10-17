@@ -23,6 +23,8 @@ from .paths import find_mod_jar
 
 MANIFEST_NAME = ".hollow-mods.json"
 STATE_NAME = "hollow_install.json"
+# Copied from another profile the first time a profile is played (see Installer.seed_settings).
+SEEDED = ["config/hollowclient.json", "config/hollowclient", "options.txt", "servers.dat"]
 
 
 class Progress(Protocol):
@@ -283,6 +285,33 @@ class Installer:
         write_manifest(self.mods, manifest)
         self.p.log(f"Hollow Client: {source.name}")
         return source.name
+
+    def seed_settings(self, others: list[Path]) -> list[str]:
+        """The first time a profile is played, start it with your settings from another profile: Hollow's config
+        (modules, HUD layout, theme, capes, waypoints, ...), Minecraft's options (keys, video) and the server list.
+        Only when this profile has no Hollow config yet; nothing that exists is overwritten. Returns what was copied."""
+        if (self.game_dir / "config" / "hollowclient.json").exists():
+            return []
+        source = next((o for o in others if (o / "config" / "hollowclient.json").is_file()), None)
+        if source is None:
+            return []
+        copied = []
+        for rel in SEEDED:
+            src, dst = source / rel, self.game_dir / rel
+            if not src.exists() or dst.exists():
+                continue
+            try:
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                if src.is_dir():
+                    shutil.copytree(src, dst)
+                else:
+                    shutil.copy2(src, dst)
+                copied.append(rel)
+            except OSError as e:
+                self.p.log(f"Couldn't copy {rel} from {source.name}: {e}")
+        if copied:
+            self.p.log(f"Started {self.profile.name} with your settings from {source.name}: {', '.join(copied)}")
+        return copied
 
     def summary(self) -> dict[str, str]:
         """Installed versions for the Home screen."""

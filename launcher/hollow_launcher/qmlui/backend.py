@@ -846,6 +846,7 @@ class Backend(QObject):
         server, self._server = self._server, None
         try:
             self.game_dir.mkdir(parents=True, exist_ok=True)
+            self.installer.seed_settings([p.instance_dir(self.root) for p in self.profiles if p.id != self.profile.id])
             options = launch.build_options(self.account, self.settings, self.game_dir, server)
             command = launch.build_command(version_id, self.root, options)
         except Exception as e:

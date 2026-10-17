@@ -241,3 +241,36 @@ def test_conflict_banner(be):
     write_jar(be.game_dir / "mods" / "x.jar", {"id": "firmament"})
     be.refresh()
     assert "Firmament is in this profile" in be.conflictText
+
+
+def test_first_play_copies_settings_from_the_other_profile(tmp_path):
+    from hollow_launcher.installer import Installer
+
+    all_profiles, default = profiles.load()
+    legacy = profiles.by_id(all_profiles, "legacy-1.21.11", default).instance_dir(tmp_path)
+    (legacy / "config" / "hollowclient" / "capes").mkdir(parents=True)
+    (legacy / "config" / "hollowclient.json").write_text('{"modules": {"discord": {"enabled": true}}}')
+    (legacy / "config" / "hollowclient" / "capes" / "mine.png").write_bytes(b"png")
+    (legacy / "options.txt").write_text("fov:0.5")
+    (legacy / "config" / "sodium-options.json").write_text("{}")  # other mods' config stays per version
+    main = Installer(tmp_path, profiles.by_id(all_profiles, "hollow-26.2", default), progress=QuietLog())
+    others = [legacy, tmp_path / "instances" / "missing"]
+    assert main.seed_settings(others) == ["config/hollowclient.json", "config/hollowclient", "options.txt"]
+    game = main.game_dir
+    assert (game / "config" / "hollowclient" / "capes" / "mine.png").read_bytes() == b"png"
+    assert (game / "options.txt").read_text() == "fov:0.5"
+    assert not (game / "config" / "sodium-options.json").exists()
+    (game / "options.txt").write_text("fov:1.0")
+    assert main.seed_settings(others) == [], "only the first time"
+    assert (game / "options.txt").read_text() == "fov:1.0"
+
+
+class QuietLog:
+    def status(self, t):
+        pass
+
+    def progress(self, c, m):
+        pass
+
+    def log(self, t):
+        pass
