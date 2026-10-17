@@ -124,6 +124,7 @@ public final class Modules {
 	public static DiscordModule DISCORD;
 	public static ProfilesModule PROFILES;
 	public static dev.telmuad.hollowclient.skyblock.modules.SkyBlockModeModule SKYBLOCK_MODE;
+	public static dev.telmuad.hollowclient.skyblock.features.general.FairySoulsModule FAIRY_SOULS;
 
 	private Modules() {
 	}
@@ -188,6 +189,14 @@ public final class Modules {
 		SKYBLOCK_MODE = registry.register(new dev.telmuad.hollowclient.skyblock.modules.SkyBlockModeModule());
 		registry.register(new dev.telmuad.hollowclient.skyblock.modules.SkyBlockInfoHud());
 		registry.register(new dev.telmuad.hollowclient.skyblock.modules.SkyBlockSessionHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.general.StatusBarsHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.general.VanillaBarsModule());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.general.GeneralHuds.PetHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.general.GeneralHuds.NextEventsHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.general.GeneralHuds.DeployablesHud());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.general.DamageNumbersModule());
+		registry.register(new dev.telmuad.hollowclient.skyblock.features.general.ClutterModule());
+		FAIRY_SOULS = registry.register(new dev.telmuad.hollowclient.skyblock.features.general.FairySoulsModule());
 		// Client: theme, font, sounds and the global Performance Mode
 		THEME = registry.register(new ThemeModule());
 		PROFILES = registry.register(new ProfilesModule());

@@ -64,8 +64,18 @@ final class SbCommands {
 									SkyBlock.input().setRecorder(null);
 									return ok(c, f == null ? "The recorder wasn't on." : "Saved " + SkyBlock.recorder().lines() + " lines to " + f.getFileName() + ".");
 								})))
+						.then(ClientCommands.literal("sbsouls")
+								.then(ClientCommands.literal("found").executes(c -> souls(c, true)))
+								.then(ClientCommands.literal("reset").executes(c -> souls(c, false))))
 						.then(ClientCommands.literal("sbstate").executes(SbCommands::state))
 						.then(ClientCommands.literal("sbdump").executes(SbCommands::dump))));
+	}
+
+	private static int souls(CommandContext<FabricClientCommandSource> c, boolean found) {
+		var m = dev.telmuad.hollowclient.modules.Modules.FAIRY_SOULS;
+		if (m == null || !SkyBlock.active()) return fail(c, "Only on SkyBlock.");
+		int n = m.markIsland(found);
+		return ok(c, (found ? "Marked all " : "Unmarked all ") + n + " fairy souls on this island.");
 	}
 
 	private static int list(CommandContext<FabricClientCommandSource> c) {
@@ -78,7 +88,7 @@ final class SbCommands {
 
 	private static int state(CommandContext<FabricClientCommandSource> c) {
 		SkyBlockState s = SkyBlock.state();
-		String source = SkyBlock.simulator().running() ? "simulator" : s.fromModApi() ? "Hypixel Mod API" : "scoreboard and tab list";
+		String source = SkyBlock.simulating() ? "simulator" : s.fromModApi() ? "Hypixel Mod API" : "scoreboard and tab list";
 		ok(c, s.onSkyBlock() ? "On SkyBlock (" + source + ")" : "Not on SkyBlock");
 		if (!s.onSkyBlock()) return 1;
 		info(c, "Island: " + s.island().displayName() + (s.area().isEmpty() ? "" : " / " + s.area()));

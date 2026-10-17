@@ -16,7 +16,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * A separate HUD layout while on SkyBlock (or one per island): which HUD elements are on and where they are. Joining
+ * A separate HUD layout while on SkyBlock (or one per island): which of the normal HUD elements are on and where they
+ * are (SkyBlock's own elements keep one state, since they only show on SkyBlock). Joining
  * SkyBlock saves the layout you had and loads the SkyBlock one; leaving swaps back. The first time on an island
  * that has no layout yet, it starts from the shared SkyBlock layout. Saved in
  * {@code config/hollowclient/skyblock/hud_layouts.json}.
@@ -82,9 +83,15 @@ public final class HudLayouts {
 		save();
 	}
 
+	/** SkyBlock's own HUD elements only show on SkyBlock anyway, so they keep one state and aren't swapped. */
+	private static boolean swapped(HudModule m) {
+		return !(m instanceof SkyBlockFeature);
+	}
+
 	private static JsonObject snapshot() {
 		JsonObject out = new JsonObject();
 		for (HudModule m : HudRenderer.hudModules()) {
+			if (!swapped(m)) continue;
 			JsonObject o = new JsonObject();
 			o.addProperty("enabled", m.isEnabled());
 			o.add("hud", m.hudPosition().toJson());
@@ -95,6 +102,7 @@ public final class HudLayouts {
 
 	private static void apply(JsonObject layout) {
 		for (HudModule m : HudRenderer.hudModules()) {
+			if (!swapped(m)) continue;
 			JsonElement e = layout.get(m.id());
 			if (e == null || !e.isJsonObject()) continue;
 			JsonObject o = e.getAsJsonObject();

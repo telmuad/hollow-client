@@ -41,6 +41,12 @@ public final class Simulator {
 	private long startedAt;
 	private String name = "";
 	private double speed = 1;
+	private Consumer<JsonObject> world;
+
+	/** Handles "summon" steps (a name tag floating near you, for HUDs that read visible name tags). */
+	public void setWorld(Consumer<JsonObject> world) {
+		this.world = world;
+	}
 
 	public boolean running() {
 		return next < steps.size();
@@ -125,7 +131,7 @@ public final class Simulator {
 	public int tick(long now, SkyBlockInput input, Consumer<RawItem> give) {
 		int ran = 0;
 		while (next < steps.size() && steps.get(next).t() <= (now - startedAt) * speed) {
-			apply(steps.get(next++).entry(), input, give);
+			apply(steps.get(next++).entry(), input, give, world);
 			ran++;
 		}
 		return ran;
@@ -133,11 +139,15 @@ public final class Simulator {
 
 	/** Plays the whole scenario at once (tests). */
 	public void runAll(SkyBlockInput input, Consumer<RawItem> give) {
-		while (next < steps.size()) apply(steps.get(next++).entry(), input, give);
+		while (next < steps.size()) apply(steps.get(next++).entry(), input, give, world);
 	}
 
 	/** One recorded input into SkyBlock Mode. Unknown types are skipped. */
 	public static void apply(JsonObject e, SkyBlockInput input, Consumer<RawItem> give) {
+		apply(e, input, give, null);
+	}
+
+	public static void apply(JsonObject e, SkyBlockInput input, Consumer<RawItem> give, Consumer<JsonObject> world) {
 		String type = e.has("type") ? e.get("type").getAsString() : "";
 		switch (type) {
 			case "location" -> input.location(new Location(s(e, "serverName"), s(e, "serverType"), s(e, "lobbyName"),
@@ -157,6 +167,9 @@ public final class Simulator {
 			case "container_closed" -> input.containerClosed();
 			case "give" -> {
 				if (give != null && e.has("item")) give.accept(RawItem.fromJson(e.getAsJsonObject("item")));
+			}
+			case "summon", "clear_summons" -> {
+				if (world != null) world.accept(e);
 			}
 			default -> {
 			}

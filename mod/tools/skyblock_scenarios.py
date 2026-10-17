@@ -82,6 +82,15 @@ scenarios = {
         bar(500, "§a5m 20sф Left    §c600/600❤"),
         bar(1500, "§a5m 19sф Left    §c600/600❤"),
     ]),
+    "general": ("General area: status bars from the action bar, your pet, a power orb and a big damage number nearby, a fairy soul", [
+        loc(0, "hub", "Hub"), side(100, "hub"), tabl(200, "pet_xp"), *profile,
+        bar(500, "§c1,234/1,500❤     §a512§a❈ Defense     §b300/400✎ Mana §3200ʬ"),
+        {"t": 600, "type": "summon", "name": "§aOverflux §e45s", "dx": 3, "dy": 1, "dz": 3},
+        {"t": 650, "type": "summon", "name": "§f✧§e1,234,567§6✧", "dx": -2, "dy": 1.5, "dz": 3},
+        bar(1500, "§c1,180/1,500❤     §a512§a❈ Defense     §b260/400✎ Mana §3200ʬ"),
+        chat(2000, "§d§lSOUL! §eYou found a §dFairy Soul§e!"),
+        bar(2500, "§c1,180/1,500❤     §a512§a❈ Defense     §b260/400✎ Mana §3200ʬ"),
+    ]),
     "items": ("Gives a Hyperion, a Golden Dragon pet, an Ultimate Wise book and a drill, and opens a menu with them", [
         loc(0, "hub", "Hub"), side(100, "hub"), tabl(200, "hub"),
         give(300, "hyperion"), give(350, "pet"), give(400, "book"), give(450, "soulbound"),

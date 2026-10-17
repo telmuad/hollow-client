@@ -1,0 +1,11 @@
+{"t": 0, "type": "location", "serverName": "mini42AB", "serverType": "SKYBLOCK", "lobbyName": "", "mode": "hub", "map": "Hub"}
+{"t": 100, "type": "sidebar", "title": "§e§lSKYBLOCK", "lines": ["§710/16/26 §8m42AB", "§7 🎂", " Early Autumn 13th", "§7 4:20pm §e☀", " §7⏣ §bVillage", "§7 👾", "Purse: §61,234,567 §e(+5)", "Bits: §b1,234", "§7 🌠", "§ewww.hypixel.net"]}
+{"t": 200, "type": "tab", "lines": ["         §e§lInfo", "§b§lArea: §7Hub", " Server: §8mini42AB", "§b§lProfile: §aApple", "", "§e§lPet:", " §7[Lvl 87] §5Ender Dragon", " §e1.2M§6/§e3.4M XP §6(35.3%)"]}
+{"t": 400, "type": "chat", "text": "§aYou are playing on profile: §eApple"}
+{"t": 450, "type": "chat", "text": "§8Profile ID: 0b1c2d3e-0000-4000-8000-0000000000aa"}
+{"t": 500, "type": "actionbar", "text": "§c1,234/1,500❤     §a512§a❈ Defense     §b300/400✎ Mana §3200ʬ"}
+{"t": 600, "type": "summon", "name": "§aOverflux §e45s", "dx": 3, "dy": 1, "dz": 3}
+{"t": 650, "type": "summon", "name": "§f✧§e1,234,567§6✧", "dx": -2, "dy": 1.5, "dz": 3}
+{"t": 1500, "type": "actionbar", "text": "§c1,180/1,500❤     §a512§a❈ Defense     §b260/400✎ Mana §3200ʬ"}
+{"t": 2000, "type": "chat", "text": "§d§lSOUL! §eYou found a §dFairy Soul§e!"}
+{"t": 2500, "type": "actionbar", "text": "§c1,180/1,500❤     §a512§a❈ Defense     §b260/400✎ Mana §3200ʬ"}

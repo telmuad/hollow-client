@@ -19,6 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 abstract class EntityRendererNameMixin {
 	@Inject(method = "extractRenderState(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/client/renderer/entity/state/EntityRenderState;F)V", at = @At("TAIL"))
 	private void hollowclient$styleOwnName(Entity entity, EntityRenderState state, float partialTick, CallbackInfo ci) {
+		dev.telmuad.hollowclient.skyblock.features.general.DamageNumbersModule.restyle(entity, state);
 		OwnNametagModule m = Modules.OWN_NAMETAG;
 		if (m == null || !m.isEnabled() || state.nameTag == null || entity != Minecraft.getInstance().player) return;
 		String name = state.nameTag.getString();

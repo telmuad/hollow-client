@@ -56,5 +56,15 @@
     " §fRoyal Mines Mithril: §c45%",
     " §fGoblin Slayer: §aDONE",
     "§b§lProfile: §aMango ☀"
+  ],
+  "pet_xp": [
+    "         §e§lInfo",
+    "§b§lArea: §7Hub",
+    " Server: §8mini42AB",
+    "§b§lProfile: §aApple",
+    "",
+    "§e§lPet:",
+    " §7[Lvl 87] §5Ender Dragon",
+    " §e1.2M§6/§e3.4M XP §6(35.3%)"
   ]
 }

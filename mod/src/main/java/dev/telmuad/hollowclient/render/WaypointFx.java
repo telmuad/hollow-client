@@ -46,7 +46,32 @@ public final class WaypointFx {
 	private static final RenderType BEAM = RenderType.create("hollowclient_waypoint_beam", RenderSetup.builder(BEAM_PIPELINE).createRenderSetup());
 	private static final float BEAM_HEIGHT = 320f;
 
+	/** Waypoints from elsewhere (SkyBlock Mode's fixed locations), drawn the same way. */
+	public interface Source {
+		List<Waypoint> waypoints(Minecraft mc);
+	}
+
+	private static final List<Source> SOURCES = new java.util.concurrent.CopyOnWriteArrayList<>();
+
 	private WaypointFx() {
+	}
+
+	public static void addSource(Source source) {
+		SOURCES.add(source);
+	}
+
+	/** Your own waypoints (singleplayer, Waypoints module on) plus every other source's. */
+	private static List<Waypoint> all(Minecraft mc) {
+		List<Waypoint> out = new ArrayList<>();
+		if (module() != null && Waypoints.allowed(mc)) out.addAll(Waypoints.here(mc));
+		for (Source s : SOURCES) {
+			try {
+				out.addAll(s.waypoints(mc));
+			} catch (RuntimeException e) {
+				HollowClient.LOG.warn("A waypoint source failed", e);
+			}
+		}
+		return out;
 	}
 
 	public static void register() {
@@ -65,18 +90,19 @@ public final class WaypointFx {
 	private static void renderBeams(LevelRenderContext context) {
 		Minecraft mc = Minecraft.getInstance();
 		WaypointsModule m = module();
-		if (m == null || m.beams() <= 0f || !Waypoints.allowed(mc) || CameraPaths.playing()) return;
-		List<Waypoint> list = Waypoints.here(mc);
+		if (mc.player == null || CameraPaths.playing()) return;
+		float strength = m == null ? 0.8f : m.beams();
+		if (strength <= 0f) return;
+		List<Waypoint> list = all(mc);
 		if (list.isEmpty()) return;
 		PoseStack pose = context.poseStack();
 		if (pose == null) return;
 		Vec3 cam = WorldProjection.camera();
-		context.submitNodeCollector().submitCustomGeometry(pose, BEAM, (p, v) -> beams(mc, m, list, cam, v, p.pose()));
+		context.submitNodeCollector().submitCustomGeometry(pose, BEAM, (p, v) -> beams(mc, strength, list, cam, v, p.pose()));
 	}
 
-	private static void beams(Minecraft mc, WaypointsModule m, List<Waypoint> list, Vec3 cam, VertexConsumer v, Matrix4f mat) {
+	private static void beams(Minecraft mc, float strength, List<Waypoint> list, Vec3 cam, VertexConsumer v, Matrix4f mat) {
 		double maxDist = Math.max(32, mc.options.getEffectiveRenderDistance() * 16 - 12);
-		float strength = m.beams();
 		float pulse = 0.85f + 0.15f * (float) Math.sin(Util.getMillis() / 600.0);
 		for (Waypoint w : list) {
 			if (!w.visible) continue;
@@ -130,9 +156,11 @@ public final class WaypointFx {
 	public static void renderLabels(GuiGraphicsExtractor g) {
 		Minecraft mc = Minecraft.getInstance();
 		WaypointsModule m = module();
-		if (m == null || !m.labels() || !Waypoints.allowed(mc) || CameraPaths.playing()) return;
-		List<Waypoint> list = new ArrayList<>(Waypoints.here(mc));
+		if (mc.player == null || (m != null && !m.labels()) || CameraPaths.playing()) return;
+		List<Waypoint> list = all(mc);
 		if (list.isEmpty()) return;
+		double range = m == null ? 0 : m.range();
+		boolean showDistance = m == null || m.distance();
 		Vec3 eye = mc.player.getEyePosition();
 		list.sort(Comparator.comparingDouble((Waypoint w) -> w.distanceTo(eye.x, eye.y, eye.z)));
 		int gw = g.guiWidth();
@@ -141,7 +169,7 @@ public final class WaypointFx {
 		for (Waypoint w : list) {
 			if (!w.visible) continue;
 			double dist = w.distanceTo(eye.x, eye.y, eye.z);
-			if (m.range() > 0 && dist > m.range()) continue;
+			if (range > 0 && dist > range) continue;
 			WorldProjection.Point p = WorldProjection.toGui(w.x, w.y + 1.6, w.z, gw, gh);
 			if (p == null || p.x() < -40 || p.x() > gw + 40 || p.y() < -20 || p.y() > gh + 20) continue;
 			float fade = (float) Math.min(1, Math.max(0, (dist - 2) / 4));
@@ -150,7 +178,7 @@ public final class WaypointFx {
 			float cx = p.x() - gw / 2f;
 			float cy = p.y() - gh / 2f;
 			float focus = (float) Math.max(0.65, 1 - Math.sqrt(cx * cx + cy * cy) / (gw * 0.6));
-			String text = w.name + (m.distance() ? "  " + formatDistance(dist) : "");
+			String text = w.name + (showDistance ? "  " + formatDistance(dist) : "");
 			int width = Ui.hudWidth(mc.font, text) + 14;
 			int x = Math.round(p.x() - width / 2f);
 			int y = Math.round(p.y() - 6);
@@ -177,7 +205,7 @@ public final class WaypointFx {
 			Draw.roundOutline(g, l.x(), l.y(), l.w2(), 13, 4, Theme.fade(ColorUtil.withAlpha(c, 150), a));
 			Draw.circle(g, l.x() + 4, l.y() + 4, 5, Theme.fade(c, a));
 			Ui.drawHud(g, mc.font, l.w().name, l.x() + 11, l.y() + 3, Theme.fade(0xFFFFFFFF, a), false);
-			if (m.distance()) {
+			if (showDistance) {
 				Ui.drawHud(g, mc.font, formatDistance(l.dist()), l.x() + 11 + Ui.hudWidth(mc.font, l.w().name + "  "), l.y() + 3,
 						Theme.fade(0xFFB8B8C8, a), false);
 			}

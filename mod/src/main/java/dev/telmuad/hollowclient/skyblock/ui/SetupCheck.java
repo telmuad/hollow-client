@@ -47,7 +47,7 @@ public final class SetupCheck {
 		boolean on = s.onSkyBlock();
 		out.add(new Item("SkyBlock detected", on,
 				on ? "On " + (s.island() == Island.UNKNOWN ? "SkyBlock (island not known yet)" : s.island().displayName())
-						+ (SkyBlock.simulator().running() ? ", from the simulator." : s.fromModApi() ? ", from the Hypixel Mod API." : ", from the scoreboard and tab list.")
+						+ (SkyBlock.simulating() ? ", from the simulator." : s.fromModApi() ? ", from the Hypixel Mod API." : ", from the scoreboard and tab list.")
 						: "Not on SkyBlock right now.",
 				on ? "" : "Join Hypixel (mc.hypixel.net) and type /skyblock. Then open this again."));
 		boolean profile = !s.profileName().isEmpty();

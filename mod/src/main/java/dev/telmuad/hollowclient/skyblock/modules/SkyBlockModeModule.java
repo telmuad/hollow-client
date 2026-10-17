@@ -95,7 +95,7 @@ public final class SkyBlockModeModule extends SkyBlockModule {
 	@Override
 	public Health health() {
 		if (!SkyBlock.active()) return Health.missing("Not on SkyBlock");
-		if (SkyBlock.simulator().running()) return Health.ok("Location from the simulator");
+		if (SkyBlock.simulating()) return Health.ok("Location from the simulator");
 		return Health.ok(SkyBlock.state().fromModApi() ? "Location from the Hypixel Mod API" : "Location from the scoreboard and tab list");
 	}
 }

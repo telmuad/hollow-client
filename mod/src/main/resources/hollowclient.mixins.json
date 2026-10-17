@@ -17,6 +17,7 @@
 		"ChatScreenPlusMixin",
 		"ClientLevelMixin",
 		"ClientPacketListenerMixin",
+		"EntityRenderDispatcherMixin",
 		"EntityRendererNameMixin",
 		"FogRendererMixin",
 		"CameraFovMixin",

@@ -126,7 +126,8 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 	// ------------------------------------------------------------------------------------------------ SkyBlock Mode
 
 	private void skyblock(ClientGameTestContext ctx, TestSingleplayerContext sp) {
-		var sb = dev.telmuad.hollowclient.skyblock.SkyBlock.class;
+		// no price or item-repository downloads during tests (the run folder is wiped every time)
+		ctx.runOnClient(mc -> ((dev.telmuad.hollowclient.setting.BooleanSetting) module("skyblock_mode").setting("downloads")).set(false));
 		check("The /hollow client command is registered", ctx.computeOnClient(mc -> {
 			var d = net.fabricmc.fabric.api.client.command.v2.ClientCommands.getActiveDispatcher();
 			return d != null && d.getRoot().getChild("hollow") != null;
@@ -210,9 +211,42 @@ public final class HollowClientGameTest implements FabricClientGameTest {
 		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.stopSimulation());
 		ctx.waitTicks(5);
 		check("Stopping the simulator leaves SkyBlock", ctx.computeOnClient(mc -> !dev.telmuad.hollowclient.skyblock.SkyBlock.active()));
+		skyblockGeneral(ctx);
 		check("Leaving SkyBlock puts the normal HUD layout back", ctx.computeOnClient(mc ->
 				"outside".equals(dev.telmuad.hollowclient.modules.Modules.SKYBLOCK_MODE.activeLayout())));
 		sp.getServer().runCommand("clear @a");
+	}
+
+	/** A1 General: status bars, pet, next events, deployables and compact damage, from the "general" scenario. */
+	private void skyblockGeneral(ClientGameTestContext ctx) {
+		for (String id : new String[]{"sb_status_bars", "sb_pet", "sb_next_events", "sb_deployables", "sb_damage_numbers", "sb_vanilla_bars"}) {
+			setEnabled(ctx, id, true);
+		}
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.simulate(mc, "general"));
+		ctx.waitTicks(70);
+		check("Status Bars show from the action bar", ctx.computeOnClient(mc -> module("sb_status_bars") instanceof dev.telmuad.hollowclient.hud.HudModule h
+				&& h.visibleInGame(mc)));
+		check("Status Bars take health/defense/mana out of the action bar text", ctx.computeOnClient(mc -> {
+			var out = dev.telmuad.hollowclient.skyblock.features.general.StatusBarsHud.filterActionBar(
+					net.minecraft.network.chat.Component.literal("§c1,234/1,500❤     §a512§a❈ Defense     §3+12 Farming (5/10)")).getString();
+			return !out.contains("❤") && !out.contains("Defense") && out.contains("Farming");
+		}));
+		check("A power orb's name tag is read as a deployable", ctx.computeOnClient(mc -> mc.level.getEntitiesOfClass(
+				net.minecraft.world.entity.decoration.ArmorStand.class, mc.player.getBoundingBox().inflate(10)).stream()
+				.anyMatch(a -> a.getCustomName() != null && dev.telmuad.hollowclient.skyblock.features.general.GeneralParse.deployable(
+						dev.telmuad.hollowclient.skyblock.mc.LegacyText.of(a.getCustomName())) != null)));
+		check("The Pet HUD reads the Pet widget", ctx.computeOnClient(mc -> {
+			var p = dev.telmuad.hollowclient.skyblock.features.general.GeneralParse.pet(dev.telmuad.hollowclient.skyblock.SkyBlock.state().tab());
+			return p != null && p.level() == 87;
+		}));
+		screenshot(ctx, "skyblock_general_hud");
+		ctx.runOnClient(mc -> dev.telmuad.hollowclient.skyblock.SkyBlock.stopSimulation());
+		ctx.waitTicks(5);
+		check("Stopping the simulator removes its name tags", ctx.computeOnClient(mc -> mc.level.getEntitiesOfClass(
+				net.minecraft.world.entity.decoration.ArmorStand.class, mc.player.getBoundingBox().inflate(10)).isEmpty()));
+		for (String id : new String[]{"sb_status_bars", "sb_pet", "sb_next_events", "sb_deployables", "sb_damage_numbers", "sb_vanilla_bars"}) {
+			setEnabled(ctx, id, false);
+		}
 	}
 
 	// ------------------------------------------------------------------------------------------------ helpers

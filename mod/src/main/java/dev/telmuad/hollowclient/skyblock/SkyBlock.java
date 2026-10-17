@@ -50,6 +50,8 @@ public final class SkyBlock {
 	private static LocationSource locationSource;
 	private static List<UUID> party = List.of();
 	private static boolean clientOverlay;
+	/** A scenario was started and not stopped: the simulated state stays (for previews) until /hollow sbsim stop. */
+	private static boolean simulating;
 	private static int ticks;
 	private static long lastSessionSave;
 
@@ -75,6 +77,7 @@ public final class SkyBlock {
 		reader = new GameReader();
 		recorder = new DebugRecorder(debugDir(), System::currentTimeMillis);
 		simulator = new Simulator();
+		simulator.setWorld(SkyBlock::simWorld);
 		store = new ProfileStore(dir().resolve("profiles"));
 		session = new SessionStats(state, bus, System::currentTimeMillis);
 		bus.on(SbEvent.LeftSkyBlock.class, e -> saveSession());
@@ -85,7 +88,7 @@ public final class SkyBlock {
 		java.util.concurrent.CompletableFuture.runAsync(data::loadCached);
 
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> client.execute(() -> {
-			if (simulator.running()) stopSimulation();
+			if (simulating) stopSimulation();
 			input.left();
 		}));
 		if (FabricLoader.getInstance().isModLoaded("hypixel-mod-api")) {
@@ -94,7 +97,7 @@ public final class SkyBlock {
 						.getDeclaredConstructor().newInstance();
 				Minecraft mc = Minecraft.getInstance();
 				src.start(loc -> mc.execute(() -> {
-					if (!simulator.running()) input.location(loc);
+					if (!simulating) input.location(loc);
 				}), members -> mc.execute(() -> party = List.copyOf(members)));
 				locationSource = src;
 				HollowClient.LOG.info("SkyBlock Mode: using the Hypixel Mod API for location");
@@ -169,9 +172,8 @@ public final class SkyBlock {
 		if (state == null) return;
 		ticks++;
 		long now = System.currentTimeMillis();
-		if (simulator.running()) {
+		if (simulating) {
 			simulator.tick(now, input, SkyBlock::give);
-			if (!simulator.running()) reader.setPaused(false);
 		} else {
 			reader.tick(mc, input);
 		}
@@ -196,12 +198,12 @@ public final class SkyBlock {
 
 	/** Chat from the server (the chat mixin). */
 	public static void onChat(Component message) {
-		if (input != null && !simulator.running()) input.chat(LegacyText.of(message));
+		if (input != null && !simulating) input.chat(LegacyText.of(message));
 	}
 
 	/** Action bar from the server (the HUD mixin); Hollow's own overlay messages are skipped. */
 	public static void onActionBar(Component message) {
-		if (input != null && !clientOverlay && !simulator.running()) input.actionBar(LegacyText.of(message));
+		if (input != null && !clientOverlay && !simulating) input.actionBar(LegacyText.of(message));
 	}
 
 	private static String subtitle = "";
@@ -213,7 +215,7 @@ public final class SkyBlock {
 
 	public static void onTitle(Component title) {
 		if (clientOverlay) return;
-		if (input != null && !simulator.running()) input.title(LegacyText.of(title), subtitle);
+		if (input != null && !simulating) input.title(LegacyText.of(title), subtitle);
 		subtitle = "";
 	}
 
@@ -250,14 +252,52 @@ public final class SkyBlock {
 			return "Couldn't read the scenario: " + e.getMessage();
 		}
 		reader.setPaused(true);
+		simulating = true;
 		input.left();
 		return null;
 	}
 
 	public static void stopSimulation() {
+		simWorld(clearSummons());
 		simulator.stop();
+		simulating = false;
 		reader.setPaused(false);
 		input.left();
+	}
+
+	private static com.google.gson.JsonObject clearSummons() {
+		com.google.gson.JsonObject o = new com.google.gson.JsonObject();
+		o.addProperty("type", "clear_summons");
+		return o;
+	}
+
+	/**
+	 * The simulator's "summon" steps: an invisible marker armor stand with a visible name tag, {@code dx/dy/dz} from
+	 * you (singleplayer only), for features that read name tags (deployables, damage numbers).
+	 */
+	private static void simWorld(com.google.gson.JsonObject e) {
+		Minecraft mc = Minecraft.getInstance();
+		MinecraftServer server = mc.getSingleplayerServer();
+		if (server == null || mc.player == null) return;
+		String type = e.get("type").getAsString();
+		if (type.equals("clear_summons")) {
+			server.execute(() -> server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(),
+					"kill @e[type=armor_stand,tag=hollow_sim]"));
+			return;
+		}
+		double x = mc.player.getX() + (e.has("dx") ? e.get("dx").getAsDouble() : 2);
+		double y = mc.player.getY() + (e.has("dy") ? e.get("dy").getAsDouble() : 1);
+		double z = mc.player.getZ() + (e.has("dz") ? e.get("dz").getAsDouble() : 2);
+		String name = e.has("name") ? e.get("name").getAsString() : "";
+		String snbt = "\"" + name.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
+		String cmd = String.format(java.util.Locale.ROOT, "summon minecraft:armor_stand %.2f %.2f %.2f {CustomName:%s,CustomNameVisible:1b,"
+				+ "Invisible:1b,NoGravity:1b,Marker:1b,Tags:[\"hollow_sim\"]}", x, y, z, snbt);
+		server.execute(() -> server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(), cmd));
+	}
+
+	/** True from starting a scenario until it's stopped (its data stays on screen after the last step). */
+	public static boolean simulating() {
+		return simulating;
 	}
 
 	/** Puts an item into the singleplayer inventory (the simulator's "give" steps). */

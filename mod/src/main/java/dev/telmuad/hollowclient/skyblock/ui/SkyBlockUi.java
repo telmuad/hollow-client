@@ -27,6 +27,7 @@ public final class SkyBlockUi {
 	}
 
 	public static void init() {
+		dev.telmuad.hollowclient.skyblock.features.general.VanillaBarsModule.registerHooks();
 		ScreenEvents.AFTER_INIT.register((client, screen, w, h) -> {
 			if (!(screen instanceof AbstractContainerScreen<?> container)) return;
 			ScreenKeyboardEvents.afterKeyPress(screen).register((s, event) -> {

@@ -1,0 +1,5 @@
+{
+  "_comment": "Names floating over entities (armor stands Hypixel uses as labels), matched against the cleaned name. Only names anyone can see are read. The deployable and damage formats aren't documented on the wiki; check them with the debug recorder in game.",
+  "deployable": "(?<name>Radiant|Mana Flux|Overflux|Plasmaflux|Warning Flare|Alert Flare|SOS Flare|Totem of Corruption|Umberella) (?<time>(?:\\d+m )?\\d+s)",
+  "damage": "(?<pre>[✧✯]?)(?<num>\\d{1,3}(?:,\\d{3})+|\\d{4,})(?<post>[✧✯♞☄❤⚔♨ﬗ]*)"
+}

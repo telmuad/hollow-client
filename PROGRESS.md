@@ -52,7 +52,21 @@ first unticked item below. Plans 1 and 2 (Minecraft 1.21.11) are finished and fr
   - [x] Hub (H): session, calendar, held item value, mayor (keyless election resource), latest events, tools; alerts engine (built-ins + your own chat regex alerts, title/sound/toast, cooldowns) + editor; setup checker; feature health; compatibility (Skyblocker/SkyHanni/Firmament); hover-dump key (unbound) and "Save held item"; optional API key stored with Windows DPAPI (JNA ships with Minecraft)
   - [x] Tests: 51 SkyBlock JUnit tests (150 in all); gametest 75/75 incl. screenshots of the join toast, SkyBlock HUD, an alert, Hub, setup checker, feature health, alerts editor, compatibility and the SkyBlock menu category
   - [x] TESTING_SKYBLOCK.md started (setup checker + foundation)
-- [ ] **A1–A14. SkyBlock features** (see the plan, section 6): general/HUD, items/GUI, economy, garden, dungeons, slayers, mining, fishing, foraging/hunting, Crimson Isle/Kuudra, Rift, events, progression, chat/party
+- [ ] **A1–A14. SkyBlock features** (see the plan, section 6)
+  - [x] A1 General & HUD: Status Bars (+ action bar trimming), Hide Vanilla Bars, Pet, Next Events, Deployables, Compact Damage, Clutter Hider, Fairy Souls (NEU locations, found per profile, `/hollow sbsouls`); shared SkyBlock waypoint source; `general` scenario (with simulated name tags); SkyBlock HUD elements left out of the layout swap; scenarios stay on screen until `/hollow sbsim stop`; 56 SkyBlock unit tests; gametest 80/80
+  - [ ] A2 Items, inventory & GUI
+  - [ ] A3 Economy
+  - [ ] A4 Garden & farming
+  - [ ] A5 Dungeons
+  - [ ] A6 Slayers
+  - [ ] A7 Mining
+  - [ ] A8 Fishing
+  - [ ] A9 Foraging, Hunting & newer content
+  - [ ] A10 Crimson Isle & Kuudra
+  - [ ] A11 The Rift
+  - [ ] A12 Events & calendar
+  - [ ] A13 Progression & stats
+  - [ ] A14 Chat & party
 - [ ] **T/Z. Finish**: TESTING_SKYBLOCK.md, USER_GUIDE, README, LICENSE/THIRD_PARTY_NOTICES, final summary
 
 ### Plan 3 notes

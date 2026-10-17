@@ -11,6 +11,8 @@
   "interest": "Interest: (?<time>.+)",
   "skill": "Skills?: (?<skill>[A-Za-z]+) (?<level>\\d+|[IVXLC]+): (?<progress>MAX|[\\d.]+%)",
   "pet": "\\[Lvl (?<level>\\d+)\\] (?<name>.+)",
+  "pet_xp": "(?<current>[\\d,.]+[kM]?)/(?<needed>[\\d,.]+[kM]?) XP \\((?<percent>[\\d.]+)%\\)",
+  "pet_max": "MAX LEVEL",
   "visitors": "Visitors: \\((?<count>\\d+)\\)",
   "garden_level": "Garden Level: (?<level>[IVXLC]+|\\d+)",
   "commission": "(?<name>[A-Z][^:]{2,40}): (?<progress>\\d+(?:\\.\\d+)?%|DONE)",

@@ -37,3 +37,19 @@ and use `/hollow sbdump`. Other players' chat is never recorded and names are re
 - [ ] Feature health: every switched-on feature shows ✓ where its data should be.
 - [ ] Compatibility (only if you also use Skyblocker, SkyHanni or Firmament): their names are listed.
 - [ ] Chat from other players never fires an alert (ask a friend to type "RARE DROP! test").
+
+## 2. General & HUD (Right Shift → SkyBlock → General)
+
+Switch the features on in the menu first (they start off, except SkyBlock Info).
+
+- [ ] **Status Bars**: health/mana/defense bars match the action bar; overheal shows gold; overflow mana shows "+N";
+  EHP looks sensible. With "Take these out of the action bar" on, the action bar only shows the rest (skill XP etc.).
+- [ ] **Hide Vanilla Bars**: hearts, armor and food are gone on SkyBlock and come back in lobbies.
+- [ ] **Pet**: name and level match your pet; XP progress (or MAX LEVEL). Needs the tab list's Pet widget.
+- [ ] **Next Events**: compare with the in-game calendar (Dark Auction, Jacob's contest, festivals).
+- [ ] **Deployables**: place a power orb (or stand near someone's): its name and seconds show and count down.
+  If nothing shows, record a few seconds next to an orb and send the file (the name format is a guess).
+- [ ] **Compact Damage**: big damage numbers show as 1.2M / 45.7k; crits keep their stars. If not, record a fight.
+- [ ] **Clutter Hider**: in the Hub other players disappear, NPCs stay, party members stay; lightning is gone.
+- [ ] **Fairy Souls**: beams lead to souls; after you click one ("SOUL! You found a Fairy Soul!") its beam goes away.
+  `/hollow sbsouls found` marks every soul on the island as found (if you got them before Hollow).
